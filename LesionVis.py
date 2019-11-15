@@ -12,6 +12,7 @@ import logging
 import math
 import Settings
 import Subject
+import LesionUtils
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 import nibabel as nib
 import numpy as np
@@ -294,14 +295,14 @@ class Ui(Qt.QMainWindow):
                 
                 if fileNames[i].endswith("lesions.obj"):
                     #pgm = vtk.vtkShaderProgram2()
-                    mrmlDataFileName = open ( subjectFolder + "\\mrml.txt" , 'r')
-                    crasDataFileName = open ( subjectFolder + "\\cras.txt" , 'r')
+                    mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+                    crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
                     arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
                     transform.SetMatrix(arrayList)
 
 
                     niftiReader = vtk.vtkNIFTIImageReader()
-                    niftiReader.SetFileName(subjectFolder + "\\T1.nii")
+                    niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
                     niftiReader.Update()
                     probeFilter = vtk.vtkProbeFilter()
                     probeFilter.SetSourceConnection(niftiReader.GetOutputPort())
@@ -370,7 +371,7 @@ class Ui(Qt.QMainWindow):
                 actor.SetUserTransform(transform)
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
-                    translationFilePath = os.path.join(subjectFolder, "cras.txt")
+                    translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
                     f = open(translationFilePath, "r")
                     t_vector = []
                     for t in f:
@@ -391,7 +392,7 @@ class Ui(Qt.QMainWindow):
             #self.iren.Initialize()
             #self.iren.Start()
             self.iren.Render()
-        self.renderStructuralData(subjectFolder + "\\T1.nii", self.actors[0])
+        self.renderStructuralData(subjectFolder + "\\structural\\T1.nii", self.actors[0])
 
         # Render orientation cube.
         self.axesActor = vtk.vtkAnnotatedCubeActor()
@@ -431,13 +432,14 @@ class Ui(Qt.QMainWindow):
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
-            subjectFiles = [f for f in os.listdir(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
+            subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
             self.renderData(subjectFiles)  # Render the actual data
 
         self.model = QtGui.QStandardItemModel()
         for i in range(len(subjectFiles)):
             if subjectFiles[i].endswith(".obj"):
-                item = QtGui.QStandardItem(subjectFiles[i])
+                print(subjectFiles[i])
+                item = QtGui.QStandardItem(os.path.basename(subjectFiles[i]))
                 item.setCheckable(True)
                 item.setCheckState(2)      
                 self.model.appendRow(item)
@@ -452,9 +454,9 @@ class Ui(Qt.QMainWindow):
     def on_click_LoadStructural(self):
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
 
-        t1StructuralNiftyFileName = subjectFolder + "\\T1.nii"
-        mrmlDataFileName = open ( subjectFolder + "\\mrml.txt" , 'r')
-        crasDataFileName = open ( subjectFolder + "\\cras.txt" , 'r')
+        t1StructuralNiftyFileName = subjectFolder + "\\structural\\T1.nii"
+        mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+        crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
         niftiReader = vtk.vtkNIFTIImageReader()
         niftiReader.SetFileName(t1StructuralNiftyFileName)
         niftiReader.Update()
