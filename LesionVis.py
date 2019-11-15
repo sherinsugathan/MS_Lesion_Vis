@@ -32,7 +32,7 @@ class Ui(Qt.QMainWindow):
     # Main Initialization
     def __init__(self):
         super(Ui, self).__init__()
-        uic.loadUi("C:\\Sherin\\OneDrive - University of Bergen\\Source\\5_VTK_Python\\MS_Lesion_Vis\\lesionui.ui", self)
+        uic.loadUi("lesionui.ui", self)
         logging.info('UI file loaded successfully.')
         self.showMaximized()
         self.initUI()
