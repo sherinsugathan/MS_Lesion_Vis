@@ -39,7 +39,6 @@ class Ui(Qt.QMainWindow):
         logging.info('UI initialized successfully.')
         self.initVTK()
         logging.info('VTK initialized successfully.')
-        #structuralDataReader.readStructuralData()
 
     # Initialize the UI.    
     def initUI(self):
