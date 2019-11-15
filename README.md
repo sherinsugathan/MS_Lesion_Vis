@@ -1,3 +1,3 @@
 # MS-Lesion-Vis
  Interactive Visualization for Multiple Sclerosis Lesions
-![MainApp](screenshots/screenshotmain.png)
+![Main App](screenshots/screenshotMain.png)
