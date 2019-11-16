@@ -39,6 +39,8 @@ class Ui(Qt.QMainWindow):
         self.clear()
         logging.info('UI initialized successfully.')
         self.initVTK()
+        self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
+        self.volumeDataLoaded = False # Flag to indicate that volume data is initialized and loaded.
         logging.info('VTK initialized successfully.')
 
     # Initialize the UI.    
@@ -54,8 +56,9 @@ class Ui(Qt.QMainWindow):
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
         self.comboBox_VisType.addItem("Default View")
         self.comboBox_VisType.addItem("Transparent Surfaces")
-        self.comboBox_VisType.addItem("Lesion Color Mapped - Raw")
-        self.comboBox_VisType.addItem("Lesion Color Mapped - Gray")
+        self.comboBox_VisType.addItem("Raw Lesion Intensity Vis.")
+        self.comboBox_VisType.addItem("Lesion Difference With NAWM")
+        self.comboBox_VisType.addItem("Lesion Classification View")
         self.comboBox_VisType.addItem("Lesion Surface Mapping")
         self.mprA_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRA)
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
@@ -77,6 +80,9 @@ class Ui(Qt.QMainWindow):
         self.vtkWidgetMPRA = QVTKRenderWindowInteractor(self.frame_MPRA)
         self.vtkWidgetMPRB = QVTKRenderWindowInteractor(self.frame_MPRB)
         self.vtkWidgetMPRC = QVTKRenderWindowInteractor(self.frame_MPRC)
+
+        # Orientation cube.
+        self.axesActor = vtk.vtkAnnotatedCubeActor()
         
         #self.vtkWidget.setStyleSheet("background-color:black;")
         self.vl.addWidget(self.vtkWidget)
@@ -179,7 +185,7 @@ class Ui(Qt.QMainWindow):
         self.renMPRC.RemoveAllViewProps()     
 
     # Load and Render Structural data
-    def renderStructuralData(self, fileName, actorName):
+    def renderStructuralData(self, fileName):
         img = nib.load(fileName)
         img_data = img.get_data()
         img_data_shape = img_data.shape
@@ -387,33 +393,8 @@ class Ui(Qt.QMainWindow):
         for a in self.actors:
             self.ren.AddActor(a)
             self.ren.ResetCamera()
-            #self.frame.setLayout(self.vl)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
-        self.renderStructuralData(subjectFolder + "\\structural\\T1.nii", self.actors[0])
-
-        # Render orientation cube.
-        self.axesActor = vtk.vtkAnnotatedCubeActor()
-        self.axesActor.SetXPlusFaceText('R')
-        self.axesActor.SetXMinusFaceText('L')
-        self.axesActor.SetYMinusFaceText('H')
-        self.axesActor.SetYPlusFaceText('F')
-        self.axesActor.SetZMinusFaceText('P')
-        self.axesActor.SetZPlusFaceText('A')
-        self.axesActor.GetTextEdgesProperty().SetColor(1,1,1)
-        self.axesActor.GetTextEdgesProperty().SetLineWidth(1)
-        self.axesActor.GetCubeProperty().SetColor(0.133,0.49,0.21)
-        self.axes = vtk.vtkOrientationMarkerWidget()
-        self.axes.SetOrientationMarker(self.axesActor)
-        #self.axes.SetViewport( 0.0, 0.2, 0.1, 0.3 )
-        self.axes.SetViewport( 0.9, 0.9, 1.0, 1.0 )
-        self.axes.SetCurrentRenderer(self.ren)
-        self.axes.SetInteractor(self.iren)
-        self.axes.EnabledOn()
-        #self.axes.InteractiveOn()
-        self.iren.Render()
+        self.renderStructuralData(subjectFolder + "\\structural\\T1.nii")
 
     # Handler for browse folder button click.
     @pyqtSlot()
@@ -429,6 +410,10 @@ class Ui(Qt.QMainWindow):
     # Handler for load data button click
     @pyqtSlot()
     def on_click_LoadData(self):
+        if(self.volumeDataLoaded==True):
+            self.ren.RemoveVolume(self.volume) # Remove existing volume from scene.
+            self.model_structural.removeRows(0,self.model_structural.rowCount())
+        self.volumeDataLoaded=False # Initialize volume load status to false.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
@@ -438,7 +423,6 @@ class Ui(Qt.QMainWindow):
         self.model = QtGui.QStandardItemModel()
         for i in range(len(subjectFiles)):
             if subjectFiles[i].endswith(".obj"):
-                print(subjectFiles[i])
                 item = QtGui.QStandardItem(os.path.basename(subjectFiles[i]))
                 item.setCheckable(True)
                 item.setCheckState(2)      
@@ -447,56 +431,76 @@ class Ui(Qt.QMainWindow):
         self.listView.setSelectionRectVisible(True)
         self.model.itemChanged.connect(self.on_itemChanged)
 
+        # Load orientation cube only once.
+        if(self.dataFolderInitialized==False):
+            # Render orientation cube.
+            self.axesActor.SetXPlusFaceText('R')
+            self.axesActor.SetXMinusFaceText('L')
+            self.axesActor.SetYMinusFaceText('H')
+            self.axesActor.SetYPlusFaceText('F')
+            self.axesActor.SetZMinusFaceText('P')
+            self.axesActor.SetZPlusFaceText('A')
+            self.axesActor.GetTextEdgesProperty().SetColor(1,1,1)
+            self.axesActor.GetTextEdgesProperty().SetLineWidth(1)
+            self.axesActor.GetCubeProperty().SetColor(0.133,0.49,0.21)
+            self.axes = vtk.vtkOrientationMarkerWidget()
+            self.axes.SetOrientationMarker(self.axesActor)
+            self.axes.SetViewport( 0.9, 0.9, 1.0, 1.0 )
+            self.axes.SetCurrentRenderer(self.ren)
+            self.axes.SetInteractor(self.iren)
+            self.axes.EnabledOn()
+            #self.axes.InteractiveOn()
+            self.iren.Render()
+
+        self.dataFolderInitialized=True
         # Handler for load data button click
    
     # Handler for load structural data
     @pyqtSlot()
     def on_click_LoadStructural(self):
-        subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
+        if(self.dataFolderInitialized==True and self.volumeDataLoaded==False):
+            subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
 
-        t1StructuralNiftyFileName = subjectFolder + "\\structural\\T1.nii"
-        mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
-        crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
-        niftiReader = vtk.vtkNIFTIImageReader()
-        niftiReader.SetFileName(t1StructuralNiftyFileName)
-        niftiReader.Update()
+            t1StructuralNiftyFileName = subjectFolder + "\\structural\\T1.nii"
+            mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+            crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
+            niftiReader = vtk.vtkNIFTIImageReader()
+            niftiReader.SetFileName(t1StructuralNiftyFileName)
+            niftiReader.Update()
 
-        ijkras_transform = vtk.vtkTransform()
-        arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
-        ijkras_transform.SetMatrix(arrayList)
-        ijkras_transform.Update()
+            ijkras_transform = vtk.vtkTransform()
+            arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
+            ijkras_transform.SetMatrix(arrayList)
+            ijkras_transform.Update()
 
-        # Ray cast volume mapper
-        volumeMapper = vtk.vtkGPUVolumeRayCastMapper()
-        volumeMapper.SetInputConnection(niftiReader.GetOutputPort())
-        self.volume = vtk.vtkVolume()
-        self.volume.SetMapper(volumeMapper)
-        self.volume.SetUserTransform(ijkras_transform) # Apply the IJK to RAS and origin transform.
-        opacityTransferFunction = vtk.vtkPiecewiseFunction()
-        opacityTransferFunction.AddPoint(5,0.0)
-        opacityTransferFunction.AddPoint(1500,0.1)
-        volprop = vtk.vtkVolumeProperty()
-        volprop.SetScalarOpacity(opacityTransferFunction)
-        self.volume.SetProperty(volprop)
-        self.ren.AddVolume(self.volume)
-        # Add to list
-        self.model_structural = QtGui.QStandardItemModel()
-        item = QtGui.QStandardItem("T1.nii")
-        item.setCheckable(True)
-        item.setCheckState(2)      
-        self.model_structural.appendRow(item)
-        self.listView_Structural.setModel(self.model_structural)
-        self.listView_Structural.setSelectionRectVisible(True)
-        self.model_structural.itemChanged.connect(self.on_itemChanged_Structural)
+            # Ray cast volume mapper
+            volumeMapper = vtk.vtkGPUVolumeRayCastMapper()
+            volumeMapper.SetInputConnection(niftiReader.GetOutputPort())
+            self.volume = vtk.vtkVolume()
+            self.volume.SetMapper(volumeMapper)
+            self.volume.SetUserTransform(ijkras_transform) # Apply the IJK to RAS and origin transform.
+            opacityTransferFunction = vtk.vtkPiecewiseFunction()
+            opacityTransferFunction.AddPoint(5,0.0)
+            opacityTransferFunction.AddPoint(1500,0.1)
+            volprop = vtk.vtkVolumeProperty()
+            volprop.SetScalarOpacity(opacityTransferFunction)
+            self.volume.SetProperty(volprop)
+            self.ren.AddVolume(self.volume)
+            # Add to list
+            self.model_structural = QtGui.QStandardItemModel()
+            item = QtGui.QStandardItem("T1.nii")
+            item.setCheckable(True)
+            item.setCheckState(2)      
+            self.model_structural.appendRow(item)
+            self.listView_Structural.setModel(self.model_structural)
+            self.listView_Structural.setSelectionRectVisible(True)
+            self.model_structural.itemChanged.connect(self.on_itemChanged_Structural)
 
-        mrmlDataFileName.close()
-        crasDataFileName.close()
-        #self.show()
-        #self.iren.Initialize()
-        #self.iren.Start()
-        self.iren.Render()
+            mrmlDataFileName.close()
+            crasDataFileName.close()
 
-
+            self.iren.Render()
+            self.volumeDataLoaded=True # Indicate that volume data is loaded properly.
 
     # Handler for checkbox check status change for surface data.
     @pyqtSlot(QtGui.QStandardItem)

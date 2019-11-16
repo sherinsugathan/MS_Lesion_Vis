@@ -157,6 +157,7 @@ border-radius: 4px;
 {
 background-color: rgb(54, 113, 38);
 }
+QPushButton:pressed#pushButton_LoadData {background-color:rgb(143, 180,146);}
 QPushButton#pushButton_LoadData
 {
 background-color: rgb(10, 61, 29);
@@ -211,6 +212,7 @@ border-style: solid;
 {
 background-color: rgb(54, 113, 38);
 }
+QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
 QPushButton#pushButton_UnselectAllSubjects
 {
 background-color: rgb(10, 61, 29);
@@ -250,6 +252,7 @@ border-style: solid;
 {
 background-color: rgb(54, 113, 38);
 }
+QPushButton:pressed#pushButton_LoadStructural {background-color:rgb(143, 180,146);}
 QPushButton#pushButton_LoadStructural
 {
 background-color: rgb(10, 61, 29);
@@ -266,7 +269,7 @@ border-style: solid;
 }</string>
          </property>
          <property name="text">
-          <string>Enable Volume Rendering</string>
+          <string>Load All Nifti Volumes</string>
          </property>
         </widget>
        </item>
@@ -341,6 +344,7 @@ border-radius: 4px;
 {
 background-color: rgb(54, 113, 38);
 }
+QPushButton:pressed#pushButton_LoadFolder {background-color:rgb(143, 180,146);}
 QPushButton#pushButton_LoadFolder
 {
 background-color: rgb(10, 61, 29);
