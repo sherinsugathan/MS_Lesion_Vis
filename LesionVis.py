@@ -25,7 +25,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5 import Qt
 from os import system, name
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
+from enum import Enum
 
 class Ui(Qt.QMainWindow):
 
@@ -56,7 +56,7 @@ class Ui(Qt.QMainWindow):
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
         self.comboBox_VisType.addItem("Default View")
         self.comboBox_VisType.addItem("Transparent Surfaces")
-        self.comboBox_VisType.addItem("Raw Lesion Intensity Vis.")
+        self.comboBox_VisType.addItem("Lesion Intensity Raw Vis.")
         self.comboBox_VisType.addItem("Lesion Difference With NAWM")
         self.comboBox_VisType.addItem("Lesion Classification View")
         self.comboBox_VisType.addItem("Lesion Surface Mapping")
@@ -339,8 +339,8 @@ class Ui(Qt.QMainWindow):
                     doubleArray = vtk.vtkDoubleArray()
                     pointArray = doubleArray.SafeDownCast(polyData.GetPointData().GetArray("pointArrayData"))
                     #cellData.SetNumberOfTuples(polyData.GetNumberOfCells())
-                    for pointIndex in range(numberOfPoints):
-                        value = polyData.GetPoint(pointIndex)
+                    #for pointIndex in range(numberOfPoints):
+                    #   value = polyData.GetPoint(pointIndex)
                         #print(value)
                     #for cellIndex in range(int(polyData.GetNumberOfCells())):
                     #    rgbColor.clear()
@@ -406,7 +406,9 @@ class Ui(Qt.QMainWindow):
             for dataFolderName in dataFolders:
                 self.comboBox_AvailableSubjects.addItem(dataFolderName)
 
-    # Handler for load data button click
+    ##########################################
+    # Handler for load data
+    ##########################################
     @pyqtSlot()
     def on_click_LoadData(self):
         if(self.volumeDataLoaded==True):
@@ -414,6 +416,11 @@ class Ui(Qt.QMainWindow):
             self.model_structural.removeRows(0,self.model_structural.rowCount())
         self.volumeDataLoaded=False # Initialize volume load status to false.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
+
+        # Fetch required display settings.
+        print(self.comboBox_VisType.currentText())
+        self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText())) 
+        print(self.settings)
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
