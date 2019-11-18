@@ -182,7 +182,6 @@ class Ui(Qt.QMainWindow):
         self.iren_MPRC.Initialize()
         #self.iren_MPRC.Start()
 
-
         # Clear all actors from the scene
         #self.ren.RemoveAllViewProps()  
         self.renMPRA.RemoveAllViewProps() 
