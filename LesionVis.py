@@ -34,13 +34,14 @@ class Ui(Qt.QMainWindow):
         super(Ui, self).__init__()
         uic.loadUi("lesionui.ui", self)
         logging.info('UI file loaded successfully.')
-        self.showMaximized()
+        #self.showMaximized()
         self.initUI()
         self.clear()
         logging.info('UI initialized successfully.')
         self.initVTK()
         self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
         self.volumeDataLoaded = False # Flag to indicate that volume data is initialized and loaded.
+        self.showMaximized()
         logging.info('VTK initialized successfully.')
 
     # Initialize the UI.    
@@ -63,6 +64,9 @@ class Ui(Qt.QMainWindow):
         self.mprA_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRA)
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
         self.mprC_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRC)
+
+        pm = Qt.QPixmap("fundAndSupportLogos.png")
+        self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
 
     # Initialize vtk
     def initVTK(self):
@@ -138,6 +142,7 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
+        self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
 
         cone = vtk.vtkConeSource()
         cone.SetResolution(8)
@@ -150,13 +155,13 @@ class Ui(Qt.QMainWindow):
         self.ren.ResetCamera()
         self.frame.setLayout(self.vl)
 
-        self.renMPRA.AddActor(coneActor)
+        #self.renMPRA.AddActor(coneActor)
         self.renMPRA.ResetCamera()
         self.frame_MPRA.setLayout(self.vl_MPRA)
-        self.renMPRB.AddActor(coneActor)
+        #self.renMPRB.AddActor(coneActor)
         self.renMPRB.ResetCamera()
         self.frame_MPRB.setLayout(self.vl_MPRB)
-        self.renMPRC.AddActor(coneActor)
+        #self.renMPRC.AddActor(coneActor)
         self.renMPRC.ResetCamera()
         self.frame_MPRC.setLayout(self.vl_MPRC)
         #self.setCentralWidget(self.frame)
@@ -271,7 +276,7 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
         
     # Load and Render Data
-    def renderData(self, fileNames):#, translate, x_t=0, y_t=0,z_t=0):
+    def renderData(self, fileNames, settings=None):#, translate, x_t=0, y_t=0,z_t=0):
         self.actors = []
         for i in range(len(fileNames)):
             if fileNames[i].endswith(".vtp"):
@@ -286,7 +291,7 @@ class Ui(Qt.QMainWindow):
                 actorL.SetMapper(mapper)
                 self.actors.append(actorL)
 
-            if fileNames[i].endswith(".obj"):
+            if fileNames[i].endswith(".obj") and os.path.basename(fileNames[i]) in settings.getSurfaceWhiteList():
                 subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
                 loadFilePath = os.path.join(subjectFolder, fileNames[i])      
                 reader = vtk.vtkOBJReader()
@@ -294,7 +299,6 @@ class Ui(Qt.QMainWindow):
                 reader.Update()
                 mapper = vtk.vtkOpenGLPolyDataMapper()
                 mapper.SetInputConnection(reader.GetOutputPort())
-
                 transform = vtk.vtkTransform()
                 transform.Identity()
 
@@ -390,6 +394,19 @@ class Ui(Qt.QMainWindow):
                     f.close()
                 self.actors.append(actor)
 
+                # Also add to the listBox showing loaded surfaces.
+                # Populate loaded surface data listBox
+                #self.modelListBoxSurfaces = QtGui.QStandardItemModel()
+                #for i in range(len(subjectFiles)):
+                #    if subjectFiles[i].endswith(".obj"):
+                item = QtGui.QStandardItem(os.path.basename(fileNames[i]))
+                item.setCheckable(True)
+                item.setCheckState(2)      
+                self.modelListBoxSurfaces.appendRow(item)
+                self.listView.setModel(self.modelListBoxSurfaces)
+                self.listView.setSelectionRectVisible(True)
+                self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
+
         for a in self.actors:
             self.ren.AddActor(a)
             self.ren.ResetCamera()
@@ -417,26 +434,16 @@ class Ui(Qt.QMainWindow):
             self.model_structural.removeRows(0,self.model_structural.rowCount())
         self.volumeDataLoaded=False # Initialize volume load status to false.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
+        self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
         # Fetch required display settings.
-        print(self.comboBox_VisType.currentText())
         self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText())) 
-        print(self.settings)
+        print(self.settings.getSurfaceWhiteList())
+
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
-            self.renderData(subjectFiles)  # Render the actual data
-
-        self.model = QtGui.QStandardItemModel()
-        for i in range(len(subjectFiles)):
-            if subjectFiles[i].endswith(".obj"):
-                item = QtGui.QStandardItem(os.path.basename(subjectFiles[i]))
-                item.setCheckable(True)
-                item.setCheckState(2)      
-                self.model.appendRow(item)
-        self.listView.setModel(self.model)
-        self.listView.setSelectionRectVisible(True)
-        self.model.itemChanged.connect(self.on_itemChanged)
+            self.renderData(subjectFiles, self.settings)  # Render the actual data
 
         # Load orientation cube only once.
         if(self.dataFolderInitialized==False):
@@ -558,19 +565,19 @@ class Ui(Qt.QMainWindow):
     # Handler for MPRA Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRA(self):
-        self.mprA_Slice_Number_Label.setText(str(self.mprA_Slice_Slider.value()))
+        #self.mprA_Slice_Number_Label.setText(str(self.mprA_Slice_Slider.value()))
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for MPRB Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRB(self):
-        self.mprB_Slice_Number_Label.setText(str(self.mprB_Slice_Slider.value()))
+        #self.mprB_Slice_Number_Label.setText(str(self.mprB_Slice_Slider.value()))
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for MPRC Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRC(self):
-        self.mprC_Slice_Number_Label.setText(str(self.mprC_Slice_Slider.value()))
+        #self.mprC_Slice_Number_Label.setText(str(self.mprC_Slice_Slider.value()))
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for Dial moved.
