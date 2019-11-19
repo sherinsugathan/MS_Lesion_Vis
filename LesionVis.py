@@ -141,6 +141,11 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
+        self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
+        self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
+        self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
+        self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
+        
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
 
@@ -242,12 +247,16 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
             self.resliceImageViewerMPRB.SetColorLevel(255)
+            
+            self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
             self.mprB_Slice_Slider.setMaximum(self.resliceImageViewerMPRB.GetSliceMax())
             self.resliceImageViewerMPRB.SetSlice(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
             self.mprB_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
             # Define Interactor
             interactorMPRB = vtk.vtkInteractorStyleImage()
             self.iren_MPRB.SetInteractorStyle(interactorMPRB)
+            #self.renMPRB.ResetCamera()
+            #self.resliceImageViewerMPRB.GetImageActor().SetScale(1.5)
 
             ################################
             # MPR C    #####################
@@ -436,8 +445,7 @@ class Ui(Qt.QMainWindow):
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
         # Fetch required display settings.
-        self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText())) 
-        print(self.settings.getSurfaceWhiteList())
+        self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText()))
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:

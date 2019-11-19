@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1130</width>
-    <height>732</height>
+    <height>890</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@ color:white;</string>
       <property name="maximumSize">
        <size>
         <width>250</width>
-        <height>700</height>
+        <height>16777215</height>
        </size>
       </property>
       <property name="styleSheet">
@@ -454,13 +454,13 @@ border-style: solid;
        <widget class="QFrame" name="frame_MPRC">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>16777215</height>
          </size>
         </property>
@@ -483,13 +483,13 @@ border-radius: 10px;</string>
        <widget class="QFrame" name="frame_MPRB">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>16777215</height>
          </size>
         </property>
@@ -558,13 +558,13 @@ border-radius: 10px;</string>
        <widget class="QFrame" name="frame_MPRA">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>350</width>
+          <width>300</width>
           <height>16777215</height>
          </size>
         </property>
