@@ -73,7 +73,7 @@ class Ui(Qt.QMainWindow):
         # Define viewport ranges (3 MPRS and 1 volume rendering)
         #self.mprA_Viewport=[0.0, 0.667, 0.333, 1.0]
         #self.mprB_Viewport=[0.0, 0.334, 0.333, 0.665]
-        self.mprC_Viewport=[0.0, 0.0, 0.1, 0.1]
+        #self.mprC_Viewport=[0.0, 0.0, 0.1, 0.1]
         #self.VR_Viewport=[0.335, 0, 1.0, 1.0]
 
         self.vl = Qt.QVBoxLayout()
@@ -88,7 +88,6 @@ class Ui(Qt.QMainWindow):
         # Orientation cube.
         self.axesActor = vtk.vtkAnnotatedCubeActor()
         
-        #self.vtkWidget.setStyleSheet("background-color:black;")
         self.vl.addWidget(self.vtkWidget)
         self.vl_MPRA.addWidget(self.vtkWidgetMPRA)
         self.vl_MPRB.addWidget(self.vtkWidgetMPRB)
@@ -117,9 +116,6 @@ class Ui(Qt.QMainWindow):
         #self.renMPRB.SetViewport(self.mprB_Viewport[0], self.mprB_Viewport[1], self.mprB_Viewport[2], self.mprB_Viewport[3])
         #self.renMPRC.SetViewport(self.mprC_Viewport[0], self.mprC_Viewport[1], self.mprC_Viewport[2], self.mprC_Viewport[3])
 
-        #self.renMPRA.InteractiveOff() # disable interaction in MPRA
-        #self.renMPRB.InteractiveOff() # disable interaction in MPRB
-
         self.vtkWidget.GetRenderWindow().SetAlphaBitPlanes(True)
         self.vtkWidget.GetRenderWindow().SetMultiSamples(0)
 
@@ -128,7 +124,6 @@ class Ui(Qt.QMainWindow):
         #self.vtkWidget.GetRenderWindow().AddRenderer(self.renMPRB)
         #self.vtkWidget.GetRenderWindow().AddRenderer(self.renMPRC)
         self.iren = self.vtkWidget.GetRenderWindow().GetInteractor()
-        #self.iren = vtk.vtkRenderWindowInteractor()
         self.iren.SetRenderWindow(self.vtkWidget.GetRenderWindow())
 
         self.vtkWidgetMPRA.GetRenderWindow().AddRenderer(self.renMPRA)
@@ -149,43 +144,27 @@ class Ui(Qt.QMainWindow):
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
 
-        cone = vtk.vtkConeSource()
-        cone.SetResolution(8)
-        coneMapper = vtk.vtkPolyDataMapper()
-        coneMapper.SetInputConnection(cone.GetOutputPort())
-        coneActor = vtk.vtkActor()
-        coneActor.SetMapper(coneMapper)
+        self.sliceNumberTextMPRA = vtk.vtkTextActor() # MPRA Slice number
+        self.sliceNumberTextMPRB = vtk.vtkTextActor() # MPRB Slice number
+        self.sliceNumberTextMPRC = vtk.vtkTextActor() # MPRC Slice number
 
-        #self.ren.AddActor(coneActor)   
         self.ren.ResetCamera()
         self.frame.setLayout(self.vl)
 
-        #self.renMPRA.AddActor(coneActor)
         self.renMPRA.ResetCamera()
         self.frame_MPRA.setLayout(self.vl_MPRA)
-        #self.renMPRB.AddActor(coneActor)
         self.renMPRB.ResetCamera()
         self.frame_MPRB.setLayout(self.vl_MPRB)
-        #self.renMPRC.AddActor(coneActor)
         self.renMPRC.ResetCamera()
         self.frame_MPRC.setLayout(self.vl_MPRC)
-        #self.setCentralWidget(self.frame)
 
         self.show()
         self.iren.Initialize()
-        #self.iren.Render()
         self.iren.Start()
-        #self.iren.ExitCallback()
-        #self.vtkWidget.GetRenderWindow().GetInteractor().Start()
 
         self.iren_MPRA.Initialize()
-        #self.iren_MPRA.Start()
-
         self.iren_MPRB.Initialize()
-        #self.iren_MPRB.Start()
-
         self.iren_MPRC.Initialize()
-        #self.iren_MPRC.Start()
 
         # Clear all actors from the scene
         #self.ren.RemoveAllViewProps()  
@@ -373,13 +352,14 @@ class Ui(Qt.QMainWindow):
 
                     # Setup the text and add it to the renderer
                     textActorLesionStatistics = vtk.vtkTextActor()
-                    depthPeelingStatus = "Depth Peeling: Enabled" if self.checkBox_DepthPeeling.isChecked() else "Depth Peeling: Disabled"
+                    depthPeelingStatus = "Depth Peeling : Enabled" if self.checkBox_DepthPeeling.isChecked() else "Depth Peeling: Disabled"
                     textActorLesionStatistics.SetInput("Lesion Load : " + str(connectivityFilter.GetNumberOfExtractedRegions()) + "\n" + depthPeelingStatus)
                     textActorLesionStatistics.UseBorderAlignOff()
-                    textActorLesionStatistics.SetPosition2(10,100)
-                    textActorLesionStatistics.GetTextProperty().SetFontFamilyAsString("Google Sans")
-                    textActorLesionStatistics.GetTextProperty().SetFontSize(12)
+                    textActorLesionStatistics.SetPosition(10,20)
+                    textActorLesionStatistics.GetTextProperty().SetFontFamilyToCourier()
+                    textActorLesionStatistics.GetTextProperty().SetFontSize(16)
                     textActorLesionStatistics.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+
                     self.ren.AddActor2D(textActorLesionStatistics)
                     mrmlDataFileName.close()
                     crasDataFileName.close()
@@ -387,6 +367,10 @@ class Ui(Qt.QMainWindow):
                 actor = vtk.vtkActor()
                 actor.SetMapper(mapper)
                 actor.SetUserTransform(transform)
+
+                # Apply transparency settings.
+                if "lh.pial" in fileNames[i]:
+                    actor.GetProperty().SetOpacity(settings.lh_pial_transparency*500)
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
                     translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
@@ -572,19 +556,40 @@ class Ui(Qt.QMainWindow):
     # Handler for MPRA Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRA(self):
-        #self.mprA_Slice_Number_Label.setText(str(self.mprA_Slice_Slider.value()))
+        # Setup the slide number text and add it to the renderer
+        self.sliceNumberTextMPRA.SetInput(str(self.mprA_Slice_Slider.value()))
+        self.sliceNumberTextMPRA.UseBorderAlignOff()
+        self.sliceNumberTextMPRA.SetPosition(5,5)
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.renMPRA.AddActor2D(self.sliceNumberTextMPRA)
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for MPRB Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRB(self):
-        #self.mprB_Slice_Number_Label.setText(str(self.mprB_Slice_Slider.value()))
+        # Setup the slide number text and add it to the renderer
+        self.sliceNumberTextMPRB.SetInput(str(self.mprB_Slice_Slider.value()))
+        self.sliceNumberTextMPRB.UseBorderAlignOff()
+        self.sliceNumberTextMPRB.SetPosition(5,5)
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.renMPRB.AddActor2D(self.sliceNumberTextMPRB)
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for MPRC Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRC(self):
-        #self.mprC_Slice_Number_Label.setText(str(self.mprC_Slice_Slider.value()))
+        # Setup the slide number text and add it to the renderer
+        self.sliceNumberTextMPRC.SetInput(str(self.mprC_Slice_Slider.value()))
+        self.sliceNumberTextMPRC.UseBorderAlignOff()
+        self.sliceNumberTextMPRC.SetPosition(5,5)
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.renMPRC.AddActor2D(self.sliceNumberTextMPRC)
         self.LoadStructuralSlices("dummy", False)
 
     # Handler for Dial moved.
@@ -593,9 +598,6 @@ class Ui(Qt.QMainWindow):
         selectedListIndices = self.listView.selectedIndexes()
         if selectedListIndices:
             self.actors[selectedListIndices[0].row()].GetProperty().SetOpacity(self.dial.value()/float(500))
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
 
     # Handler for unselecting all subjects at once-
@@ -607,9 +609,6 @@ class Ui(Qt.QMainWindow):
             item = model.item(index)
             if item.isCheckable() and item.checkState() == QtCore.Qt.Checked:
                 item.setCheckState(QtCore.Qt.Unchecked)
-        #self.show()
-        #self.iren.Initialize()
-        #self.iren.Start()
         self.iren.Render()
 
     # Handler for depth peeling checkbox
@@ -618,23 +617,15 @@ class Ui(Qt.QMainWindow):
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
         else:
             self.ren.SetUseDepthPeeling(False)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
     
 
     def closeEvent(self, event):
         print("Trying to exit")
-        self.iren.SetEnableRender(False)
         event.accept() # let the window close
-
 
     # define function to clear the terminal
     def clear(self): 

@@ -367,10 +367,30 @@ border-radius: 4px;
           </widget>
          </item>
          <item>
-          <widget class="QDial" name="dial"/>
+          <widget class="QDial" name="dial">
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
 {
