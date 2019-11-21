@@ -136,13 +136,15 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
-        self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
-        self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
+        #self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
+        #self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
         self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
         self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
         
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
+        self.listView.setModel(self.modelListBoxSurfaces)
+        self.listView.selectionModel().selectionChanged.connect(self.onSurfaceListSelectionChanged) # Event handler for surface list view selection changed.
 
         self.sliceNumberTextMPRA = vtk.vtkTextActor() # MPRA Slice number
         self.sliceNumberTextMPRB = vtk.vtkTextActor() # MPRB Slice number
@@ -370,7 +372,13 @@ class Ui(Qt.QMainWindow):
 
                 # Apply transparency settings.
                 if "lh.pial" in fileNames[i]:
-                    actor.GetProperty().SetOpacity(settings.lh_pial_transparency*500)
+                    actor.GetProperty().SetOpacity(settings.lh_pial_transparency)
+                if "rh.pial" in fileNames[i]:
+                    actor.GetProperty().SetOpacity(settings.rh_pial_transparency)
+                if "lh.white" in fileNames[i]:
+                    actor.GetProperty().SetOpacity(settings.lh_white_transparency)
+                if "rh.white" in fileNames[i]:
+                    actor.GetProperty().SetOpacity(settings.rh_white_transparency)
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
                     translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
@@ -395,7 +403,6 @@ class Ui(Qt.QMainWindow):
                 item.setCheckable(True)
                 item.setCheckState(2)      
                 self.modelListBoxSurfaces.appendRow(item)
-                self.listView.setModel(self.modelListBoxSurfaces)
                 self.listView.setSelectionRectVisible(True)
                 self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
 
@@ -429,7 +436,8 @@ class Ui(Qt.QMainWindow):
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
         # Fetch required display settings.
-        self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText()))
+        if(self.dataFolderInitialized==False or self.checkBox_persistSettings.isChecked() == False):
+            self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText()))
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
@@ -595,10 +603,43 @@ class Ui(Qt.QMainWindow):
     # Handler for Dial moved.
     @pyqtSlot()
     def on_DialMoved(self):
+        self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
         selectedListIndices = self.listView.selectedIndexes()
         if selectedListIndices:
             self.actors[selectedListIndices[0].row()].GetProperty().SetOpacity(self.dial.value()/float(500))
             self.iren.Render()
+        # Update settings.
+        currentIndex = self.listView.currentIndex()
+        if currentIndex.row() > -1:
+            item = self.listView.model().itemFromIndex(currentIndex).text()
+            if item is not None:
+                if item.endswith("lh.pial.obj"):
+                    self.settings.lh_pial_transparency = self.dial.value()/float(500)
+                if item.endswith("rh.pial.obj"):
+                    self.settings.rh_pial_transparency = self.dial.value()/float(500)
+                if item.endswith("lh.white.obj"):
+                    self.settings.lh_white_transparency = self.dial.value()/float(500)
+                if item.endswith("rh.white.obj"):
+                    self.settings.rh_white_transparency = self.dial.value()/float(500)
+
+    
+    @pyqtSlot()
+    def onSurfaceListSelectionChanged(self):
+        currentIndex = self.listView.currentIndex()
+        if currentIndex.row() > -1:
+            item = self.listView.model().itemFromIndex(currentIndex).text()
+            if item is not None:
+                if item.endswith("lh.pial.obj"):
+                    self.dial.setValue(self.settings.lh_pial_transparency*500)
+                if item.endswith("rh.pial.obj"):
+                    self.dial.setValue(self.settings.rh_pial_transparency*500)
+                if item.endswith("lh.white.obj"):
+                    self.dial.setValue(self.settings.lh_white_transparency*500)
+                if item.endswith("rh.white.obj"):
+                    self.dial.setValue(self.settings.rh_white_transparency*500)
+
+        #item = self.selModel.selection().indexes()[0]
+        #print item.data()
 
     # Handler for unselecting all subjects at once-
     @pyqtSlot()

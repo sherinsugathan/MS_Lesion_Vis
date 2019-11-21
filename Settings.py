@@ -10,7 +10,7 @@ class VisType(enum.Enum):
     SURFACE_MAPPING = 5 # Provides a visualization of lesion mapping to the surface.
 
 class Settings:
-  def __init__(self, lh_pial_enabled, rh_pial_enabled, lh_white_enabled, rh_white_enabled, lesions_enabled, lh_pial_transparency, rh_pial_transparency, lh_white_transparency, rh_white_trasparency, depthPeelingEnabled, visType):
+  def __init__(self, lh_pial_enabled, rh_pial_enabled, lh_white_enabled, rh_white_enabled, lesions_enabled, lh_pial_transparency, rh_pial_transparency, lh_white_transparency, rh_white_transparency, depthPeelingEnabled, visType):
     self.lh_pial_enabled = "lh.pial.obj", lh_pial_enabled
     self.rh_pial_enabled = "rh.pial.obj", rh_pial_enabled
     self.lh_white_enabled = "lh.white.obj", lh_white_enabled
@@ -19,13 +19,13 @@ class Settings:
     self.lh_pial_transparency = lh_pial_transparency
     self.rh_pial_transparency = rh_pial_transparency
     self.lh_white_transparency = lh_white_transparency
-    self.rh_white_trasparency = rh_white_trasparency
+    self.rh_white_transparency = rh_white_transparency
     self.depthPeelingEnabled = depthPeelingEnabled
     self.visType = visType
   def __str__(self):
     return "Lh Pial Enabled:" + str(self.lh_pial_enabled[1]) + ", Rh Pial Enabled:" + str(self.rh_pial_enabled[1]) +  ", Lh White Enabled:" + str(self.lh_white_enabled[1]) + \
       ", Rh White Enabled:" + str(self.rh_white_enabled[1]) + ", Lesions Enabled:" + str(self.lesions_enabled[1]) + ", Lh Pial Transparency:" + str(self.lh_pial_transparency) + ", Rh Pial Transparency:" + str(self.rh_pial_transparency) + \
-         ", Lh White Transparency:" + str(self.lh_white_transparency) + ", Rh White Transparency:" + str(self.rh_white_trasparency) + \
+         ", Lh White Transparency:" + str(self.lh_white_transparency) + ", Rh White Transparency:" + str(self.rh_white_transparency) + \
            ", Depth Peeling Enabled:" + str(self.depthPeelingEnabled) + ", Vis Type:" + str(self.visType) 
   
   def getSurfaceWhiteList(self):
