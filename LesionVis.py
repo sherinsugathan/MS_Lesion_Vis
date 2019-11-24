@@ -25,6 +25,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5 import Qt
 from os import system, name
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from freesurfer_surface import Surface, Vertex, Triangle
 from enum import Enum
 
 class Ui(Qt.QMainWindow):
@@ -138,8 +139,8 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
         #self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
         #self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
-        self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
-        self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
+        #self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
+        #self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
         
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
@@ -162,7 +163,7 @@ class Ui(Qt.QMainWindow):
 
         self.show()
         self.iren.Initialize()
-        self.iren.Start()
+        #self.iren.Start()
 
         self.iren_MPRA.Initialize()
         self.iren_MPRB.Initialize()
@@ -204,6 +205,7 @@ class Ui(Qt.QMainWindow):
         if(isNiftyReadRequired==True):
             self.niftyReaderT1.SetFileName(fileName)
             self.niftyReaderT1.Update()
+
             ################################
             # MPR A    #####################
             ################################
@@ -256,6 +258,13 @@ class Ui(Qt.QMainWindow):
             interactorMPRC = vtk.vtkInteractorStyleImage()
             self.iren_MPRC.SetInteractorStyle(interactorMPRC)
 
+            self.renMPRA.ResetCamera()
+            self.renMPRB.ResetCamera()
+            self.renMPRC.ResetCamera()
+            self.renMPRA.GetActiveCamera().Zoom(1.5)
+            self.renMPRB.GetActiveCamera().Zoom(1.5)
+            self.renMPRC.GetActiveCamera().Zoom(1.5)
+
             self.iren_MPRA.Render()
             self.iren_MPRB.Render()
             self.iren_MPRC.Render()
@@ -265,7 +274,7 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
         
     # Load and Render Data
-    def renderData(self, fileNames, settings=None):#, translate, x_t=0, y_t=0,z_t=0):
+    def renderData(self, fileNames, settings=None):
         self.actors = []
         for i in range(len(fileNames)):
             if fileNames[i].endswith(".vtp"):
@@ -291,14 +300,16 @@ class Ui(Qt.QMainWindow):
                 transform = vtk.vtkTransform()
                 transform.Identity()
 
-                
-                if fileNames[i].endswith("lesions.obj"):
-                    #pgm = vtk.vtkShaderProgram2()
-                    mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
-                    crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
+                isLesionTransformNeeded = False
+                if fileNames[i].endswith("lesions.obj"): # Check if surface is a lesion.
+                    if(os.path.isfile(subjectFolder + "\\meta\\mrmlMask.txt") and os.path.isfile(subjectFolder + "\\meta\\crasMask.txt")):
+                        mrmlDataFileName = open ( subjectFolder + "\\meta\\mrmlMask.txt" , 'r')
+                    else:
+                        mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+
                     arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
                     transform.SetMatrix(arrayList)
-
+                    isLesionTransformNeeded = True
 
                     niftiReader = vtk.vtkNIFTIImageReader()
                     niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
@@ -309,41 +320,14 @@ class Ui(Qt.QMainWindow):
                     probeFilter.Update()
                     mapper.SetInputConnection(probeFilter.GetOutputPort())
 
-
+                    # Setup color mapping for lesions.
                     lookupTable = vtk.vtkLookupTable()
                     lookupTable.SetNumberOfTableValues(256)
                     #lookupTable.SetHueRange(0,255)
                     lookupTable.Build()
 
-                    #mapper.SetScalarRange(0,255)
-                    #mapper.SetLookupTable(lookupTable)
-                    mapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
-                    #mapper.SetScalarRange(0,255)
-
-                    #temp.AssignShadersToLesionMapper(mapper)
-                    #math = vtk.vtkMath()
-                    #rgbColor = []
-                    #math.RandomSeed(8775070)
-                    #polyData = vtk.vtkPolyData()
-                    polyData = reader.GetOutput()
-
-                    cellData = vtk.vtkUnsignedCharArray()
-                    cellData.SetNumberOfComponents(3)
-                    numberOfPoints = polyData.GetNumberOfPoints()
-                    doubleArray = vtk.vtkDoubleArray()
-                    pointArray = doubleArray.SafeDownCast(polyData.GetPointData().GetArray("pointArrayData"))
-                    #cellData.SetNumberOfTuples(polyData.GetNumberOfCells())
-                    #for pointIndex in range(numberOfPoints):
-                    #   value = polyData.GetPoint(pointIndex)
-                        #print(value)
-                    #for cellIndex in range(int(polyData.GetNumberOfCells())):
-                    #    rgbColor.clear()
-                    #    rgbColor.append(math.Random(64,255))
-                    #    rgbColor.append(math.Random(64,255))
-                    #    rgbColor.append(math.Random(64,255))
-                    #    cellData.InsertTuple(cellIndex,rgbColor)
-                    
-                    #polyData.GetCellData().SetScalars(cellData)
+                    # Probe the lesion surface with the volume data.
+                    mapper = LesionUtils.probeSurfaceWithVolume(subjectFolder)
 
                     connectivityFilter = vtk.vtkPolyDataConnectivityFilter()
                     connectivityFilter.SetInputConnection(reader.GetOutputPort())
@@ -364,11 +348,16 @@ class Ui(Qt.QMainWindow):
 
                     self.ren.AddActor2D(textActorLesionStatistics)
                     mrmlDataFileName.close()
-                    crasDataFileName.close()
+                    #crasDataFileName.close()
 
                 actor = vtk.vtkActor()
                 actor.SetMapper(mapper)
-                actor.SetUserTransform(transform)
+                if(isLesionTransformNeeded == True): # Apply special transform to lesions.
+                    print("Special transform applied")
+                    # Non need to apply transform here because it is already applied in the mapper using LesionUtils.
+                else: # This is not a lesion. Do not disturb with a transformation.
+                    transform.Identity()
+                    actor.SetUserTransform(transform)
 
                 # Apply transparency settings.
                 if "lh.pial" in fileNames[i]:
