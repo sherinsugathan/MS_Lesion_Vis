@@ -1,7 +1,8 @@
 import os
 import vtk
 import numpy as np
-	
+import time
+
 '''
 ##########################################################################
     For the given path, get the List of all files in the directory tree 
@@ -27,7 +28,8 @@ def getListOfFiles(dirName):
 '''
 ##########################################################################
     Perform probe filtering after applying necessary transformations.
-    Returns: A mapper object representing the probe filter output.
+    Returns: 1. A mapper object representing the probe filter output.
+             2. A probeFilter object containing the volume colored lesion vertices.
 ##########################################################################
 '''
 def probeSurfaceWithVolume(subjectFolder):
@@ -78,12 +80,113 @@ def probeSurfaceWithVolume(subjectFolder):
 
     lesionMapper = vtk.vtkOpenGLPolyDataMapper()
     lesionMapper.SetInputConnection(probeFilter.GetOutputPort())
-    lesionActor = vtk.vtkActor()
-    lesionActor.SetMapper(lesionMapper)
     lookupTable = vtk.vtkLookupTable()
     lookupTable.SetNumberOfTableValues(256)
     lookupTable.Build()
     lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
                 
-    return lesionMapper
+    return lesionMapper, probeFilter
 
+'''
+##########################################################################
+    Perform connectivity filter analysis on the algorithm output received from probeFilter.
+    Returns: A list of dijoint lesions.
+##########################################################################
+'''
+def runLesionConnectivityAnalysis(probeFilterObject):
+    connectivityFilter = vtk.vtkPolyDataConnectivityFilter()
+    #connectivityFilter.SetInputConnection(lesionReader.GetOutputPort())
+    connectivityFilter.SetInputConnection(probeFilterObject.GetOutputPort())
+    connectivityFilter.SetExtractionModeToAllRegions()
+    connectivityFilter.ScalarConnectivityOff()
+    connectivityFilter.ColorRegionsOff()
+    connectivityFilter.Update()
+    #connectivityFilter.SetExtractionModeToClosestPointRegion()
+    #connectivityFilter.AddSpecifiedRegion(1) #select the region to extract here
+    numberOfExtractedRegions = connectivityFilter.GetNumberOfExtractedRegions()
+    #regionSizesArray = connectivityFilter.GetRegionSizes()
+    #for index in range(numberOfExtractedRegions):
+    #    print(regionSizesArray.GetValue(index))
+
+    #connectivityFilter.SetExtractionModeToSpecifiedRegions()
+    #connectivityFilter.Update()
+
+    polydata_collection = []
+    for region in range(numberOfExtractedRegions):
+        connectivityFilter.InitializeSpecifiedRegionList()
+        connectivityFilter.AddSpecifiedRegion(region)
+        #connectivityFilter.Update()
+ 
+        #p = vtk.vtkPolyData()
+        #p.DeepCopy(connectivityFilter.GetOutput())
+ 
+        #polydata_collection.append(p)
+        p= vtk.vtkPolyDataMapper()
+        p.SetInputConnection(connectivityFilter.GetOutputPort())
+        p.SetScalarRange(probeFilterObject.GetOutput().GetScalarRange())
+        p.Update()
+        polydata_collection.append(p)
+
+
+    return polydata_collection, numberOfExtractedRegions
+
+
+
+'''
+##########################################################################
+    Capture a screnshot from the main renderer.
+    Returns: Nothing
+##########################################################################
+'''
+def captureScreenshot(renderWindow): 
+    windowToImageFilter = vtk.vtkWindowToImageFilter()
+    windowToImageFilter.SetInput(renderWindow)
+    #windowToImageFilter.SetMagnification(3) #set the resolution of the output image (3 times the current resolution of vtk render window)
+    windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
+    windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
+    windowToImageFilter.Update()
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    writer = vtk.vtkPNGWriter()
+    writer.SetFileName(timestr + ".png")
+    writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+    writer.Write()
+
+
+class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
+ 
+    def __init__(self,parent=None):
+        self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
+
+        self.LastPickedActor = None
+        self.LastPickedProperty = vtk.vtkProperty()
+ 
+    def leftButtonPressEvent(self,obj,event):
+        clickPos = self.GetInteractor().GetEventPosition()
+
+        picker = vtk.vtkPropPicker()
+        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+        
+        # get the new
+        self.NewPickedActor = picker.GetActor()
+        
+        # If something was selected
+        if self.NewPickedActor:
+            # If we picked something before, reset its property
+            if self.LastPickedActor:
+                self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+    
+            
+            # Save the property of the picked actor so that we can
+            # restore it next time
+            self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+            # Highlight the picked actor by changing its properties
+            self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+            self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+            self.NewPickedActor.GetProperty().SetSpecular(0.0)
+            self.NewPickedActor.GetProperty().SetOpacity(0.9)
+
+            # save the last picked actor
+            self.LastPickedActor = self.NewPickedActor
+        
+        self.OnLeftButtonDown()
+        return

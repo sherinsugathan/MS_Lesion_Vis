@@ -56,6 +56,7 @@ class Ui(Qt.QMainWindow):
         self.dial.valueChanged.connect(self.on_DialMoved)
         self.pushButton_UnselectAllSubjects.clicked.connect(self.on_click_UnselectAllSubjects) # Attaching button click Handlers
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
+        self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_VisType.addItem("Default View")
         self.comboBox_VisType.addItem("Transparent Surfaces")
         self.comboBox_VisType.addItem("Lesion Intensity Raw Vis.")
@@ -85,10 +86,8 @@ class Ui(Qt.QMainWindow):
         self.vtkWidgetMPRA = QVTKRenderWindowInteractor(self.frame_MPRA)
         self.vtkWidgetMPRB = QVTKRenderWindowInteractor(self.frame_MPRB)
         self.vtkWidgetMPRC = QVTKRenderWindowInteractor(self.frame_MPRC)
-
         # Orientation cube.
         self.axesActor = vtk.vtkAnnotatedCubeActor()
-        
         self.vl.addWidget(self.vtkWidget)
         self.vl_MPRA.addWidget(self.vtkWidgetMPRA)
         self.vl_MPRB.addWidget(self.vtkWidgetMPRB)
@@ -108,7 +107,6 @@ class Ui(Qt.QMainWindow):
         self.renMPRB.SetBackground(0, 0, 0)
         self.renMPRC.SetBackground(0, 0, 0)
         #self.ren.SetViewport(self.VR_Viewport[0], self.VR_Viewport[1], self.VR_Viewport[2], self.VR_Viewport[3])
-        #self.renOrientationCube.SetViewport(self.mprC_Viewport[0], self.mprC_Viewport[1], self.mprC_Viewport[2], self.mprC_Viewport[3])
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
@@ -117,6 +115,9 @@ class Ui(Qt.QMainWindow):
         #self.renMPRB.SetViewport(self.mprB_Viewport[0], self.mprB_Viewport[1], self.mprB_Viewport[2], self.mprB_Viewport[3])
         #self.renMPRC.SetViewport(self.mprC_Viewport[0], self.mprC_Viewport[1], self.mprC_Viewport[2], self.mprC_Viewport[3])
 
+        # GPU enable attempt
+        #self.renderWindow = vtk.vtkGenericOpenGLRenderWindow()
+        #self.vtkWidget.SetRenderWindow(self.renderWindow)
         self.vtkWidget.GetRenderWindow().SetAlphaBitPlanes(True)
         self.vtkWidget.GetRenderWindow().SetMultiSamples(0)
 
@@ -141,6 +142,8 @@ class Ui(Qt.QMainWindow):
         #self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
         #self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
         #self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
+
+        self.informationKey = vtk.vtkInformationStringKey.MakeKey("ID", "vtkActor")
         
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
@@ -150,6 +153,15 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRA = vtk.vtkTextActor() # MPRA Slice number
         self.sliceNumberTextMPRB = vtk.vtkTextActor() # MPRB Slice number
         self.sliceNumberTextMPRC = vtk.vtkTextActor() # MPRC Slice number
+
+        # Text overlay support in main renderer.
+        self.textActorLesionStatistics = vtk.vtkTextActor()
+        self.depthPeelingStatus = "Depth Peeling : Enabled"
+        self.numberOfLesions = 0
+
+        self.style = LesionUtils.MouseInteractorHighLightActor()
+        self.style.SetDefaultRenderer(self.ren)
+        self.iren.SetInteractorStyle(self.style)
 
         self.ren.ResetCamera()
         self.frame.setLayout(self.vl)
@@ -167,13 +179,9 @@ class Ui(Qt.QMainWindow):
 
         self.iren_MPRA.Initialize()
         self.iren_MPRB.Initialize()
-        self.iren_MPRC.Initialize()
+        self.iren_MPRC.Initialize() 
 
-        # Clear all actors from the scene
-        #self.ren.RemoveAllViewProps()  
-        self.renMPRA.RemoveAllViewProps() 
-        self.renMPRB.RemoveAllViewProps() 
-        self.renMPRC.RemoveAllViewProps()     
+        #print(self.ren.GetRenderWindow().ReportCapabilities())
 
     # Load and Render Structural data
     def renderStructuralData(self, fileName):
@@ -189,16 +197,10 @@ class Ui(Qt.QMainWindow):
         dataImporter.SetDataExtent(0, img_data_shape[2] - 1, 0, img_data_shape[1] - 1, 0, img_data_shape[0] - 1)
         dataImporter.SetWholeExtent(0, img_data_shape[2] - 1, 0, img_data_shape[1] - 1, 0, img_data_shape[0] - 1)
         dataImporter.Update()
-        #temp_data = dataImporter.GetOutput()
-        #new_data = vtk.vtkImageData() 
         self.ren.ResetCamera()
-        #self.frame.setLayout(self.vl)
         # Also render the MPR Views
         self.LoadStructuralSlices(fileName)
-
-        #self.show()
         self.iren.Initialize()
-        #self.iren.Start()
 
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, fileName, isNiftyReadRequired=True):
@@ -238,8 +240,6 @@ class Ui(Qt.QMainWindow):
             # Define Interactor
             interactorMPRB = vtk.vtkInteractorStyleImage()
             self.iren_MPRB.SetInteractorStyle(interactorMPRB)
-            #self.renMPRB.ResetCamera()
-            #self.resliceImageViewerMPRB.GetImageActor().SetScale(1.5)
 
             ################################
             # MPR C    #####################
@@ -277,17 +277,17 @@ class Ui(Qt.QMainWindow):
     def renderData(self, fileNames, settings=None):
         self.actors = []
         for i in range(len(fileNames)):
-            if fileNames[i].endswith(".vtp"):
-                subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
-                loadFilePath = os.path.join(subjectFolder, fileNames[i]) 
-                polyDataReader = vtk.vtkXMLPolyDataReader()
-                polyDataReader.SetFileName(loadFilePath)
-                polyDataReader.Update()
-                mapper = vtk.vtkOpenGLPolyDataMapper()
-                mapper.SetInputConnection(polyDataReader.GetOutputPort())
-                actorL = vtk.vtkActor()
-                actorL.SetMapper(mapper)
-                self.actors.append(actorL)
+            #if fileNames[i].endswith(".vtp"):
+            #    subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
+            #    loadFilePath = os.path.join(subjectFolder, fileNames[i]) 
+            #    polyDataReader = vtk.vtkXMLPolyDataReader()
+            #    polyDataReader.SetFileName(loadFilePath)
+            #    polyDataReader.Update()
+            #    mapper = vtk.vtkOpenGLPolyDataMapper()
+            #    mapper.SetInputConnection(polyDataReader.GetOutputPort())
+            #    actorL = vtk.vtkActor()
+            #    actorL.SetMapper(mapper)
+            #    self.actors.append(actorL)
 
             if fileNames[i].endswith(".obj") and os.path.basename(fileNames[i]) in settings.getSurfaceWhiteList():
                 subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
@@ -311,15 +311,6 @@ class Ui(Qt.QMainWindow):
                     transform.SetMatrix(arrayList)
                     isLesionTransformNeeded = True
 
-                    niftiReader = vtk.vtkNIFTIImageReader()
-                    niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
-                    niftiReader.Update()
-                    probeFilter = vtk.vtkProbeFilter()
-                    probeFilter.SetSourceConnection(niftiReader.GetOutputPort())
-                    probeFilter.SetInputData(reader.GetOutput())
-                    probeFilter.Update()
-                    mapper.SetInputConnection(probeFilter.GetOutputPort())
-
                     # Setup color mapping for lesions.
                     lookupTable = vtk.vtkLookupTable()
                     lookupTable.SetNumberOfTableValues(256)
@@ -327,28 +318,21 @@ class Ui(Qt.QMainWindow):
                     lookupTable.Build()
 
                     # Probe the lesion surface with the volume data.
-                    mapper = LesionUtils.probeSurfaceWithVolume(subjectFolder)
+                    mapper, probeFilter = LesionUtils.probeSurfaceWithVolume(subjectFolder)
 
-                    connectivityFilter = vtk.vtkPolyDataConnectivityFilter()
-                    connectivityFilter.SetInputConnection(reader.GetOutputPort())
-                    connectivityFilter.SetExtractionModeToAllRegions()
-                    connectivityFilter.SetColorRegions(True)
-                    connectivityFilter.ColorRegionsOn()
-                    connectivityFilter.Update()
+                    # Run connectivity filter to extract lesions into separate polydata objects.
+                    polyDataCollection, self.numberOfLesions = LesionUtils.runLesionConnectivityAnalysis(probeFilter)
 
                     # Setup the text and add it to the renderer
-                    textActorLesionStatistics = vtk.vtkTextActor()
-                    depthPeelingStatus = "Depth Peeling : Enabled" if self.checkBox_DepthPeeling.isChecked() else "Depth Peeling: Disabled"
-                    textActorLesionStatistics.SetInput("Lesion Load : " + str(connectivityFilter.GetNumberOfExtractedRegions()) + "\n" + depthPeelingStatus)
-                    textActorLesionStatistics.UseBorderAlignOff()
-                    textActorLesionStatistics.SetPosition(10,20)
-                    textActorLesionStatistics.GetTextProperty().SetFontFamilyToCourier()
-                    textActorLesionStatistics.GetTextProperty().SetFontSize(16)
-                    textActorLesionStatistics.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
-
-                    self.ren.AddActor2D(textActorLesionStatistics)
+                    self.depthPeelingStatus = "Depth Peeling : Enabled" if self.checkBox_DepthPeeling.isChecked() else "Depth Peeling : Disabled"
+                    self.textActorLesionStatistics.SetInput("Lesion Load : " + str(self.numberOfLesions) + "\n" + self.depthPeelingStatus)
+                    self.textActorLesionStatistics.UseBorderAlignOff()
+                    self.textActorLesionStatistics.SetPosition(10,20)
+                    self.textActorLesionStatistics.GetTextProperty().SetFontFamilyToCourier()
+                    self.textActorLesionStatistics.GetTextProperty().SetFontSize(16)
+                    self.textActorLesionStatistics.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+                    self.ren.AddActor2D(self.textActorLesionStatistics)
                     mrmlDataFileName.close()
-                    #crasDataFileName.close()
 
                 actor = vtk.vtkActor()
                 actor.SetMapper(mapper)
@@ -359,15 +343,20 @@ class Ui(Qt.QMainWindow):
                     transform.Identity()
                     actor.SetUserTransform(transform)
 
-                # Apply transparency settings.
+                information = vtk.vtkInformation()
+                # Apply transparency settings and add information.
                 if "lh.pial" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.lh_pial_transparency)
+                    information.Set(self.informationKey,"lh.pial")
                 if "rh.pial" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.rh_pial_transparency)
+                    information.Set(self.informationKey,"rh.pial")
                 if "lh.white" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.lh_white_transparency)
+                    information.Set(self.informationKey,"lh.white")
                 if "rh.white" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.rh_white_transparency)
+                    information.Set(self.informationKey,"rh.white")
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
                     translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
@@ -381,13 +370,22 @@ class Ui(Qt.QMainWindow):
                     transform.Translate(t_vector[0], t_vector[1], t_vector[2])
                     actor.SetUserTransform(transform)
                     f.close()
-                self.actors.append(actor)
 
+                if(fileNames[i].endswith("lesions.obj")==False):
+                    actor.GetProperty().SetInformation(information)
+                    self.actors.append(actor)
+                else:
+                    lesionIndex=0
+                    for mapper in polyDataCollection:
+                        information = vtk.vtkInformation()
+                        information.Set(self.informationKey,"lesions")
+                        lesionActor = vtk.vtkActor()
+                        lesionActor.SetMapper(mapper)
+                        lesionActor.GetProperty().SetInformation(information)
+                        self.actors.append(lesionActor)
+                        lesionIndex = lesionIndex + 1
+                
                 # Also add to the listBox showing loaded surfaces.
-                # Populate loaded surface data listBox
-                #self.modelListBoxSurfaces = QtGui.QStandardItemModel()
-                #for i in range(len(subjectFiles)):
-                #    if subjectFiles[i].endswith(".obj"):
                 item = QtGui.QStandardItem(os.path.basename(fileNames[i]))
                 item.setCheckable(True)
                 item.setCheckState(2)      
@@ -395,6 +393,7 @@ class Ui(Qt.QMainWindow):
                 self.listView.setSelectionRectVisible(True)
                 self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
 
+        print("Actor Count is: " + str(len(self.actors)))
         for a in self.actors:
             self.ren.AddActor(a)
             self.ren.ResetCamera()
@@ -509,22 +508,16 @@ class Ui(Qt.QMainWindow):
     def on_itemChanged(self,  item):
         state = ['UNCHECKED', 'TRISTATE',  'CHECKED'][item.checkState()]
         if(state == 'UNCHECKED'):
-            removeIndex = item.index()
-            self.ren.RemoveActor(self.actors[removeIndex.row()])
-            #self.ren.ResetCamera()
+            for actorItem in self.actors:
+                if actorItem.GetProperty().GetInformation().Get(self.informationKey) in item.text():
+                    self.ren.RemoveActor(actorItem)
             self.frame.setLayout(self.vl)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
         else:
-            addIndex = item.index()
-            self.ren.AddActor(self.actors[addIndex.row()])
-            #self.ren.ResetCamera()
+            for actorItem in self.actors:
+                if actorItem.GetProperty().GetInformation().Get(self.informationKey) in item.text():
+                    self.ren.AddActor(actorItem)
             self.frame.setLayout(self.vl)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
 
     # Handler for checkbox check status change for structural data.
@@ -536,18 +529,12 @@ class Ui(Qt.QMainWindow):
             self.ren.RemoveVolume(self.volume)
             #self.ren.ResetCamera()
             self.frame.setLayout(self.vl)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
         else:
             addIndex = item.index()
             self.ren.AddVolume(self.volume)
             #self.ren.ResetCamera()
             self.frame.setLayout(self.vl)
-            #self.show()
-            #self.iren.Initialize()
-            #self.iren.Start()
             self.iren.Render()
 
     # Handler for MPRA Slider change.
@@ -593,10 +580,11 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot()
     def on_DialMoved(self):
         self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
-        selectedListIndices = self.listView.selectedIndexes()
-        if selectedListIndices:
-            self.actors[selectedListIndices[0].row()].GetProperty().SetOpacity(self.dial.value()/float(500))
-            self.iren.Render()
+        for actorItem in self.actors:
+            if actorItem.GetProperty().GetInformation().Get(self.informationKey) in self.listView.model().itemFromIndex(self.listView.currentIndex()).text():
+                actorItem.GetProperty().SetOpacity(self.dial.value()/float(500))
+                break
+        self.iren.Render()
         # Update settings.
         currentIndex = self.listView.currentIndex()
         if currentIndex.row() > -1:
@@ -611,7 +599,7 @@ class Ui(Qt.QMainWindow):
                 if item.endswith("rh.white.obj"):
                     self.settings.rh_white_transparency = self.dial.value()/float(500)
 
-    
+    # Handle when item selection in the surface list is changed.
     @pyqtSlot()
     def onSurfaceListSelectionChanged(self):
         currentIndex = self.listView.currentIndex()
@@ -627,13 +615,9 @@ class Ui(Qt.QMainWindow):
                 if item.endswith("rh.white.obj"):
                     self.dial.setValue(self.settings.rh_white_transparency*500)
 
-        #item = self.selModel.selection().indexes()[0]
-        #print item.data()
-
     # Handler for unselecting all subjects at once-
     @pyqtSlot()
     def on_click_UnselectAllSubjects(self):
-        #self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         model = self.listView.model()
         for index in range(model.rowCount()):
             item = model.item(index)
@@ -641,18 +625,23 @@ class Ui(Qt.QMainWindow):
                 item.setCheckState(QtCore.Qt.Unchecked)
         self.iren.Render()
 
+    # Handler for capturing the screenshot.
+    @pyqtSlot()
+    def on_click_CaptureScreeshot(self):
+        LesionUtils.captureScreenshot(self.ren.GetRenderWindow())
+
     # Handler for depth peeling checkbox
     @pyqtSlot()
     def depthpeel_state_changed(self):
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
-            self.iren.Render()
         else:
             self.ren.SetUseDepthPeeling(False)
-            self.iren.Render()
+        self.depthPeelingStatus = "Depth Peeling : Enabled" if self.checkBox_DepthPeeling.isChecked() else "Depth Peeling : Disabled"
+        self.textActorLesionStatistics.SetInput("Lesion Load : " + str(self.numberOfLesions) + "\n" + self.depthPeelingStatus)
+        self.iren.Render()
     
-
     def closeEvent(self, event):
         print("Trying to exit")
         event.accept() # let the window close
@@ -666,8 +655,6 @@ class Ui(Qt.QMainWindow):
         else: 
             _ = system('clear')
 
-
-###########################################
 ###########################################
 # QApplication ############################
 ###########################################
