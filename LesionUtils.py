@@ -2,6 +2,7 @@ import os
 import vtk
 import numpy as np
 import time
+import SimpleITK as sitk
 
 '''
 ##########################################################################
@@ -121,7 +122,7 @@ def runLesionConnectivityAnalysis(probeFilterObject):
         #p.DeepCopy(connectivityFilter.GetOutput())
  
         #polydata_collection.append(p)
-        p= vtk.vtkPolyDataMapper()
+        p= vtk.vtkOpenGLPolyDataMapper()
         p.SetInputConnection(connectivityFilter.GetOutputPort())
         p.SetScalarRange(probeFilterObject.GetOutput().GetScalarRange())
         p.Update()
@@ -183,10 +184,33 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
             self.NewPickedActor.GetProperty().SetDiffuse(1.0)
             self.NewPickedActor.GetProperty().SetSpecular(0.0)
-            self.NewPickedActor.GetProperty().SetOpacity(0.9)
+            self.NewPickedActor.GetProperty().SetOpacity(0.0)
 
             # save the last picked actor
             self.LastPickedActor = self.NewPickedActor
         
         self.OnLeftButtonDown()
         return
+
+'''
+##########################################################################
+    Compute Lesion Properties using ITK Connected Component Analysis.
+    Returns: 
+##########################################################################
+'''
+def computeLesionProperties(subjectFolder):
+    imageLesionMask = sitk.ReadImage(subjectFolder + "\\lesionMask\\Consensus.nii")
+    # Binary threshold filter.
+    binaryThresholdFilter = sitk.BinaryThresholdImageFilter()
+    binaryThresholdFilter.SetOutsideValue(0)
+    binaryThresholdFilter.SetInsideValue(1)
+    binaryThresholdFilter.SetLowerThreshold(0.8)
+    binaryThresholdFilter.SetUpperThreshold(1)
+    binaryImage = binaryThresholdFilter.Execute(imageLesionMask)
+    # Connected component filter.
+    connectedComponentFilter = sitk.ConnectedComponentImageFilter()
+    connectedComponentImage = connectedComponentFilter.Execute(binaryImage)
+    return connectedComponentImage, connectedComponentFilter
+
+
+

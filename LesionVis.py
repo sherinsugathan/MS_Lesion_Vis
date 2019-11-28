@@ -176,38 +176,17 @@ class Ui(Qt.QMainWindow):
         self.show()
         self.iren.Initialize()
         #self.iren.Start()
-
         self.iren_MPRA.Initialize()
         self.iren_MPRB.Initialize()
         self.iren_MPRC.Initialize() 
 
         #print(self.ren.GetRenderWindow().ReportCapabilities())
 
-    # Load and Render Structural data
-    def renderStructuralData(self, fileName):
-        img = nib.load(fileName)
-        img_data = img.get_data()
-        img_data_shape = img_data.shape
-
-        dataImporter = vtk.vtkImageImport()
-        dataImporter.SetDataScalarTypeToShort()
-        data_string = img_data.tostring()
-        dataImporter.SetNumberOfScalarComponents(1)
-        dataImporter.CopyImportVoidPointer(data_string, len(data_string))
-        dataImporter.SetDataExtent(0, img_data_shape[2] - 1, 0, img_data_shape[1] - 1, 0, img_data_shape[0] - 1)
-        dataImporter.SetWholeExtent(0, img_data_shape[2] - 1, 0, img_data_shape[1] - 1, 0, img_data_shape[0] - 1)
-        dataImporter.Update()
-        self.ren.ResetCamera()
-        # Also render the MPR Views
-        self.LoadStructuralSlices(fileName)
-        self.iren.Initialize()
-
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, fileName, isNiftyReadRequired=True):
         if(isNiftyReadRequired==True):
             self.niftyReaderT1.SetFileName(fileName)
             self.niftyReaderT1.Update()
-
             ################################
             # MPR A    #####################
             ################################
@@ -273,9 +252,15 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRB.SetSlice(self.mprB_Slice_Slider.value())
             self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
         
-    # Load and Render Data
+    #####################################
+    # MAIN LOADER: Load and Render Data #
+    #####################################
     def renderData(self, fileNames, settings=None):
         self.actors = []
+        subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
+        # Compute lesion properties
+        connectedComponentImage, connectedComponentFilter = LesionUtils.computeLesionProperties(subjectFolder)
+        print(connectedComponentFilter.GetObjectCount())
         for i in range(len(fileNames)):
             #if fileNames[i].endswith(".vtp"):
             #    subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
@@ -289,8 +274,8 @@ class Ui(Qt.QMainWindow):
             #    actorL.SetMapper(mapper)
             #    self.actors.append(actorL)
 
+            # Check if files are wavefront OBJ and in the whitelist according to settings.
             if fileNames[i].endswith(".obj") and os.path.basename(fileNames[i]) in settings.getSurfaceWhiteList():
-                subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
                 loadFilePath = os.path.join(subjectFolder, fileNames[i])      
                 reader = vtk.vtkOBJReader()
                 reader.SetFileName(loadFilePath)
@@ -375,15 +360,13 @@ class Ui(Qt.QMainWindow):
                     actor.GetProperty().SetInformation(information)
                     self.actors.append(actor)
                 else:
-                    lesionIndex=0
-                    for mapper in polyDataCollection:
+                    for individualLesionMapper in polyDataCollection:
                         information = vtk.vtkInformation()
                         information.Set(self.informationKey,"lesions")
                         lesionActor = vtk.vtkActor()
-                        lesionActor.SetMapper(mapper)
+                        lesionActor.SetMapper(individualLesionMapper)
                         lesionActor.GetProperty().SetInformation(information)
                         self.actors.append(lesionActor)
-                        lesionIndex = lesionIndex + 1
                 
                 # Also add to the listBox showing loaded surfaces.
                 item = QtGui.QStandardItem(os.path.basename(fileNames[i]))
@@ -393,12 +376,13 @@ class Ui(Qt.QMainWindow):
                 self.listView.setSelectionRectVisible(True)
                 self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
 
-        print("Actor Count is: " + str(len(self.actors)))
         for a in self.actors:
             self.ren.AddActor(a)
-            self.ren.ResetCamera()
-            self.iren.Render()
-        self.renderStructuralData(subjectFolder + "\\structural\\T1.nii")
+        self.ren.ResetCamera()
+        self.iren.Render()
+
+        # Load data for MPRs.
+        self.LoadStructuralSlices(subjectFolder + "\\structural\\T1.nii")
 
     # Handler for browse folder button click.
     @pyqtSlot()
