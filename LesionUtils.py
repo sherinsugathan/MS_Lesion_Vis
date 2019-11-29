@@ -91,46 +91,33 @@ def probeSurfaceWithVolume(subjectFolder):
 '''
 ##########################################################################
     Perform connectivity filter analysis on the algorithm output received from probeFilter.
-    Returns: A list of dijoint lesions.
+    Returns: A list of dijoint lesion mappers and the total number of connected components.
 ##########################################################################
 '''
 def runLesionConnectivityAnalysis(probeFilterObject):
     connectivityFilter = vtk.vtkPolyDataConnectivityFilter()
-    #connectivityFilter.SetInputConnection(lesionReader.GetOutputPort())
     connectivityFilter.SetInputConnection(probeFilterObject.GetOutputPort())
     connectivityFilter.SetExtractionModeToAllRegions()
-    connectivityFilter.ScalarConnectivityOff()
-    connectivityFilter.ColorRegionsOff()
     connectivityFilter.Update()
-    #connectivityFilter.SetExtractionModeToClosestPointRegion()
-    #connectivityFilter.AddSpecifiedRegion(1) #select the region to extract here
     numberOfExtractedRegions = connectivityFilter.GetNumberOfExtractedRegions()
-    #regionSizesArray = connectivityFilter.GetRegionSizes()
-    #for index in range(numberOfExtractedRegions):
-    #    print(regionSizesArray.GetValue(index))
-
-    #connectivityFilter.SetExtractionModeToSpecifiedRegions()
-    #connectivityFilter.Update()
-
-    polydata_collection = []
-    for region in range(numberOfExtractedRegions):
-        connectivityFilter.InitializeSpecifiedRegionList()
-        connectivityFilter.AddSpecifiedRegion(region)
-        #connectivityFilter.Update()
- 
-        #p = vtk.vtkPolyData()
-        #p.DeepCopy(connectivityFilter.GetOutput())
- 
-        #polydata_collection.append(p)
-        p= vtk.vtkOpenGLPolyDataMapper()
-        p.SetInputConnection(connectivityFilter.GetOutputPort())
-        p.SetScalarRange(probeFilterObject.GetOutput().GetScalarRange())
-        p.Update()
-        polydata_collection.append(p)
-
-
-    return polydata_collection, numberOfExtractedRegions
-
+    connectivityFilter.SetExtractionModeToSpecifiedRegions()
+    components = list()
+    idx=0
+    while True:
+        connectivityFilter.AddSpecifiedRegion(idx)
+        connectivityFilter.Update()
+        component = vtk.vtkPolyData()
+        component.DeepCopy(connectivityFilter.GetOutput())
+        if component.GetNumberOfCells() <=0:
+            break
+        mapper = vtk.vtkOpenGLPolyDataMapper()
+        mapper.SetInputDataObject(component)
+        mapper.SetScalarRange(probeFilterObject.GetOutput().GetScalarRange())
+        mapper.Update()
+        components.append(mapper)
+        connectivityFilter.DeleteSpecifiedRegion(idx)
+        idx +=1
+    return components, numberOfExtractedRegions
 
 
 '''

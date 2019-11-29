@@ -296,12 +296,6 @@ class Ui(Qt.QMainWindow):
                     transform.SetMatrix(arrayList)
                     isLesionTransformNeeded = True
 
-                    # Setup color mapping for lesions.
-                    lookupTable = vtk.vtkLookupTable()
-                    lookupTable.SetNumberOfTableValues(256)
-                    #lookupTable.SetHueRange(0,255)
-                    lookupTable.Build()
-
                     # Probe the lesion surface with the volume data.
                     mapper, probeFilter = LesionUtils.probeSurfaceWithVolume(subjectFolder)
 
@@ -360,9 +354,8 @@ class Ui(Qt.QMainWindow):
                     actor.GetProperty().SetInformation(information)
                     self.actors.append(actor)
                 else:
+                    information.Set(self.informationKey,"lesions")
                     for individualLesionMapper in polyDataCollection:
-                        information = vtk.vtkInformation()
-                        information.Set(self.informationKey,"lesions")
                         lesionActor = vtk.vtkActor()
                         lesionActor.SetMapper(individualLesionMapper)
                         lesionActor.GetProperty().SetInformation(information)
