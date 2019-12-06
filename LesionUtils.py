@@ -101,7 +101,7 @@ def runLesionConnectivityAnalysis(probeFilterObject):
     connectivityFilter.Update()
     numberOfExtractedRegions = connectivityFilter.GetNumberOfExtractedRegions()
     connectivityFilter.SetExtractionModeToSpecifiedRegions()
-    components = list()
+    lesionComponentMappers = list()
     idx=0
     while True:
         connectivityFilter.AddSpecifiedRegion(idx)
@@ -110,25 +110,45 @@ def runLesionConnectivityAnalysis(probeFilterObject):
         component.DeepCopy(connectivityFilter.GetOutput())
         if component.GetNumberOfCells() <=0:
             break
+
+        centerOfMassFilter = vtk.vtkCenterOfMass()
+        centerOfMassFilter.SetInputData(component)
+        centerOfMassFilter.SetUseScalarsAsWeights(False)
+        centerOfMassFilter.Update()
+        #print(centerOfMassFilter.GetCenter())
+        #print(component.GetNumberOfCells())
+
         mapper = vtk.vtkOpenGLPolyDataMapper()
-        mapper.SetInputDataObject(component)
+        mapper.SetInputData(component)
         mapper.SetScalarRange(probeFilterObject.GetOutput().GetScalarRange())
         mapper.Update()
-        components.append(mapper)
+        lesionComponentMappers.append(mapper)
         connectivityFilter.DeleteSpecifiedRegion(idx)
         idx +=1
-    return components, numberOfExtractedRegions
-
+    return lesionComponentMappers, numberOfExtractedRegions
 
 '''
 ##########################################################################
-    Capture a screnshot from the main renderer.
+    Update overlay text on a specific renderer.
+    Returns: Nothing
+##########################################################################
+'''
+def updateOverlayText(renderWindow, overlayDictionary, overlayTextActor): 
+    overlayText =""
+    for key in overlayDictionary.keys():
+        overlayText = overlayText + str(key) + ": " + str(overlayDictionary[key]) + "\n"
+    overlayTextActor.SetInput(overlayText)
+
+'''
+##########################################################################
+    Capture a screenshot from the main renderer. File gets written with timestamp name.
     Returns: Nothing
 ##########################################################################
 '''
 def captureScreenshot(renderWindow): 
     windowToImageFilter = vtk.vtkWindowToImageFilter()
     windowToImageFilter.SetInput(renderWindow)
+    windowToImageFilter.SetScale(3,3)
     #windowToImageFilter.SetMagnification(3) #set the resolution of the output image (3 times the current resolution of vtk render window)
     windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
     windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
@@ -139,14 +159,22 @@ def captureScreenshot(renderWindow):
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
 
-
+'''
+##########################################################################
+    Class for implementing custom interactor.
+##########################################################################
+'''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None):
+    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
         self.LastPickedActor = None
         self.LastPickedProperty = vtk.vtkProperty()
+        self.iren = iren
+        self.overlayDataMain = overlayDataMain
+        self.textActorLesionStatistics = textActorLesionStatistics
+        self.informationKey = informationKey
  
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -162,7 +190,6 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             # If we picked something before, reset its property
             if self.LastPickedActor:
                 self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
-    
             
             # Save the property of the picked actor so that we can
             # restore it next time
@@ -171,8 +198,21 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
             self.NewPickedActor.GetProperty().SetDiffuse(1.0)
             self.NewPickedActor.GetProperty().SetSpecular(0.0)
-            self.NewPickedActor.GetProperty().SetOpacity(0.0)
+            self.NewPickedActor.GetProperty().SetOpacity(0.1)
 
+            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+            centerOfMassFilter = vtk.vtkCenterOfMass()
+            centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+            #print(self.NewPickedActor.GetMapper().GetInput())
+            centerOfMassFilter.SetUseScalarsAsWeights(False)
+            centerOfMassFilter.Update()
+
+            self.centerOfMass = centerOfMassFilter.GetCenter()
+            #print(self.centerOfMass)
+            #self.overlayDataMain["Lesion Load"] = str(self.centerOfMass[0]) + str(self.centerOfMass[1]) + str(self.centerOfMass[2])
+            self.overlayDataMain["Lesion ID"] = str(lesionID)
+            updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
+            self.iren.Render()
             # save the last picked actor
             self.LastPickedActor = self.NewPickedActor
         
@@ -182,7 +222,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 '''
 ##########################################################################
     Compute Lesion Properties using ITK Connected Component Analysis.
-    Returns: 
+    Returns: Connected Component Output Image, filter object.
 ##########################################################################
 '''
 def computeLesionProperties(subjectFolder):
@@ -199,5 +239,109 @@ def computeLesionProperties(subjectFolder):
     connectedComponentImage = connectedComponentFilter.Execute(binaryImage)
     return connectedComponentImage, connectedComponentFilter
 
+'''
+##########################################################################
+    Compute streamlines using temperature scalars.
+    Returns: Nothing
+##########################################################################
+'''
+def computeStreamlines(subjectFolder):
+    temperatureDataFileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
+    niftiReaderTemperature = vtk.vtkNIFTIImageReader()
+    niftiReaderTemperature.SetFileName(temperatureDataFileName)
+    niftiReaderTemperature.Update()
+    cellDerivatives = vtk.vtkCellDerivatives()
+    cellDerivatives.SetInputConnection(niftiReaderTemperature.GetOutputPort())
+    cellDerivatives.Update()
+    cellDataToPointData = vtk.vtkCellDataToPointData()
+    cellDataToPointData.SetInputConnection(cellDerivatives.GetOutputPort())
+    cellDataToPointData.Update()
 
+    # CRAS translation for gradient data.
+    crasDataFile = open(subjectFolder + "\\meta\\crasGradient.txt" , 'r')
+    cras_t_vector = []
+    for t in crasDataFile:
+        cras_t_vector.append(t)
+    cras_t_vector = list(map(float, cras_t_vector))
+    transform2 = vtk.vtkTransform()
+    transform2.PostMultiply()
+    transform2.Translate(cras_t_vector[0], cras_t_vector[1], cras_t_vector[2])
 
+    # Transform for temperature data
+    transformGradient = vtk.vtkTransform()
+    mrmlDataFileGradient = open (subjectFolder + "\\meta\\mrmlGradient.txt" , 'r')
+    mrmlDataFileGradient2 = open (subjectFolder + "\\meta\\mrmlGradient2.txt" , 'r')
+    arrayListGradient = list(np.asfarray(np.array(mrmlDataFileGradient.readline().split(",")),float))
+    arrayListGradient2 = list(np.asfarray(np.array(mrmlDataFileGradient2.readline().split(",")),float))
+    transformGradient.PostMultiply()
+    transformGradient.SetMatrix(arrayListGradient)
+    transformGradient.Concatenate(arrayListGradient2)
+    transformGradient.Concatenate(transform2)
+    transformGradient.Update()
+    
+    # Create point source and actor
+    psource = vtk.vtkPointSource()
+    psource.SetNumberOfPoints(9500)
+    psource.SetCenter(127,80,150)
+    psource.SetRadius(80)
+    pointSourceMapper = vtk.vtkPolyDataMapper()
+    pointSourceMapper.SetInputConnection(psource.GetOutputPort())
+    pointSourceActor = vtk.vtkActor()
+    pointSourceActor.SetMapper(pointSourceMapper)
+
+    # Perform stream tracing
+    streamers = vtk.vtkStreamTracer()
+    streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
+    streamers.SetIntegrationDirectionToBoth()
+    streamers.SetSourceConnection(psource.GetOutputPort())
+    streamers.SetMaximumPropagation(100.0)
+    streamers.SetInitialIntegrationStep(0.2)
+    streamers.SetTerminalSpeed(.01)
+    streamers.Update()
+    tubes = vtk.vtkTubeFilter()
+    tubes.SetInputConnection(streamers.GetOutputPort())
+    tubes.SetRadius(0.3)
+    tubes.SetNumberOfSides(6)
+    tubes.SetVaryRadius(0)
+    lut = vtk.vtkLookupTable()
+    lut.SetHueRange(.667, 0.0)
+    lut.Build()
+    streamerMapper = vtk.vtkPolyDataMapper()
+    streamerMapper.SetInputConnection(tubes.GetOutputPort())
+    streamerMapper.SetLookupTable(lut)
+    streamerActor = vtk.vtkActor()
+    streamerActor.SetMapper(streamerMapper)
+    streamerActor.SetUserTransform(transformGradient)
+
+    return streamerActor
+
+'''
+##########################################################################
+    Compute transformations required for json data
+    Returns: Transform object.
+##########################################################################
+'''
+def computeJsonDataTransform(subjectFolder):
+    # Transform for temperature data
+    transformGradient = vtk.vtkTransform()
+    mrmlDataFileGradient2 = open (subjectFolder + "\\meta\\mrmlGradient2.txt" , 'r')
+    arrayListGradient2 = list(np.asfarray(np.array(mrmlDataFileGradient2.readline().split(",")),float))
+    arrayListGradient2[0]= arrayListGradient2[0] * -1 # A flip needed.
+    transformGradient.PostMultiply()
+    transformGradient.Concatenate(arrayListGradient2)
+    transformGradient.Update()
+    return transformGradient
+
+'''
+##########################################################################
+    Compute transformation matrix for json data
+    Returns: JSON data transformation matrix
+##########################################################################
+'''
+def getJsonDataTransformMatrix(subjectFolder):
+    mrmlDataFileGradient2 = open (subjectFolder + "\\meta\\mrmlGradient2.txt" , 'r')
+    arrayListGradient2 = list(np.asfarray(np.array(mrmlDataFileGradient2.readline().split(",")),float))
+    arrayListGradient2[0]= arrayListGradient2[0] * -1 # A flip needed.
+    transformMat = np.array(arrayListGradient2)
+    matrix= np.reshape(transformMat, (4, 4))
+    return matrix
