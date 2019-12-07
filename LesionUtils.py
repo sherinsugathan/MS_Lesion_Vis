@@ -166,7 +166,7 @@ def captureScreenshot(renderWindow):
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None):
+    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None, informationKeyID = None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
         self.LastPickedActor = None
@@ -175,7 +175,18 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.overlayDataMain = overlayDataMain
         self.textActorLesionStatistics = textActorLesionStatistics
         self.informationKey = informationKey
- 
+        self.informationKeyID = informationKeyID
+
+    def addLesionData(self, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness):
+        self.lesionCentroids = lesionCentroids
+        self.lesionNumberOfPixels = lesionNumberOfPixels
+        self.lesionElongation = lesionElongation
+        self.lesionPerimeter = lesionPerimeter
+        self.lesionSphericalRadius = lesionSphericalRadius
+        self.lesionSphericalPerimeter = lesionSphericalPerimeter
+        self.lesionFlatness = lesionFlatness
+        self.lesionRoundness = lesionRoundness
+
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
 
@@ -198,9 +209,14 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
             self.NewPickedActor.GetProperty().SetDiffuse(1.0)
             self.NewPickedActor.GetProperty().SetSpecular(0.0)
-            self.NewPickedActor.GetProperty().SetOpacity(0.1)
+            self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
+            self.NewPickedActor.GetProperty().SetOpacity(0.5)
+            #print(self.NewPickedActor.GetMapper().GetScalarRange())
+            #print(self.NewPickedActor)
 
-            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+            #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
+
             centerOfMassFilter = vtk.vtkCenterOfMass()
             centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
             #print(self.NewPickedActor.GetMapper().GetInput())
@@ -208,9 +224,20 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             centerOfMassFilter.Update()
 
             self.centerOfMass = centerOfMassFilter.GetCenter()
-            #print(self.centerOfMass)
-            #self.overlayDataMain["Lesion Load"] = str(self.centerOfMass[0]) + str(self.centerOfMass[1]) + str(self.centerOfMass[2])
-            self.overlayDataMain["Lesion ID"] = str(lesionID)
+            if lesionID!=None:
+                self.overlayDataMain["Lesion ID"] = str(lesionID)
+            else:
+                self.overlayDataMain["Lesion ID"] = "NA"
+            self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+            #self.overlayDataMain["Selection Type"] = str(itemType)
+            self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
+            self.overlayDataMain["Elongation"] = self.lesionElongation[int(lesionID)-1]
+            self.overlayDataMain["Lesion Perimeter"] = self.lesionPerimeter[int(lesionID)-1]
+            self.overlayDataMain["Lesion Spherical Radius"] = self.lesionSphericalRadius[int(lesionID)-1]
+            self.overlayDataMain["Lesion Spherical Perimeter"] = self.lesionSphericalPerimeter[int(lesionID)-1]
+            self.overlayDataMain["Lesion Flatness"] = self.lesionFlatness[int(lesionID)-1]
+            self.overlayDataMain["Lesion Roundness"] = self.lesionRoundness[int(lesionID)-1]
+
             updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
             self.iren.Render()
             # save the last picked actor
@@ -345,3 +372,102 @@ def getJsonDataTransformMatrix(subjectFolder):
     transformMat = np.array(arrayListGradient2)
     matrix= np.reshape(transformMat, (4, 4))
     return matrix
+
+
+'''
+##########################################################################
+    Extract lesions by processing labelled lesion mask data.
+    Returns: Lesion actors.
+##########################################################################
+'''
+def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, probeLesions=False):
+    # Load lesion mask
+    niftiReaderLesionMask = vtk.vtkNIFTIImageReader()
+    niftiReaderLesionMask.SetFileName(subjectFolder + "\\lesionMask\\ConnectedComponents.nii")
+    niftiReaderLesionMask.Update()
+
+    lesionActors = []
+    surface = vtk.vtkDiscreteMarchingCubes()
+    surface.SetInputConnection(niftiReaderLesionMask.GetOutputPort())
+    for i in range(labelCount):
+        surface.SetValue(i,i+1)
+    surface.Update()
+    component = vtk.vtkPolyData()
+    component.DeepCopy(surface.GetOutput())
+
+    mrmlDataFileName = open(subjectFolder + "\\meta\\mrmlMask.txt" , 'r')
+    transform = vtk.vtkTransform()
+    transform.Identity()
+    arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
+    transform.SetMatrix(arrayList)
+    transform.Update()
+    transformFilter = vtk.vtkTransformFilter()
+    transformFilter.SetInputConnection(surface.GetOutputPort())
+    transformFilter.SetTransform(transform)
+    transformFilter.Update()
+
+    # Apply probe filtering also.
+    if(probeLesions==True):
+        niftiReader = vtk.vtkNIFTIImageReader()
+        niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
+        niftiReader.Update()
+        mrmlDataFileVolume = open ( subjectFolder + "\\meta\\mrml.txt" , 'r') # Transformation for volume data
+        arrayListVolume = list(np.asfarray(np.array(mrmlDataFileVolume.readline().split(",")),float))
+        volumeTransform = vtk.vtkTransform()
+        volumeTransform.SetMatrix(arrayListVolume)
+        volumeTransform.Update()
+        # Set transformation for volume data.
+        transformVolume = vtk.vtkTransformFilter()
+        transformVolume.SetInputData(niftiReader.GetOutput())
+        transformVolume.SetTransform(volumeTransform)
+        transformVolume.Update()
+
+    for i in range(labelCount):
+        threshold = vtk.vtkThreshold()
+        threshold.SetInputData(transformFilter.GetOutput())
+        threshold.ThresholdBetween(i+1,i+1)
+        threshold.Update()
+
+        geometryFilter = vtk.vtkGeometryFilter()
+        geometryFilter.SetInputData(threshold.GetOutput())
+        geometryFilter.Update()
+
+        # Check if probing lesion surface with intensity volume is requested or not.
+        if(probeLesions==False):
+            mapper = vtk.vtkOpenGLPolyDataMapper()
+            mapper.SetInputData(geometryFilter.GetOutput())
+            mapper.Update()
+            lesionActor = vtk.vtkActor()
+            lesionActor.SetMapper(mapper)
+            information = vtk.vtkInformation()
+            information.Set(informationKey,"lesions")
+            lesionActor.GetProperty().SetInformation(information)
+            informationID = vtk.vtkInformation()
+            informationID.Set(informationKeyID,str(i+1))
+            lesionActor.GetProperty().SetInformation(informationID)
+            lesionActors.append(lesionActor)
+        else:
+            # Apply probeFilter
+            probeFilter = vtk.vtkProbeFilter()
+            probeFilter.SetSourceConnection(transformVolume.GetOutputPort())
+            probeFilter.SetInputData(geometryFilter.GetOutput())
+            probeFilter.Update()
+
+            lesionMapper = vtk.vtkOpenGLPolyDataMapper()
+            lesionMapper.SetInputConnection(probeFilter.GetOutputPort())
+            lookupTable = vtk.vtkLookupTable()
+            lookupTable.SetNumberOfTableValues(256)
+            lookupTable.Build()
+            lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
+
+            lesionActor = vtk.vtkActor()
+            lesionActor.SetMapper(lesionMapper)
+            information = vtk.vtkInformation()
+            information.Set(informationKey,"lesions")
+            lesionActor.GetProperty().SetInformation(information)
+            informationID = vtk.vtkInformation()
+            informationID.Set(informationKeyID,str(i+1))
+            lesionActor.GetProperty().SetInformation(informationID)
+            lesionActors.append(lesionActor)
+
+    return lesionActors
