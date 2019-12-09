@@ -160,6 +160,7 @@ class Ui(Qt.QMainWindow):
 
         self.informationKey = vtk.vtkInformationStringKey.MakeKey("ID", "vtkActor")
         self.informationUniqueKey = vtk.vtkInformationStringKey.MakeKey("type", "vtkActor")
+        #self.actorInformationKey = vtk.vtkInformationStringVectorKey.MakeKey("actorInformation", "vtkActor")
 
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
@@ -629,12 +630,20 @@ class Ui(Qt.QMainWindow):
                 if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                     if actorItem.GetProperty().GetInformation().Get(self.informationKey) in item.text():
                         self.ren.RemoveActor(actorItem)
+                    continue
+                if(actorItem.GetProperty().GetInformation().Get(self.informationUniqueKey) != None):
+                    if (actorItem.GetProperty().GetInformation().Get(self.informationUniqueKey).isdigit() and "lesions" in item.text()):
+                        self.ren.RemoveActor(actorItem)
             self.frame.setLayout(self.vl)
             self.iren.Render()
         else:
             for actorItem in self.actors:
                 if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                     if actorItem.GetProperty().GetInformation().Get(self.informationKey) in item.text():
+                        self.ren.AddActor(actorItem)
+                    continue
+                if(actorItem.GetProperty().GetInformation().Get(self.informationUniqueKey) != None):
+                    if (actorItem.GetProperty().GetInformation().Get(self.informationUniqueKey).isdigit() and "lesions" in item.text()):
                         self.ren.AddActor(actorItem)
             self.frame.setLayout(self.vl)
             self.iren.Render()
