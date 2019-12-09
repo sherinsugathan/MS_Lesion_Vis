@@ -73,3 +73,14 @@ def visMapping(selection):
     return VisType.LESION_CLASS_VIEW
   elif(selection=="Lesion Surface Mapping"):
     return VisType.SURFACE_MAPPING
+
+
+class LesionFilterParamSettings:
+  def __init__(self, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness):
+    self.lesionNumberOfPixels = lesionNumberOfPixels
+    self.lesionElongation = lesionElongation
+    self.lesionPerimeter = lesionPerimeter
+    self.lesionSphericalRadius = lesionSphericalRadius
+    self.lesionSphericalPerimeter = lesionSphericalPerimeter
+    self.lesionFlatness = lesionFlatness
+    self.lesionRoundness = lesionRoundness 

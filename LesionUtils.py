@@ -226,17 +226,17 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.centerOfMass = centerOfMassFilter.GetCenter()
             if lesionID!=None:
                 self.overlayDataMain["Lesion ID"] = str(lesionID)
+                self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+                #self.overlayDataMain["Selection Type"] = str(itemType)
+                self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
+                self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
+                self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
+                self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
+                self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
+                self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
+                self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
             else:
                 self.overlayDataMain["Lesion ID"] = "NA"
-            self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
-            #self.overlayDataMain["Selection Type"] = str(itemType)
-            self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
-            self.overlayDataMain["Elongation"] = self.lesionElongation[int(lesionID)-1]
-            self.overlayDataMain["Lesion Perimeter"] = self.lesionPerimeter[int(lesionID)-1]
-            self.overlayDataMain["Lesion Spherical Radius"] = self.lesionSphericalRadius[int(lesionID)-1]
-            self.overlayDataMain["Lesion Spherical Perimeter"] = self.lesionSphericalPerimeter[int(lesionID)-1]
-            self.overlayDataMain["Lesion Flatness"] = self.lesionFlatness[int(lesionID)-1]
-            self.overlayDataMain["Lesion Roundness"] = self.lesionRoundness[int(lesionID)-1]
 
             updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
             self.iren.Render()
@@ -471,3 +471,38 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
             lesionActors.append(lesionActor)
 
     return lesionActors
+
+
+'''
+##########################################################################
+    Get lesion IDs that are falling below or equal to a specific threshold value
+    Returns: Lesion actor indices.
+##########################################################################
+'''
+def getThresholdLesionIndices(sliderValue, parameterArray, NewMax, NewMin):
+    OldMin = 1
+    OldMax = 1000
+    OldValue = sliderValue
+    OldRange = 999
+    thresholdValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+    removeIndices = []
+    for index in range(1, len(parameterArray)+1):
+        if (parameterArray[index-1] > thresholdValue):
+            removeIndices.append(index)
+    return removeIndices
+
+'''
+##########################################################################
+    Refresh lesion display based on params.
+    Returns: Lesion actor indices.
+##########################################################################
+'''
+def filterLesionsAndRender(removeIndices, actorList, informationKeyID, renderer):
+    removeIndicesString = [str(i) for i in removeIndices] 
+    for actor in actorList:
+        if(actor.GetProperty().GetInformation().Get(informationKeyID)!=None): # Check if this is a lesion.
+            if(actor.GetProperty().GetInformation().Get(informationKeyID) in removeIndicesString):
+                renderer.RemoveActor(actor)
+            else:
+                renderer.AddActor(actor)
+        

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1130</width>
-    <height>890</height>
+    <height>924</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,17 +48,51 @@ border-style: solid;</string>
        <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="5" column="1">
-        <widget class="QLabel" name="label_2">
+       <item row="18" column="1">
+        <widget class="QComboBox" name="comboBox_LesionFilter">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(67, 99, 56);
+color: rgb(36, 255, 25);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Select Patient</string>
+          <string>Structural Data</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="24" column="1">
+       <item row="26" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>50</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="28" column="1">
         <widget class="QLabel" name="imageLabel">
          <property name="minimumSize">
           <size>
@@ -80,67 +114,58 @@ border-style: solid;</string>
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
-        <widget class="Line" name="line">
-         <property name="autoFillBackground">
-          <bool>false</bool>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="lineEdit_DatasetFolder">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
          </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+border-color: rgb(67, 99, 56);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="1">
+        <widget class="QSlider" name="horizontalSliderLesionFilter">
+         <property name="styleSheet">
+          <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: #393939;
+    /*margin: 0 12px;*/
+}</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="label_7">
+       <item row="24" column="1">
+        <widget class="QCheckBox" name="checkBox_DepthPeeling">
          <property name="text">
-          <string>Select Visualization</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QPushButton" name="pushButton_LoadData">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_LoadData
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_LoadData {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_LoadData
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(67, 99, 56);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Render Surface Data</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Set Patient Folder</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <string>Enable Depth Peeling</string>
          </property>
         </widget>
        </item>
@@ -172,100 +197,45 @@ border-style: solid;
          </property>
         </widget>
        </item>
-       <item row="22" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>50</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="comboBox_AvailableSubjects">
+       <item row="1" column="1">
+        <widget class="QLabel" name="logoLabel">
          <property name="minimumSize">
           <size>
-           <width>0</width>
-           <height>30</height>
+           <width>220</width>
+           <height>60</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Google Sans</family>
+           <pointsize>16</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
+          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
+         </property>
+         <property name="text">
+          <string>MS EXPERIMENTOR</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
-       <item row="19" column="1">
+       <item row="23" column="1">
         <widget class="QCheckBox" name="checkBox_persistSettings">
          <property name="text">
           <string>Persist settings for all subjects</string>
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
-        <widget class="QListView" name="listView_Structural">
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_DatasetFolder">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-border-color: rgb(67, 99, 56);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="1">
-        <widget class="QCheckBox" name="checkBox_DepthPeeling">
+       <item row="12" column="1">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Enable Depth Peeling</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QListView" name="listView">
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="1">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Structural Data</string>
+          <string>Surface Data</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -300,115 +270,17 @@ border-style: solid;
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QComboBox" name="comboBox_VisType">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>Select type of visualization.</string>
-         </property>
-         <property name="whatsThis">
-          <string/>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-         <property name="inputMethodHints">
-          <set>Qt::ImhNone</set>
-         </property>
-         <property name="editable">
-          <bool>false</bool>
-         </property>
-         <property name="currentText">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
-         <property name="minimumSize">
-          <size>
-           <width>80</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_UnselectAllSubjects
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(67, 99, 56);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
+       <item row="7" column="1">
+        <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Unselect All</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Surface Data</string>
+          <string>Select Visualization</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="logoLabel">
-         <property name="minimumSize">
-          <size>
-           <width>220</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Google Sans</family>
-           <pointsize>16</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
-         </property>
-         <property name="text">
-          <string>MS EXPERIMENTOR</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
+       <item row="21" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <property name="topMargin">
           <number>0</number>
@@ -448,7 +320,66 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="21" column="1">
+       <item row="2" column="1">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Set Patient Folder</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="pushButton_LoadData">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_LoadData
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_LoadData {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_LoadData
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(67, 99, 56);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Render Surface Data</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <widget class="QListView" name="listView_Structural">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(67, 99, 56);
+color: rgb(36, 255, 25);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="25" column="1">
         <widget class="QPushButton" name="pushButton_Screenshot">
          <property name="styleSheet">
           <string notr="true">QPushButton:hover#pushButton_Screenshot
@@ -475,6 +406,173 @@ border-style: solid;
           <string>Render Capture</string>
          </property>
         </widget>
+       </item>
+       <item row="13" column="1">
+        <widget class="QListView" name="listView">
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(67, 99, 56);
+color: rgb(36, 255, 25);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QComboBox" name="comboBox_AvailableSubjects">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(67, 99, 56);
+color: rgb(36, 255, 25);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="27" column="1">
+        <widget class="Line" name="line">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QComboBox" name="comboBox_VisType">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>Select type of visualization.</string>
+         </property>
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(67, 99, 56);
+color: rgb(36, 255, 25);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+         <property name="inputMethodHints">
+          <set>Qt::ImhNone</set>
+         </property>
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="currentText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Filter Lesions</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Select Patient</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_UnselectAllSubjects
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(67, 99, 56);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Unselect All</string>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMin">
+           <property name="text">
+            <string>#</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterCurrent">
+           <property name="text">
+            <string>#</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMax">
+           <property name="text">
+            <string>#</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
