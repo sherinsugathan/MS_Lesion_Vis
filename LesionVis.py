@@ -65,6 +65,7 @@ class Ui(Qt.QMainWindow):
         self.comboBox_VisType.addItem("Lesion Difference With NAWM")
         self.comboBox_VisType.addItem("Lesion Classification View")
         self.comboBox_VisType.addItem("Lesion Surface Mapping")
+        self.comboBox_VisType.addItem("Study Lesion Impact")
         self.comboBox_LesionFilter.addItem("None")
         self.comboBox_LesionFilter.addItem("Voxel Count")
         self.comboBox_LesionFilter.addItem("Elongation")
@@ -461,9 +462,13 @@ class Ui(Qt.QMainWindow):
         if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
             fiberActor = LesionUtils.computeStreamlines(subjectFolder)
             information = vtk.vtkInformation()
-            information.Set(self.informationKey,"fiber")
+            information.Set(self.informationKey,"structural tracts")
             fiberActor.GetProperty().SetInformation(information)
             self.actors.append(fiberActor)
+            item = QtGui.QStandardItem("structural tracts")
+            item.setCheckable(True)
+            item.setCheckState(2)      
+            self.modelListBoxSurfaces.appendRow(item)
         for a in self.actors:
             self.ren.AddActor(a)
             #print(a.GetMapper().GetInput())
