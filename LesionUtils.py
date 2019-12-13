@@ -166,7 +166,7 @@ def captureScreenshot(renderWindow):
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None, informationKeyID = None):
+    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
         self.LastPickedActor = None
@@ -176,8 +176,9 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.textActorLesionStatistics = textActorLesionStatistics
         self.informationKey = informationKey
         self.informationKeyID = informationKeyID
+        self.lesionSeededFiberTracts = lesionSeededFiberTracts
 
-    def addLesionData(self, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness):
+    def addLesionData(self, subjectFolder, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness, lesionSeededFiberTracts):
         self.lesionCentroids = lesionCentroids
         self.lesionNumberOfPixels = lesionNumberOfPixels
         self.lesionElongation = lesionElongation
@@ -186,6 +187,8 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionSphericalPerimeter = lesionSphericalPerimeter
         self.lesionFlatness = lesionFlatness
         self.lesionRoundness = lesionRoundness
+        self.subjectFolder = subjectFolder
+        self.lesionSeededFiberTracts = lesionSeededFiberTracts
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -235,6 +238,18 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                 self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
                 self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
                 self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
+                if (self.lesionSeededFiberTracts == True):
+                    actorCollection = self.GetDefaultRenderer().GetActors()
+                    for actor in actorCollection:
+                        actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
+                        if(actorName=="structural tracts"):
+                            self.GetDefaultRenderer().RemoveActor(actor)
+
+                    streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1])
+                    information = vtk.vtkInformation()
+                    information.Set(self.informationKey,"structural tracts")
+                    streamActor.GetProperty().SetInformation(information)
+                    self.GetDefaultRenderer().AddActor(streamActor)
             else:
                 self.overlayDataMain["Lesion ID"] = "NA"
 
@@ -272,7 +287,7 @@ def computeLesionProperties(subjectFolder):
     Returns: Nothing
 ##########################################################################
 '''
-def computeStreamlines(subjectFolder):
+def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None):
     temperatureDataFileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
     niftiReaderTemperature = vtk.vtkNIFTIImageReader()
     niftiReaderTemperature.SetFileName(temperatureDataFileName)
@@ -308,17 +323,31 @@ def computeStreamlines(subjectFolder):
     
     # Create point source and actor
     psource = vtk.vtkPointSource()
-    psource.SetNumberOfPoints(9500)
-    psource.SetCenter(127,80,150)
-    psource.SetRadius(80)
-    pointSourceMapper = vtk.vtkPolyDataMapper()
-    pointSourceMapper.SetInputConnection(psource.GetOutputPort())
-    pointSourceActor = vtk.vtkActor()
-    pointSourceActor.SetMapper(pointSourceMapper)
+    if(seedCenter!=None):
+        psource.SetNumberOfPoints(1500)
+        psource.SetCenter(seedCenter)
+        psource.SetRadius(seedRadius)
+    else:
+        psource.SetNumberOfPoints(9500)
+        psource.SetCenter(127,80,150)
+        psource.SetRadius(80)
+    #pointSourceMapper = vtk.vtkPolyDataMapper()
+    #pointSourceMapper.SetInputConnection(psource.GetOutputPort())
+    #pointSourceActor = vtk.vtkActor()
+    #pointSourceActor.SetMapper(pointSourceMapper)
+
+    if(seedCenter!=None):
+        transformFilter = vtk.vtkTransformFilter()
+        transformFilter.SetInputConnection(cellDataToPointData.GetOutputPort())
+        transformFilter.SetTransform(transformGradient)
+        transformFilter.Update()
 
     # Perform stream tracing
     streamers = vtk.vtkStreamTracer()
-    streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
+    if(seedCenter!=None):
+        streamers.SetInputConnection(transformFilter.GetOutputPort())
+    else:
+        streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
     streamers.SetIntegrationDirectionToBoth()
     streamers.SetSourceConnection(psource.GetOutputPort())
     streamers.SetMaximumPropagation(100.0)
@@ -338,7 +367,10 @@ def computeStreamlines(subjectFolder):
     streamerMapper.SetLookupTable(lut)
     streamerActor = vtk.vtkActor()
     streamerActor.SetMapper(streamerMapper)
-    streamerActor.SetUserTransform(transformGradient)
+    if(seedCenter!=None):
+        pass
+    else:
+        streamerActor.SetUserTransform(transformGradient)
 
     return streamerActor
 

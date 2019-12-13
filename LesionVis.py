@@ -57,6 +57,7 @@ class Ui(Qt.QMainWindow):
         self.dial.valueChanged.connect(self.on_DialMoved)
         self.pushButton_UnselectAllSubjects.clicked.connect(self.on_click_UnselectAllSubjects) # Attaching button click Handlers
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
+        self.checkBox_PerLesion.stateChanged.connect(self.perLesion_state_changed) # Attaching handler for per lesion.
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
         self.comboBox_VisType.addItem("Default View")
@@ -162,6 +163,7 @@ class Ui(Qt.QMainWindow):
         self.informationKey = vtk.vtkInformationStringKey.MakeKey("ID", "vtkActor")
         self.informationUniqueKey = vtk.vtkInformationStringKey.MakeKey("type", "vtkActor")
         #self.actorInformationKey = vtk.vtkInformationStringVectorKey.MakeKey("actorInformation", "vtkActor")
+        self.lesionSeededFiberTracts = False
 
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
@@ -183,7 +185,7 @@ class Ui(Qt.QMainWindow):
         self.textActorLesionStatistics.GetTextProperty().SetFontSize(16)
         self.textActorLesionStatistics.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
 
-        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.informationKey, self.informationUniqueKey)
+        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts)
         self.style.SetDefaultRenderer(self.ren)
         self.iren.SetInteractorStyle(self.style)
 
@@ -342,7 +344,7 @@ class Ui(Qt.QMainWindow):
                 # assign actor to the renderer
                 #self.actors.append(lesionSphereactor)
 
-        self.style.addLesionData(self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness)
+        self.style.addLesionData(subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
         # populate the user interface with the structure values
         #self.populateStructureInterface(structureInfo)
@@ -834,6 +836,14 @@ class Ui(Qt.QMainWindow):
         self.overlayDataMain["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
         self.iren.Render()
+
+    # Handler for depth peeling checkbox
+    @pyqtSlot()
+    def perLesion_state_changed(self):
+        if self.checkBox_PerLesion.isChecked():
+            self.lesionSeededFiberTracts = True
+        else:
+            self.lesionSeededFiberTracts = False
 
     # Handler for lesion filtering selected text changed.
     @pyqtSlot()
