@@ -209,15 +209,6 @@ class Ui(Qt.QMainWindow):
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
         self.overlayDataMain["OpenGL Renderer"] = openglRendererInUse
 
-    # # add entries to the structure table in the interface
-    # def populateStructureInterface(self, structureInfo ):
-    #     # clear previous entries
-
-    #     for lesion in structureInfo:
-    #         # add row in table
-    #         pass
-
-
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, fileName, isNiftyReadRequired=True):
         if(isNiftyReadRequired==True):
@@ -332,18 +323,6 @@ class Ui(Qt.QMainWindow):
                 self.lesionFlatness.append(p["Flatness"])
                 self.lesionRoundness.append(p["Roundness"])
 
-                # lesionSphere = vtk.vtkSphereSource()
-                # lesionSphere.SetCenter(transformedCenter[0],transformedCenter[1],transformedCenter[2])
-                # lesionSphere.SetRadius(5)
-                # lesionSphereMapper = vtk.vtkPolyDataMapper()
-                # lesionSphereMapper.SetInputConnection(lesionSphere.GetOutputPort())
-                # lesionSphereactor = vtk.vtkActor()
-                # lesionSphereactor.SetMapper(lesionSphereMapper)
-                # lesionSphereactor.GetProperty().SetColor(1.0, 0.0, 0.0)
-
-                # assign actor to the renderer
-                #self.actors.append(lesionSphereactor)
-
         self.style.addLesionData(subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
         # populate the user interface with the structure values
@@ -367,38 +346,9 @@ class Ui(Qt.QMainWindow):
                 arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
                 transform.SetMatrix(arrayList)
 
-
-                # isLesionTransformNeeded = False
-                # if fileNames[i].endswith("lesions.obj"): # Check if surface is a lesion.
-                #     if(os.path.isfile(subjectFolder + "\\meta\\mrmlMask.txt") and os.path.isfile(subjectFolder + "\\meta\\crasMask.txt")):
-                #         mrmlDataFileName = open ( subjectFolder + "\\meta\\mrmlMask.txt" , 'r')
-                #     else:
-                #         mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
-
-                #     arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
-                #     transform.SetMatrix(arrayList)
-                #     isLesionTransformNeeded = True
-
-                #     # Probe the lesion surface with the volume data.
-                #     mapper, probeFilter = LesionUtils.probeSurfaceWithVolume(subjectFolder)
-
-                #     # Run connectivity filter to extract lesions into separate polydata objects.
-                #     lesionComponentMappers, self.numberOfLesions = LesionUtils.runLesionConnectivityAnalysis(probeFilter)
-
-                #     # Update overlay text and add it to the renderer
-                #     self.overlayDataMain["Lesion Load"] = self.numberOfLesions
-                #     self.overlayDataMain["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
-                #     LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
-                #     self.ren.AddActor2D(self.textActorLesionStatistics)
-                    
-                #     mrmlDataFileName.close()
-
                 actor = vtk.vtkActor()
                 actor.SetMapper(mapper)
-                # if(isLesionTransformNeeded == True): # Apply special transform to lesions.
-                #     print("Special transform applied")
-                #     # Non need to apply transform here because it is already applied in the mapper using LesionUtils.
-                # else: # This is not a lesion. Do not disturb with a transformation.
+
                 transform.Identity()
                 actor.SetUserTransform(transform)
 
@@ -434,17 +384,6 @@ class Ui(Qt.QMainWindow):
                     actor.GetProperty().SetInformation(information)
                     actor.GetProperty().SetColor(1, 0.964, 0.878)
                     self.actors.append(actor)
-                #else:
-                    # lesionIndex = 1
-                    # for mapperIndex in range(len(lesionComponentMappers)):
-                    #     information = vtk.vtkInformation()
-                    #     #information.Set(self.informationKey,"lesions" + str(lesionIndex))
-                    #     information.Set(self.informationKey,"lesions")
-                    #     lesionActor = vtk.vtkActor()
-                    #     lesionActor.SetMapper(lesionComponentMappers[mapperIndex])
-                    #     lesionActor.GetProperty().SetInformation(information)
-                    #     self.actors.append(lesionActor)
-                    #     lesionIndex = lesionIndex + 1
    
                 # Also add to the listBox showing loaded surfaces.
                 item = QtGui.QStandardItem(os.path.basename(fileNames[i]))
@@ -471,52 +410,10 @@ class Ui(Qt.QMainWindow):
             item.setCheckable(True)
             item.setCheckState(2)      
             self.modelListBoxSurfaces.appendRow(item)
+
+        # Add all actors to renderer.
         for a in self.actors:
             self.ren.AddActor(a)
-            #print(a.GetMapper().GetInput())
-
-        # Relate JSON with surfaces.
-
-        # selectEnclosedPoints = vtk.vtkSelectEnclosedPoints()
-        
-        # count = 0
-        # print("Number of lesion centroids:" + str(len(self.lesionCentroids)))
-
-
-        # for centroidIndex in range(len(self.lesionCentroids)):
-        #     point = vtk.vtkPoints()
-        #     point.InsertNextPoint(self.lesionCentroids[centroidIndex])
-        #     ug = vtk.vtkUnstructuredGrid()
-        #     ug.SetPoints(point)
-        #     sphereSource = vtk.vtkSphereSource()
-        #     sphereSource.SetCenter(self.lesionCentroids[centroidIndex])
-        #     sphereSource.SetRadius(1)
-        #     sphereSource.SetPhiResolution(3)
-        #     sphereSource.SetThetaResolution(3)
-        #     sphereSource.Update()
-        #     for a in self.actors:
-        #         if(a.GetProperty().GetInformation().Get(self.informationKey) != None):
-        #             if a.GetProperty().GetInformation().Get(self.informationKey) in "lesions":
-        #                 selectEnclosedPoints.SetInputData(ug)
-        #                 selectEnclosedPoints.SetSurfaceData(a.GetMapper().GetInput())
-        #                 selectEnclosedPoints.SetTolerance(0.001)
-        #                 selectEnclosedPoints.Update()           
-        #                 #intersectionPolyDataFilter = vtk.vtkIntersectionPolyDataFilter()
-        #                 #intersectionPolyDataFilter.AddInputDataObject(0,sphereSource.GetOutput())
-        #                 #intersectionPolyDataFilter.AddInputDataObject(1,a.GetMapper().GetInput())   
-        #                 #intersectionPolyDataFilter.SetInputConnection(0,sphereSource.GetOutputPort())
-        #                 #intersectionPolyData Filter.SetInputConnection(1,a.GetMapper().GetOutputPort())
-        #                 #intersectionPolyDataFilter.Update()
-        #                 #if(intersectionPolyDataFilter.GetOutput()!=None):
-        #                  #   print("Valid output detected")
-        #                 #print(selectEnclosedPoints.IsInside(0))
-        #                 print(selectEnclosedPoints.IsInside(0))
-        #                 if(selectEnclosedPoints.IsInside(0)==1):
-        #                     count= count+1
-        #                 selectEnclosedPoints.Complete()
-        #     print("Pixel count is " + str(self.numberOfPixels[centroidIndex]))
-        #     print("loop done")
-        # print("detect count is:"+str(count))
 
         self.ren.ResetCamera()
         self.iren.Render()
@@ -714,7 +611,6 @@ class Ui(Qt.QMainWindow):
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
     def on_sliderChangedLesionFilter(self):
-        #self.label_lesionFilterCurrent.setText(str("{0:.2f}".format(self.horizontalSliderLesionFilter.value())))
         sliderValue = self.horizontalSliderLesionFilter.value()
         if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
             NewMax = max(self.lesionNumberOfPixels)
@@ -852,7 +748,6 @@ class Ui(Qt.QMainWindow):
             self.label_lesionFilterMin.setText(str(min(self.lesionNumberOfPixels)))
             self.label_lesionFilterMax.setText(str(max(self.lesionNumberOfPixels)))
             self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionNumberOfPixels)
-
         elif (str(self.comboBox_LesionFilter.currentText())=="Elongation"):
             self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionElongation))))
             self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionElongation))))
