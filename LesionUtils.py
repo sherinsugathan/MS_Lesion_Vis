@@ -28,68 +28,6 @@ def getListOfFiles(dirName):
 
 '''
 ##########################################################################
-    Perform probe filtering after applying necessary transformations.
-    Returns: 1. A mapper object representing the probe filter output.
-             2. A probeFilter object containing the volume colored lesion vertices.
-##########################################################################
-'''
-def probeSurfaceWithVolume(subjectFolder):
-    if(os.path.isfile(subjectFolder + "\\meta\\mrmlMask.txt") and os.path.isfile(subjectFolder + "\\meta\\mrmlMask.txt")):
-        mrmlDataFileLesion = open ( subjectFolder + "\\meta\\mrmlMask.txt" , 'r') # Corrected transformation data for lesion. Used when there is mismatch with volume nifti.
-    else:
-        mrmlDataFileLesion = open ( subjectFolder + "\\meta\\mrml.txt" , 'r') # Normal transformation data for lesion. Used when there is a match with nifti.
-
-    mrmlDataFileVolume = open ( subjectFolder + "\\meta\\mrml.txt" , 'r') # Transformation for volume data
-
-    volumeTransform = vtk.vtkTransform()
-    surfaceTransform = vtk.vtkTransform()
-    arrayListLesion = list(np.asfarray(np.array(mrmlDataFileLesion.readline().split(",")),float))
-    arrayListVolume = list(np.asfarray(np.array(mrmlDataFileVolume.readline().split(",")),float))
-
-    surfaceTransform.SetMatrix(arrayListLesion)
-    volumeTransform.SetMatrix(arrayListVolume)
-    surfaceTransform.Update()
-    volumeTransform.Update()
-
-    #Load volume data.  
-    niftiReader = vtk.vtkNIFTIImageReader()
-    niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
-    niftiReader.Update()
-
-    # Load Lesion Data
-    lesionReader = vtk.vtkOBJReader()
-    lesionReader.SetFileName(subjectFolder + "\\surfaces\\lesions.obj")
-    lesionReader.Update()
-
-    # Set transformation for volume data.
-    transformVolume = vtk.vtkTransformFilter()
-    transformVolume.SetInputData(niftiReader.GetOutput())
-    transformVolume.SetTransform(volumeTransform)
-    transformVolume.Update()
-
-    # Set transformation for surface data.
-    transformLesion = vtk.vtkTransformPolyDataFilter()
-    transformLesion.SetInputData(lesionReader.GetOutput())
-    transformLesion.SetTransform(surfaceTransform)
-    transformLesion.Update()
-
-    # Apply probeFilter
-    probeFilter = vtk.vtkProbeFilter()
-    probeFilter.SetSourceConnection(transformVolume.GetOutputPort())
-    probeFilter.SetInputData(transformLesion.GetOutput())
-    probeFilter.Update()
-
-    lesionMapper = vtk.vtkOpenGLPolyDataMapper()
-    lesionMapper.SetInputConnection(probeFilter.GetOutputPort())
-    lookupTable = vtk.vtkLookupTable()
-    lookupTable.SetNumberOfTableValues(256)
-    lookupTable.Build()
-    lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
-                
-    return lesionMapper, probeFilter
-
-'''
-##########################################################################
     Perform connectivity filter analysis on the algorithm output received from probeFilter.
     Returns: A list of dijoint lesion mappers and the total number of connected components.
 ##########################################################################
@@ -418,6 +356,11 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     niftiReaderLesionMask.SetFileName(subjectFolder + "\\lesionMask\\ConnectedComponents.nii")
     niftiReaderLesionMask.Update()
 
+    # Read QForm matrix from mask data.
+    QFormMatrixMask = niftiReaderLesionMask.GetQFormMatrix()
+    qFormListMask = [0] * 16 #the matrix is 4x4
+    QFormMatrixMask.DeepCopy(qFormListMask, QFormMatrixMask)
+
     lesionActors = []
     surface = vtk.vtkDiscreteMarchingCubes()
     surface.SetInputConnection(niftiReaderLesionMask.GetOutputPort())
@@ -427,11 +370,9 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     component = vtk.vtkPolyData()
     component.DeepCopy(surface.GetOutput())
 
-    mrmlDataFileName = open(subjectFolder + "\\meta\\mrmlMask.txt" , 'r')
     transform = vtk.vtkTransform()
     transform.Identity()
-    arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
-    transform.SetMatrix(arrayList)
+    transform.SetMatrix(qFormListMask)
     transform.Update()
     transformFilter = vtk.vtkTransformFilter()
     transformFilter.SetInputConnection(surface.GetOutputPort())
@@ -443,10 +384,12 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
         niftiReader = vtk.vtkNIFTIImageReader()
         niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
         niftiReader.Update()
-        mrmlDataFileVolume = open ( subjectFolder + "\\meta\\mrml.txt" , 'r') # Transformation for volume data
-        arrayListVolume = list(np.asfarray(np.array(mrmlDataFileVolume.readline().split(",")),float))
+        QFormMatrixT1 = niftiReader.GetQFormMatrix() # Read QForm matrix from T1 data.
+        qFormListT1 = [0] * 16 #the matrix is 4x4
+        QFormMatrixT1.DeepCopy(qFormListT1, QFormMatrixT1)
+
         volumeTransform = vtk.vtkTransform()
-        volumeTransform.SetMatrix(arrayListVolume)
+        volumeTransform.SetMatrix(qFormListT1)
         volumeTransform.Update()
         # Set transformation for volume data.
         transformVolume = vtk.vtkTransformFilter()
