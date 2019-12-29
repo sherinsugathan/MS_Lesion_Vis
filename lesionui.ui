@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1130</width>
-    <height>1009</height>
+    <height>1031</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,8 +57,8 @@ border-style: solid;</string>
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -75,8 +75,8 @@ border-radius: 4px;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -140,8 +140,8 @@ border-radius: 4px;
        <item row="13" column="1">
         <widget class="QListView" name="listView">
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -182,8 +182,8 @@ border-radius: 4px;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -206,7 +206,7 @@ color: rgb(161, 226, 158);
 border-style: outset;
 border-width: 2px;
 border-radius: 4px;
-border-color: rgb(67, 99, 56);
+border-color: rgb(29, 77, 43);
 font: bold 11px;
 padding: 6px;
 color: rgb(142, 255, 159);
@@ -231,6 +231,15 @@ border-style: solid;
        </item>
        <item row="9" column="1">
         <widget class="QPushButton" name="pushButton_LoadData">
+         <property name="font">
+          <font>
+           <family>Google Sans</family>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="styleSheet">
           <string notr="true">QPushButton:hover#pushButton_LoadData
 {
@@ -244,7 +253,7 @@ color: rgb(161, 226, 158);
 border-style: outset;
 border-width: 2px;
 border-radius: 4px;
-border-color: rgb(67, 99, 56);
+border-color: rgb(29, 77, 43);
 font: bold 11px;
 padding: 6px;
 color: rgb(142, 255, 159);
@@ -294,8 +303,8 @@ border-style: solid;
           <string/>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(67, 99, 56);
-color: rgb(36, 255, 25);
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -343,7 +352,7 @@ color: rgb(161, 226, 158);
 border-style: outset;
 border-width: 2px;
 border-radius: 4px;
-border-color: rgb(67, 99, 56);
+border-color: rgb(29, 77, 43);
 font: bold 11px;
 padding: 6px;
 color: rgb(142, 255, 159);
@@ -416,7 +425,7 @@ border-style: solid;
          </property>
          <property name="styleSheet">
           <string notr="true">color: rgb(149, 189, 149);
-border-color: rgb(67, 99, 56);
+border-color: rgb(20, 52, 30);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -505,7 +514,7 @@ color: rgb(161, 226, 158);
 border-style: outset;
 border-width: 2px;
 border-radius: 4px;
-border-color: rgb(67, 99, 56);
+border-color: rgb(29, 77, 43);
 font: bold 11px;
 padding: 6px;
 color: rgb(142, 255, 159);
@@ -561,7 +570,7 @@ color: rgb(161, 226, 158);
 border-style: outset;
 border-width: 2px;
 border-radius: 4px;
-border-color: rgb(67, 99, 56);
+border-color: rgb(29, 77, 43);
 font: bold 11px;
 padding: 6px;
 color: rgb(142, 255, 159);
@@ -625,7 +634,7 @@ border-style: solid;
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(67, 99, 56);
+border-color: rgb(20, 52, 30);
 border-style: solid;
 border-width: 2px;
 border-radius: 10px;</string>
@@ -654,7 +663,7 @@ border-radius: 10px;</string>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(67, 99, 56);
+border-color: rgb(20, 52, 30);
 border-style: solid;
 border-width: 2px;
 border-radius: 10px;</string>
@@ -729,7 +738,7 @@ border-radius: 10px;</string>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(67, 99, 56);
+border-color: rgb(20, 52, 30);
 border-style: solid;
 border-width: 2px;
 border-radius: 10px;</string>
@@ -748,7 +757,7 @@ border-radius: 10px;</string>
      <widget class="QFrame" name="frame">
       <property name="styleSheet">
        <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(67, 99, 56);
+border-color: rgb(20, 52, 30);
 border-style: solid;
 border-width: 2px;
 border-radius: 10px;</string>
@@ -769,7 +778,7 @@ border-radius: 10px;</string>
      <x>0</x>
      <y>0</y>
      <width>1130</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
