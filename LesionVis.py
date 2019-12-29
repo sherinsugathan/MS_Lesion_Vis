@@ -36,13 +36,13 @@ class Ui(Qt.QMainWindow):
         super(Ui, self).__init__()
         uic.loadUi("lesionui.ui", self)
         logging.info('UI file loaded successfully.')
+        self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
+        self.volumeDataLoaded = False # Flag to indicate that volume data is initialized and loaded.
         #self.showMaximized()
         self.initUI()
         self.clear()
         logging.info('UI initialized successfully.')
         self.initVTK()
-        self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
-        self.volumeDataLoaded = False # Flag to indicate that volume data is initialized and loaded.
         self.showMaximized()
         logging.info('VTK initialized successfully.')
 
@@ -155,6 +155,7 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
+        self.resliceImageViewerMPRA.GetImageActor().RotateZ(180)
         #self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
         #self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
         #self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
@@ -611,83 +612,85 @@ class Ui(Qt.QMainWindow):
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
     def on_sliderChangedLesionFilter(self):
-        sliderValue = self.horizontalSliderLesionFilter.value()
-        if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
-            NewMax = max(self.lesionNumberOfPixels)
-            NewMin = min(self.lesionNumberOfPixels)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionNumberOfPixels = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionNumberOfPixels, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Elongation"):
-            NewMax = max(self.lesionElongation)
-            NewMin = min(self.lesionElongation)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionElongation = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionElongation, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Perimeter"):
-            NewMax = max(self.lesionPerimeter)
-            NewMin = min(self.lesionPerimeter)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionPerimeter = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionPerimeter, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Radius"):
-            NewMax = max(self.lesionSphericalRadius)
-            NewMin = min(self.lesionSphericalRadius)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionSphericalRadius = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionSphericalRadius, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Perimeter"):
-            NewMax = max(self.lesionSphericalPerimeter)
-            NewMin = min(self.lesionSphericalPerimeter)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionSphericalPerimeter = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionSphericalPerimeter, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Flatness"):
-            NewMax = max(self.lesionFlatness)
-            NewMin = min(self.lesionFlatness)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionFlatness = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionFlatness, NewMax, NewMin)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Roundness"):
-            NewMax = max(self.lesionRoundness)
-            NewMin = min(self.lesionRoundness)
-            NewRange = NewMax - NewMin
-            self.lesionFilterParamSettings.lesionRoundness = sliderValue
-            removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionRoundness, NewMax, NewMin)
-        OldMin = 1
-        OldMax = 1000
-        OldValue = self.horizontalSliderLesionFilter.value()
-        OldRange = 999
-        NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-        self.label_lesionFilterCurrent.setText(str("{0:.2f}".format(NewValue)))
+        if(self.dataFolderInitialized == True):
+            sliderValue = self.horizontalSliderLesionFilter.value()
+            if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
+                NewMax = max(self.lesionNumberOfPixels)
+                NewMin = min(self.lesionNumberOfPixels)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionNumberOfPixels = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionNumberOfPixels, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Elongation"):
+                NewMax = max(self.lesionElongation)
+                NewMin = min(self.lesionElongation)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionElongation = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionElongation, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Perimeter"):
+                NewMax = max(self.lesionPerimeter)
+                NewMin = min(self.lesionPerimeter)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionPerimeter = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionPerimeter, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Radius"):
+                NewMax = max(self.lesionSphericalRadius)
+                NewMin = min(self.lesionSphericalRadius)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionSphericalRadius = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionSphericalRadius, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Perimeter"):
+                NewMax = max(self.lesionSphericalPerimeter)
+                NewMin = min(self.lesionSphericalPerimeter)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionSphericalPerimeter = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionSphericalPerimeter, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Flatness"):
+                NewMax = max(self.lesionFlatness)
+                NewMin = min(self.lesionFlatness)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionFlatness = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionFlatness, NewMax, NewMin)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Roundness"):
+                NewMax = max(self.lesionRoundness)
+                NewMin = min(self.lesionRoundness)
+                NewRange = NewMax - NewMin
+                self.lesionFilterParamSettings.lesionRoundness = sliderValue
+                removeIndices = LesionUtils.getThresholdLesionIndices(sliderValue, self.lesionRoundness, NewMax, NewMin)
+            OldMin = 1
+            OldMax = 1000
+            OldValue = self.horizontalSliderLesionFilter.value()
+            OldRange = 999
+            NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+            self.label_lesionFilterCurrent.setText(str("{0:.2f}".format(NewValue)))
 
-        # Filter lesions.
-        LesionUtils.filterLesionsAndRender(removeIndices, self.actors, self.informationUniqueKey, self.ren)
-        self.iren.Render()
+            # Filter lesions.
+            LesionUtils.filterLesionsAndRender(removeIndices, self.actors, self.informationUniqueKey, self.ren)
+            self.iren.Render()
         
     # Handler for Dial moved.
     @pyqtSlot()
     def on_DialMoved(self):
-        self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
-        for actorItem in self.actors:
-            if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
-                if actorItem.GetProperty().GetInformation().Get(self.informationKey) in self.listView.model().itemFromIndex(self.listView.currentIndex()).text():
-                    actorItem.GetProperty().SetOpacity(self.dial.value()/float(500))
-                    break
-        self.iren.Render()
-        # Update settings.
-        currentIndex = self.listView.currentIndex()
-        if currentIndex.row() > -1:
-            item = self.listView.model().itemFromIndex(currentIndex).text()
-            if item is not None:
-                if item.endswith("lh.pial.obj"):
-                    self.settings.lh_pial_transparency = self.dial.value()/float(500)
-                if item.endswith("rh.pial.obj"):
-                    self.settings.rh_pial_transparency = self.dial.value()/float(500)
-                if item.endswith("lh.white.obj"):
-                    self.settings.lh_white_transparency = self.dial.value()/float(500)
-                if item.endswith("rh.white.obj"):
-                    self.settings.rh_white_transparency = self.dial.value()/float(500)
+        if(self.dataFolderInitialized == True):
+            self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
+            for actorItem in self.actors:
+                if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
+                    if actorItem.GetProperty().GetInformation().Get(self.informationKey) in self.listView.model().itemFromIndex(self.listView.currentIndex()).text():
+                        actorItem.GetProperty().SetOpacity(self.dial.value()/float(500))
+                        break
+            self.iren.Render()
+            # Update settings.
+            currentIndex = self.listView.currentIndex()
+            if currentIndex.row() > -1:
+                item = self.listView.model().itemFromIndex(currentIndex).text()
+                if item is not None:
+                    if item.endswith("lh.pial.obj"):
+                        self.settings.lh_pial_transparency = self.dial.value()/float(500)
+                    if item.endswith("rh.pial.obj"):
+                        self.settings.rh_pial_transparency = self.dial.value()/float(500)
+                    if item.endswith("lh.white.obj"):
+                        self.settings.lh_white_transparency = self.dial.value()/float(500)
+                    if item.endswith("rh.white.obj"):
+                        self.settings.rh_white_transparency = self.dial.value()/float(500)
 
     # Handle when item selection in the surface list is changed.
     @pyqtSlot()
@@ -744,35 +747,36 @@ class Ui(Qt.QMainWindow):
     # Handler for lesion filtering selected text changed.
     @pyqtSlot()
     def on_combobox_changed_LesionFilter(self): 
-        if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
-            self.label_lesionFilterMin.setText(str(min(self.lesionNumberOfPixels)))
-            self.label_lesionFilterMax.setText(str(max(self.lesionNumberOfPixels)))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionNumberOfPixels)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Elongation"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionElongation))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionElongation))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionElongation)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Perimeter"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionPerimeter))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionPerimeter))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionPerimeter)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Radius"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionSphericalRadius))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionSphericalRadius))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionSphericalRadius)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Perimeter"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionSphericalPerimeter))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionSphericalPerimeter))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionSphericalPerimeter)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Flatness"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionFlatness))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionFlatness))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionFlatness)
-        elif (str(self.comboBox_LesionFilter.currentText())=="Roundness"):
-            self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionRoundness))))
-            self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionRoundness))))
-            self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionRoundness)
-        OldRange = 999
+        if(self.dataFolderInitialized ==True):
+            if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
+                self.label_lesionFilterMin.setText(str(min(self.lesionNumberOfPixels)))
+                self.label_lesionFilterMax.setText(str(max(self.lesionNumberOfPixels)))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionNumberOfPixels)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Elongation"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionElongation))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionElongation))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionElongation)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Perimeter"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionPerimeter))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionPerimeter))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionPerimeter)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Radius"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionSphericalRadius))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionSphericalRadius))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionSphericalRadius)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Spherical Perimeter"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionSphericalPerimeter))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionSphericalPerimeter))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionSphericalPerimeter)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Flatness"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionFlatness))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionFlatness))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionFlatness)
+            elif (str(self.comboBox_LesionFilter.currentText())=="Roundness"):
+                self.label_lesionFilterMin.setText(str("{0:.2f}".format(min(self.lesionRoundness))))
+                self.label_lesionFilterMax.setText(str("{0:.2f}".format(max(self.lesionRoundness))))
+                self.horizontalSliderLesionFilter.setValue(self.lesionFilterParamSettings.lesionRoundness)
+            OldRange = 999
         
     def closeEvent(self, event):
         print("Exiting program...")
