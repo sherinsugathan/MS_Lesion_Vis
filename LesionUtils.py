@@ -382,7 +382,7 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     # Apply probe filtering also.
     if(probeLesions==True):
         niftiReader = vtk.vtkNIFTIImageReader()
-        niftiReader.SetFileName(subjectFolder + "\\structural\\T1.nii")
+        niftiReader.SetFileName(subjectFolder + "\\structural\\T1IntensityDifference.nii")
         niftiReader.Update()
         QFormMatrixT1 = niftiReader.GetQFormMatrix() # Read QForm matrix from T1 data.
         qFormListT1 = [0] * 16 #the matrix is 4x4
