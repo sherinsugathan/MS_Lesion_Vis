@@ -329,8 +329,8 @@ class Ui(Qt.QMainWindow):
         # populate the user interface with the structure values
         #self.populateStructureInterface(structureInfo)
 
-        # Compute lesion properties
-        connectedComponentImage, connectedComponentFilter = LesionUtils.computeLesionProperties(subjectFolder)
+        # Compute lesion properties (Deprecated. TODO - Remove Safely)
+        # connectedComponentImage, connectedComponentFilter = LesionUtils.computeLesionProperties(subjectFolder)
         for i in range(len(fileNames)):
 
             # Check if files are wavefront OBJ and in the whitelist according to settings.
