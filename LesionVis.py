@@ -739,7 +739,6 @@ class Ui(Qt.QMainWindow):
             self.ren.SetMaximumNumberOfPeels(4)
         else:
             self.ren.SetUseDepthPeeling(False)
-        self.overlayDataMain["Lesion Load"] = self.numberOfLesions
         self.overlayDataMain["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
         self.iren.Render()
