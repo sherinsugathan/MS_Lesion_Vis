@@ -171,6 +171,9 @@ border-radius: 4px;
          <property name="text">
           <string>Enable Depth Peeling</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="18" column="1">
