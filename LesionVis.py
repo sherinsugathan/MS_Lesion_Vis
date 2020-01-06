@@ -305,6 +305,14 @@ class Ui(Qt.QMainWindow):
         for actor in self.lesionActors:
             self.actors.append(actor)
 
+        # Also add lesions string to the loaded items listbox.
+        item = QtGui.QStandardItem("lesions")
+        item.setCheckable(True)
+        item.setCheckState(2)      
+        self.modelListBoxSurfaces.appendRow(item)
+        self.listView.setSelectionRectVisible(True)
+        self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
+
         jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(subjectFolder)
         
         for jsonElementIndex in (range(1,self.numberOfLesionElements+1)):
