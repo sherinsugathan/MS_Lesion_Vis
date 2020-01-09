@@ -60,13 +60,19 @@ class Ui(Qt.QMainWindow):
         self.checkBox_PerLesion.stateChanged.connect(self.perLesion_state_changed) # Attaching handler for per lesion.
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
-        self.comboBox_VisType.addItem("Default View")
-        self.comboBox_VisType.addItem("Transparent Surfaces")
-        self.comboBox_VisType.addItem("Lesion Intensity Raw Vis.")
-        self.comboBox_VisType.addItem("Lesion Difference With NAWM")
-        self.comboBox_VisType.addItem("Lesion Classification View")
+        # self.comboBox_VisType.addItem("Default View")
+        # self.comboBox_VisType.addItem("Transparent Surfaces")
+        # self.comboBox_VisType.addItem("Lesion Intensity Raw Vis.")
+        # self.comboBox_VisType.addItem("Lesion Difference With NAWM")
+        # self.comboBox_VisType.addItem("Lesion Classification View")
+        # self.comboBox_VisType.addItem("Lesion Surface Mapping")
+        # self.comboBox_VisType.addItem("Study Lesion Impact")
+        self.comboBox_VisType.addItem("Full Data View - Raw")
+        self.comboBox_VisType.addItem("Lesion Colored - Continuous")
+        self.comboBox_VisType.addItem("Lesion Colored - Discrete")
+        self.comboBox_VisType.addItem("Lesion Colored - Distance")
         self.comboBox_VisType.addItem("Lesion Surface Mapping")
-        self.comboBox_VisType.addItem("Study Lesion Impact")
+
         self.comboBox_LesionFilter.addItem("None")
         self.comboBox_LesionFilter.addItem("Voxel Count")
         self.comboBox_LesionFilter.addItem("Elongation")
@@ -420,7 +426,7 @@ class Ui(Qt.QMainWindow):
         frameHeight = self.frame.frameRect().height()
         self.textActorGlobal.SetPosition(10, frameHeight-100)
         self.ren.AddActor2D(self.textActorGlobal)
-        # Check if streamline computation is requested.
+        # Check if full streamline computation is requested.
         if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
             fiberActor = LesionUtils.computeStreamlines(subjectFolder)
             information = vtk.vtkInformation()

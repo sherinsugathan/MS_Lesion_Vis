@@ -2,12 +2,11 @@ import vtk
 import enum
 
 class VisType(enum.Enum):
-    DEFAULT = 0 # Provides a default visualization of brain data with no processing.
-    TRANSPARENT = 1 # Provides a data visualization of subjects with transparency. (Only depth peeling supported currently)
-    RAW_LESION_INTENSITY = 2 # Provides a raw visualization of actual surface intensity of lesions.
-    RAW_LESION_CONTRAST = 3 # Provides a contrast visualization of lesions where its intensities are compared with surrounding.
-    LESION_CLASS_VIEW = 4 # Provides a classification of lesions based on their intensity with respect to the surrounding normal tissue.
-    SURFACE_MAPPING = 5 # Provides a visualization of lesion mapping to the surface.
+    DEFAULT_FULL_DATA = 0 # Provides a default visualization of all the available brain data with no processing.
+    LESION_COLORED_CONTINUOUS = 1 # Provides a data visualization of lesions probed over volume to show the intensity difference with respect to the immediate surrounding normal tissue.
+    LESION_COLORED_DISCRETE = 2 # Provides a raw visualization of actual surface intensity of lesions.
+    LESION_COLORED_DISTANCE = 3 # Provides a contrast visualization of lesions where its intensities are compared with surrounding.
+    LESION_SURFACE_MAPPING = 4 # Provides a visualization of lesion mapping to the surface.
 
 class Settings:
   def __init__(self, lh_pial_enabled, rh_pial_enabled, lh_white_enabled, rh_white_enabled, lesions_enabled, lh_pial_transparency, rh_pial_transparency, lh_white_transparency, rh_white_transparency, depthPeelingEnabled, visType):
@@ -45,34 +44,30 @@ class Settings:
 # Get view settings for a specific visualization.
 def getSettings(visType):
   setting = None
-  if(visType == VisType.DEFAULT): # Default View
-    setting = Settings(True, True, True, True, True, 1.0, 1.0, 1.0, 1.0, True, VisType.DEFAULT)
-  elif(visType == VisType.TRANSPARENT): # Transparent view with few surfaces.
-    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.TRANSPARENT)
-  elif(visType == VisType.RAW_LESION_INTENSITY): # Raw intensity color map on lesions.
-    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.RAW_LESION_INTENSITY)
-  elif(visType == VisType.RAW_LESION_CONTRAST): # Continuous color map of lesion contrast.
-    setting = Settings(True, True, True, True, True,  0.5, 0.5, 0.5, 0.5, True, VisType.RAW_LESION_CONTRAST)
-  elif(visType == VisType.LESION_CLASS_VIEW): # Class view of lesions based on intensity contrast w.r.t normal white matter.
-    setting = Settings(True, True, True, True, True,  0.5, 0.5, 0.5, 0.5, True, VisType.LESION_CLASS_VIEW)
-  elif(visType == VisType.SURFACE_MAPPING): # Lesions projected to surface view.
-    setting = Settings(True, True, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.SURFACE_MAPPING)
+  if(visType == VisType.DEFAULT_FULL_DATA): # Default View
+    setting = Settings(True, True, True, True, True, 1.0, 1.0, 1.0, 1.0, True, VisType.DEFAULT_FULL_DATA)
+  elif(visType == VisType.LESION_COLORED_CONTINUOUS): # Transparent view with few surfaces.
+    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_CONTINUOUS)
+  elif(visType == VisType.LESION_COLORED_DISCRETE): # Raw intensity color map on lesions.
+    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISCRETE)
+  elif(visType == VisType.LESION_COLORED_DISTANCE): # Continuous color map of lesion contrast.
+    setting = Settings(True, True, False, False, True,  0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISTANCE)
+  elif(visType == VisType.LESION_SURFACE_MAPPING): # Lesions projected to surface view.
+    setting = Settings(False, False, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_SURFACE_MAPPING)
   return setting
 
 # Mapping vis type selection to enums.
 def visMapping(selection):
-  if(selection=="Default View"):
-    return VisType.DEFAULT
-  elif(selection=="Transparent Surfaces"):
-    return VisType.TRANSPARENT
-  elif(selection=="Lesion Intensity Raw Vis."):
-    return VisType.RAW_LESION_INTENSITY
-  elif(selection=="Lesion Difference With NAWM"):
-    return VisType.RAW_LESION_CONTRAST
-  elif(selection=="Lesion Classification View"):
-    return VisType.LESION_CLASS_VIEW
+  if(selection=="Full Data View - Raw"):
+    return VisType.DEFAULT_FULL_DATA
+  elif(selection=="Lesion Colored - Continuous"):
+    return VisType.LESION_COLORED_CONTINUOUS
+  elif(selection=="Lesion Colored - Discrete"):
+    return VisType.LESION_COLORED_DISCRETE
+  elif(selection=="Lesion Colored - Distance"):
+    return VisType.LESION_COLORED_DISTANCE
   elif(selection=="Lesion Surface Mapping"):
-    return VisType.SURFACE_MAPPING
+    return VisType.LESION_SURFACE_MAPPING
 
 
 class LesionFilterParamSettings:

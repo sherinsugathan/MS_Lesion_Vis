@@ -75,11 +75,35 @@ border-radius: 4px;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(./downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
 color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
+}
 </string>
          </property>
         </widget>
@@ -99,7 +123,7 @@ border-radius: 4px;
 .QSlider::groove:horizontal {
     border: 1px solid #262626;
     /*width: 10px;*/
-    background: #393939;
+    background: rgb(20, 52, 30);
     /*margin: 0 12px;*/
 }</string>
          </property>
@@ -185,11 +209,35 @@ border-radius: 4px;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(./downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
 color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
+}
 </string>
          </property>
         </widget>
@@ -306,11 +354,35 @@ border-style: solid;
           <string/>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(./downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
 color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
+}
 </string>
          </property>
          <property name="inputMethodHints">
@@ -612,7 +684,7 @@ border-style: solid;
 .QSlider::groove:vertical {
     border: 1px solid #262626;
     width: 10px;
-    background: #393939;
+    background: rgb(20, 52, 30);
     margin: 0 12px;
 }</string>
         </property>
@@ -693,7 +765,7 @@ border-radius: 10px;</string>
 .QSlider::groove:vertical {
     border: 1px solid #262626;
     width: 10px;
-    background: #393939;
+    background: rgb(20, 52, 30);
     margin: 0 12px;
 }</string>
         </property>
@@ -716,7 +788,7 @@ border-radius: 10px;</string>
 .QSlider::groove:vertical {
     border: 1px solid #262626;
     width: 10px;
-    background: #393939;
+    background: rgb(20, 52, 30);
     margin: 0 12px;
 }</string>
         </property>
