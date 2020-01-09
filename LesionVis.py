@@ -1,7 +1,7 @@
 #==========================================
 # Title:  MS Lesion Visualization Project
 # Author: Sherin Sugathan
-# Last Modified Date:   15 Nov 2019
+# Last Modified Date:   9 Jan 2020
 #==========================================
 
 import sys
@@ -100,6 +100,7 @@ class Ui(Qt.QMainWindow):
         self.vl_MPRB = Qt.QVBoxLayout()
         self.vl_MPRC = Qt.QVBoxLayout()
         self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
+        
         self.vtkWidgetMPRA = QVTKRenderWindowInteractor(self.frame_MPRA)
         self.vtkWidgetMPRB = QVTKRenderWindowInteractor(self.frame_MPRB)
         self.vtkWidgetMPRC = QVTKRenderWindowInteractor(self.frame_MPRC)
@@ -176,17 +177,24 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRC = vtk.vtkTextActor() # MPRC Slice number
 
         # Text overlay support in main renderer.
-        self.overlayDataMain = {"Lesion ID":"NA", "Lesion Load":"0", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA", "Depth Peeling":"Disabled", "OpenGL Renderer":"Unknown"}
+        self.overlayDataMain = {"Lesion ID":"NA", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA"}
+        self.overlayDataGlobal = {"Lesion Load":"0", "Depth Peeling":"Disabled", "OpenGL Renderer":"Unknown"}
         self.textActorLesionStatistics = vtk.vtkTextActor()
+        self.textActorGlobal = vtk.vtkTextActor()
         self.depthPeelingStatus = "Depth Peeling : Enabled"
         self.numberOfLesions = 0
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
         self.textActorLesionStatistics.GetTextProperty().SetFontFamilyToCourier()
         self.textActorLesionStatistics.GetTextProperty().SetFontSize(16)
-        self.textActorLesionStatistics.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.textActorLesionStatistics.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
-        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts)
+        self.textActorGlobal.UseBorderAlignOff()
+        self.textActorGlobal.GetTextProperty().SetFontFamilyToCourier()
+        self.textActorGlobal.GetTextProperty().SetFontSize(16)
+        self.textActorGlobal.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+
+        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts)
         self.style.SetDefaultRenderer(self.ren)
         self.iren.SetInteractorStyle(self.style)
 
@@ -208,7 +216,7 @@ class Ui(Qt.QMainWindow):
         self.iren_MPRC.Initialize()
 
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
-        self.overlayDataMain["OpenGL Renderer"] = openglRendererInUse
+        self.overlayDataGlobal["OpenGL Renderer"] = openglRendererInUse
 
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, fileName, isNiftyReadRequired=True):
@@ -404,10 +412,14 @@ class Ui(Qt.QMainWindow):
 
 
         # Update overlay text and add it to the renderer
-        self.overlayDataMain["Lesion Load"] = self.numberOfLesionElements
-        self.overlayDataMain["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
-        LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
+        self.overlayDataGlobal["Lesion Load"] = self.numberOfLesionElements
+        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
+        LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.ren.AddActor2D(self.textActorLesionStatistics)
+                        
+        frameHeight = self.frame.frameRect().height()
+        self.textActorGlobal.SetPosition(10, frameHeight-100)
+        self.ren.AddActor2D(self.textActorGlobal)
         # Check if streamline computation is requested.
         if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
             fiberActor = LesionUtils.computeStreamlines(subjectFolder)
@@ -587,7 +599,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRA.SetPosition(5,5)
         self.sliceNumberTextMPRA.GetTextProperty().SetFontFamilyToCourier()
         self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRA.AddActor2D(self.sliceNumberTextMPRA)
         self.LoadStructuralSlices("dummy", False)
 
@@ -600,7 +612,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRB.SetPosition(5,5)
         self.sliceNumberTextMPRB.GetTextProperty().SetFontFamilyToCourier()
         self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRB.AddActor2D(self.sliceNumberTextMPRB)
         self.LoadStructuralSlices("dummy", False)
 
@@ -613,7 +625,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRC.SetPosition(5,5)
         self.sliceNumberTextMPRC.GetTextProperty().SetFontFamilyToCourier()
         self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.227, 0.969, 0.192 )
+        self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRC.AddActor2D(self.sliceNumberTextMPRC)
         self.LoadStructuralSlices("dummy", False)
 
@@ -739,8 +751,8 @@ class Ui(Qt.QMainWindow):
             self.ren.SetMaximumNumberOfPeels(4)
         else:
             self.ren.SetUseDepthPeeling(False)
-        self.overlayDataMain["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
-        LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
+        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
+        LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.iren.Render()
 
     # Handler for depth peeling checkbox

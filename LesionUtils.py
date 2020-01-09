@@ -1,3 +1,9 @@
+#==========================================
+# Title:  MS Lesion Visualization Project: Utils
+# Author: Sherin Sugathan
+# Last Modified Date:   9 Jan 2020
+#==========================================
+
 import os
 import vtk
 import numpy as np
@@ -71,11 +77,15 @@ def runLesionConnectivityAnalysis(probeFilterObject):
     Returns: Nothing
 ##########################################################################
 '''
-def updateOverlayText(renderWindow, overlayDictionary, overlayTextActor): 
+def updateOverlayText(renderWindow, overlayDictionary, overlayGlobalDictionary, overlayTextActor, globalTextActor): 
     overlayText =""
     for key in overlayDictionary.keys():
         overlayText = overlayText + str(key) + ": " + str(overlayDictionary[key]) + "\n"
     overlayTextActor.SetInput(overlayText)
+    overlayTextGlobal =""
+    for key in overlayGlobalDictionary.keys():
+        overlayTextGlobal = overlayTextGlobal + str(key) + ": " + str(overlayGlobalDictionary[key]) + "\n"
+    globalTextActor.SetInput(overlayTextGlobal)
 
 '''
 ##########################################################################
@@ -104,7 +114,7 @@ def captureScreenshot(renderWindow):
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None):
+    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
         self.LastPickedActor = None
@@ -112,6 +122,8 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.iren = iren
         self.overlayDataMain = overlayDataMain
         self.textActorLesionStatistics = textActorLesionStatistics
+        self.overlayDataGlobal = overlayDataGlobal 
+        self.textActorGlobal = textActorGlobal
         self.informationKey = informationKey
         self.informationKeyID = informationKeyID
         self.lesionSeededFiberTracts = lesionSeededFiberTracts
@@ -191,7 +203,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 self.overlayDataMain["Lesion ID"] = "NA"
 
-            updateOverlayText(self.iren, self.overlayDataMain, self.textActorLesionStatistics)
+            updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
             self.iren.Render()
             # save the last picked actor
             self.LastPickedActor = self.NewPickedActor
