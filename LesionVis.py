@@ -17,6 +17,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 import nibabel as nib
 import numpy as np
 import json
+import ctypes
+from ctypes import wintypes
 
 from PyQt5 import QtWidgets, uic
 from itkwidgets import view
@@ -34,6 +36,17 @@ class Ui(Qt.QMainWindow):
     # Main Initialization
     def __init__(self):
         super(Ui, self).__init__()
+        # Needed for windows task bar icon
+        myappid = u'mycompany.myproduct.subproduct.version' # arbitrary string
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        lpBuffer = wintypes.LPWSTR()
+        AppUserModelID = ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID
+        AppUserModelID(ctypes.cast(ctypes.byref(lpBuffer), wintypes.LPWSTR))
+        appid = lpBuffer.value
+        ctypes.windll.kernel32.LocalFree(lpBuffer)
+        if appid is not None:
+            print(appid)
+        # End taskbar icon enable.
         uic.loadUi("lesionui.ui", self)
         logging.info('UI file loaded successfully.')
         self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
@@ -43,6 +56,7 @@ class Ui(Qt.QMainWindow):
         self.clear()
         logging.info('UI initialized successfully.')
         self.initVTK()
+        
         self.showMaximized()
         logging.info('VTK initialized successfully.')
 
