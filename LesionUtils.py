@@ -158,12 +158,15 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             # Save the property of the picked actor so that we can
             # restore it next time
             self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
-            # Highlight the picked actor by changing its properties
-            self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-            self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-            self.NewPickedActor.GetProperty().SetSpecular(0.0)
-            self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
-            self.NewPickedActor.GetProperty().SetOpacity(0.5)
+
+            itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+            if itemType==None: # Itemtype is None for lesions. They only have Ids.
+                # Highlight the picked actor by changing its properties
+                self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                self.NewPickedActor.GetProperty().SetSpecular(0.0)
+                self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
+                self.NewPickedActor.GetProperty().SetOpacity(0.5)
             #print(self.NewPickedActor.GetMapper().GetScalarRange())
             #print(self.NewPickedActor)
 

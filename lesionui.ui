@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Multimodality Pathology Visualization - NOT FOR CLINICAL USE</string>
+   <string>Multiple Sclerosis Experimentor - NOT FOR CLINICAL USE</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -675,17 +675,17 @@ border-style: solid;
         <property name="styleSheet">
          <string notr="true">.QSlider::handle:vertical {
     background: #ffffff;
-    border: 12px solid #467955;
+    border: 9px solid #467955;
     height: 5px;
     /*margin: -30px -30px;*/
-	border-radius: 30px;
+	border-radius: 10px;
 }
 
 .QSlider::groove:vertical {
     border: 1px solid #262626;
-    width: 10px;
+    width: 8px;
     background: rgb(20, 52, 30);
-    margin: 0 12px;
+    margin: 0 0px;
 }</string>
         </property>
         <property name="orientation">
@@ -756,17 +756,17 @@ border-radius: 10px;</string>
         <property name="styleSheet">
          <string notr="true">.QSlider::handle:vertical {
     background: #ffffff;
-    border: 12px solid #467955;
+    border: 9px solid #467955;
     height: 5px;
     /*margin: -30px -30px;*/
-	border-radius: 30px;
+	border-radius: 10px;
 }
 
 .QSlider::groove:vertical {
     border: 1px solid #262626;
-    width: 10px;
+    width: 8px;
     background: rgb(20, 52, 30);
-    margin: 0 12px;
+    margin: 0 0px;
 }</string>
         </property>
         <property name="orientation">
@@ -779,21 +779,27 @@ border-radius: 10px;</string>
         <property name="styleSheet">
          <string notr="true">.QSlider::handle:vertical {
     background: #ffffff;
-    border: 12px solid #467955;
+    border: 9px solid #467955;
     height: 5px;
     /*margin: -30px -30px;*/
-	border-radius: 30px;
+	border-radius: 10px;
 }
 
 .QSlider::groove:vertical {
     border: 1px solid #262626;
-    width: 10px;
+    width: 8px;
     background: rgb(20, 52, 30);
-    margin: 0 12px;
+    margin: 0 0px;
 }</string>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="tickInterval">
+         <number>0</number>
         </property>
        </widget>
       </item>
@@ -856,14 +862,6 @@ border-radius: 10px;</string>
      <height>22</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
