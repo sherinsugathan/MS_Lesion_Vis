@@ -21,7 +21,6 @@ import ctypes
 from ctypes import wintypes
 
 from PyQt5 import QtWidgets, uic
-from itkwidgets import view
 from PyQt5.QtWidgets import QFileDialog, QCheckBox
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtGui
