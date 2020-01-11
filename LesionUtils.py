@@ -9,6 +9,7 @@ import vtk
 import numpy as np
 import time
 import SimpleITK as sitk
+import time
 
 '''
 ##########################################################################
@@ -114,7 +115,7 @@ def captureScreenshot(renderWindow):
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None):
+    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None, sliderA=None, sliderB=None, sliderC=None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
         self.LastPickedActor = None
@@ -127,6 +128,9 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.informationKey = informationKey
         self.informationKeyID = informationKeyID
         self.lesionSeededFiberTracts = lesionSeededFiberTracts
+        self.sliderA = sliderA
+        self.sliderB = sliderB
+        self.sliderC = sliderC
 
     def addLesionData(self, subjectFolder, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness, lesionSeededFiberTracts):
         self.lesionCentroids = lesionCentroids
@@ -139,6 +143,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionRoundness = lesionRoundness
         self.subjectFolder = subjectFolder
         self.lesionSeededFiberTracts = lesionSeededFiberTracts
+        
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -160,6 +165,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
 
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
                 # Highlight the picked actor by changing its properties
                 self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
@@ -167,19 +173,32 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                 self.NewPickedActor.GetProperty().SetSpecular(0.0)
                 self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
                 self.NewPickedActor.GetProperty().SetOpacity(0.5)
-            #print(self.NewPickedActor.GetMapper().GetScalarRange())
-            #print(self.NewPickedActor)
+                #print(self.NewPickedActor.GetMapper().GetScalarRange())
+                #print(self.NewPickedActor)
 
-            #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
-            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
+                #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+                
 
-            centerOfMassFilter = vtk.vtkCenterOfMass()
-            centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
-            #print(self.NewPickedActor.GetMapper().GetInput())
-            centerOfMassFilter.SetUseScalarsAsWeights(False)
-            centerOfMassFilter.Update()
+                centerOfMassFilter = vtk.vtkCenterOfMass()
+                centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+                #print(self.NewPickedActor.GetMapper().GetInput())
+                centerOfMassFilter.SetUseScalarsAsWeights(False)
+                centerOfMassFilter.Update()
 
-            self.centerOfMass = centerOfMassFilter.GetCenter()
+                self.centerOfMass = centerOfMassFilter.GetCenter()
+
+                # Get slice numbers for setting the MPRs.
+                sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
+                currentSliderValueA = self.sliderA.value()
+                currentSliderValueB = self.sliderB.value()
+                currentSliderValueC = self.sliderC.value()
+
+                self.sliderA.setValue(sliceNumbers[1])
+                self.sliderB.setValue(sliceNumbers[2])
+                self.sliderC.setValue(sliceNumbers[0])
+
+
+
             if lesionID!=None:
                 self.overlayDataMain["Lesion ID"] = str(lesionID)
                 self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
@@ -205,6 +224,14 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     self.GetDefaultRenderer().AddActor(streamActor)
             else:
                 self.overlayDataMain["Lesion ID"] = "NA"
+                self.overlayDataMain["Centroid"] = "NA"
+                self.overlayDataMain["Voxel Count"] = "NA"
+                self.overlayDataMain["Elongation"] = "NA"
+                self.overlayDataMain["Lesion Perimeter"] = "NA"
+                self.overlayDataMain["Lesion Spherical Radius"] = "NA"
+                self.overlayDataMain["Lesion Spherical Perimeter"] = "NA"
+                self.overlayDataMain["Lesion Flatness"] = "NA"
+                self.overlayDataMain["Lesion Roundness"] = "NA"
 
             updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
             self.iren.Render()
@@ -496,3 +523,20 @@ def filterLesionsAndRender(removeIndices, actorList, informationKeyID, renderer)
             else:
                 renderer.AddActor(actor)
         
+
+'''
+##########################################################################
+    Compute slide numbers from 3D world coordinates.
+    Returns: IJK coordinates (slice positions).
+##########################################################################
+'''
+def computeSlicePositionFrom3DCoordinates(subjectFolder, pt):
+    fileNameT1 = str(subjectFolder + "\\structural\\T1.nii")
+    # Read T1 data.
+    readerT1 = sitk.ImageFileReader()
+    readerT1.SetFileName(fileNameT1)
+    readerT1.LoadPrivateTagsOn()
+    readerT1.ReadImageInformation()
+    readerT1.LoadPrivateTagsOn()
+    imageT1 = sitk.ReadImage(fileNameT1)
+    return imageT1.TransformPhysicalPointToIndex(pt)

@@ -95,6 +95,9 @@ class Ui(Qt.QMainWindow):
         self.comboBox_LesionFilter.addItem("Flatness")
         self.comboBox_LesionFilter.addItem("Roundness")
 
+        self.comboBox_MPRModality.addItem("T1 Sequence")
+        self.comboBox_MPRModality.addItem("T2 Sequence")
+        self.comboBox_MPRModality.addItem("FLAIR Sequence")
 
         self.mprA_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRA)
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
@@ -213,7 +216,7 @@ class Ui(Qt.QMainWindow):
         self.textActorGlobal.GetTextProperty().SetFontSize(16)
         self.textActorGlobal.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
-        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts)
+        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts, self.mprA_Slice_Slider, self.mprB_Slice_Slider, self.mprC_Slice_Slider)
         self.style.SetDefaultRenderer(self.ren)
         self.iren.SetInteractorStyle(self.style)
 
@@ -526,7 +529,6 @@ class Ui(Qt.QMainWindow):
 
             t1StructuralNiftyFileName = subjectFolder + "\\structural\\T1.nii"
             mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
-            crasDataFileName = open ( subjectFolder + "\\meta\\cras.txt" , 'r')
             niftiReader = vtk.vtkNIFTIImageReader()
             niftiReader.SetFileName(t1StructuralNiftyFileName)
             niftiReader.Update()
@@ -560,7 +562,6 @@ class Ui(Qt.QMainWindow):
             self.model_structural.itemChanged.connect(self.on_itemChanged_Structural)
 
             mrmlDataFileName.close()
-            crasDataFileName.close()
 
             self.iren.Render()
             self.volumeDataLoaded=True # Indicate that volume data is loaded properly.

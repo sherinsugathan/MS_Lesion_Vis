@@ -1,1 +1,1 @@
-pngcrush -ow -rem allb -reduce file.png
+pngcrush -ow -rem allb -reduce AppLogo.png
