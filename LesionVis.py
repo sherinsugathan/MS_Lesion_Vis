@@ -323,25 +323,14 @@ class Ui(Qt.QMainWindow):
         self.lesionSphericalPerimeter = []
         self.lesionFlatness = []
         self.lesionRoundness = []
+        self.lesionAverageIntensity  = []
+        self.lesionAverageSurroundingIntensity = []
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # load precomputed lesion properties
         structureInfo = None
-        with open(subjectFolder + "\\structure-def.json") as fp: 
+        with open(subjectFolder + "\\structure-def2.json") as fp: 
             structureInfo = json.load(fp)
         self.numberOfLesionElements = len(structureInfo)
-
-        self.lesionActors = LesionUtils.extractLesions(subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, True)
-
-        for actor in self.lesionActors:
-            self.actors.append(actor)
-
-        # Also add lesions string to the loaded items listbox.
-        item = QtGui.QStandardItem("lesions")
-        item.setCheckable(True)
-        item.setCheckState(2)      
-        self.modelListBoxSurfaces.appendRow(item)
-        self.listView.setSelectionRectVisible(True)
-        self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
 
         jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(subjectFolder)
         
@@ -361,8 +350,22 @@ class Ui(Qt.QMainWindow):
                 self.lesionSphericalPerimeter.append(p["SphericalPerimeter"])
                 self.lesionFlatness.append(p["Flatness"])
                 self.lesionRoundness.append(p["Roundness"])
+                self.lesionAverageIntensity.append(p["AverageLesionIntensity"])
+                self.lesionAverageSurroundingIntensity.append(p["AverageSurroundingIntensity"])
 
         self.style.addLesionData(subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
+
+        self.requestedVisualizationType = str(self.comboBox_VisType.currentText())
+        self.lesionActors = LesionUtils.extractLesions(subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, True)
+        for actor in self.lesionActors:
+            self.actors.append(actor)
+        # Also add lesions string to the loaded items listbox.
+        item = QtGui.QStandardItem("lesions")
+        item.setCheckable(True)
+        item.setCheckState(2)
+        self.modelListBoxSurfaces.appendRow(item)
+        self.listView.setSelectionRectVisible(True)
+        self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
 
         # populate the user interface with the structure values
         #self.populateStructureInterface(structureInfo)

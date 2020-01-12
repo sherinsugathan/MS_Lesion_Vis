@@ -175,9 +175,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                 self.NewPickedActor.GetProperty().SetOpacity(0.5)
                 #print(self.NewPickedActor.GetMapper().GetScalarRange())
                 #print(self.NewPickedActor)
-
                 #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
-                
 
                 centerOfMassFilter = vtk.vtkCenterOfMass()
                 centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
@@ -189,15 +187,10 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 
                 # Get slice numbers for setting the MPRs.
                 sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
-                currentSliderValueA = self.sliderA.value()
-                currentSliderValueB = self.sliderB.value()
-                currentSliderValueC = self.sliderC.value()
-
-                self.sliderA.setValue(sliceNumbers[1])
-                self.sliderB.setValue(sliceNumbers[2])
+                
+                self.sliderA.setValue(sliceNumbers[2])
+                self.sliderB.setValue(sliceNumbers[1])
                 self.sliderC.setValue(sliceNumbers[0])
-
-
 
             if lesionID!=None:
                 self.overlayDataMain["Lesion ID"] = str(lesionID)
@@ -388,11 +381,37 @@ def getJsonDataTransformMatrix(subjectFolder):
 
 '''
 ##########################################################################
+    Use a color transfer Function to generate the colors in the lookup table.
+    See: http://www.vtk.org/doc/nightly/html/classvtkColorTransferFunction.html
+    :param: tableSize - The table size
+    :return: The lookup table.
+##########################################################################
+'''
+def MakeLUTFromCTF(tableSize):
+    ctf = vtk.vtkColorTransferFunction()
+    ctf.SetColorSpaceToDiverging()
+    # Green to tan.
+    ctf.AddRGBPoint(0.0, 1, 0, 0)
+    ctf.AddRGBPoint(0.5, 0.865, 0.865, 0.865)
+    ctf.AddRGBPoint(1.0, 0.677, 0.492, 0.093)
+
+    lut = vtk.vtkLookupTable()
+    lut.SetNumberOfTableValues(tableSize)
+    lut.Build()
+
+    for i in range(0, tableSize):
+        rgb = list(ctf.GetColor(float(i) / tableSize)) + [1]
+        lut.SetTableValue(i, rgb)
+
+    return lut
+
+'''
+##########################################################################
     Extract lesions by processing labelled lesion mask data.
     Returns: Lesion actors.
 ##########################################################################
 '''
-def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, probeLesions=False):
+def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, requestedVisualizationType, lesionAverageIntensity, lesionAverageSurroundingIntensity, probeLesions=False):
     # Load lesion mask
     niftiReaderLesionMask = vtk.vtkNIFTIImageReader()
     niftiReaderLesionMask.SetFileName(subjectFolder + "\\lesionMask\\ConnectedComponents.nii")
@@ -421,8 +440,32 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     transformFilter.SetTransform(transform)
     transformFilter.Update()
 
+    # Have a raw lesion surface view.
+    if(requestedVisualizationType == "Full Data View - Raw"):
+        for i in range(labelCount):
+            threshold = vtk.vtkThreshold()
+            threshold.SetInputData(transformFilter.GetOutput())
+            threshold.ThresholdBetween(i+1,i+1)
+            threshold.Update()
+
+            geometryFilter = vtk.vtkGeometryFilter()
+            geometryFilter.SetInputData(threshold.GetOutput())
+            geometryFilter.Update()
+
+            lesionMapper = vtk.vtkOpenGLPolyDataMapper()
+            lesionMapper.SetInputConnection(geometryFilter.GetOutputPort())
+            lesionActor = vtk.vtkActor()
+            lesionActor.SetMapper(lesionMapper)
+            #information = vtk.vtkInformation()
+            #information.Set(informationKey,"lesions")
+            #lesionActor.GetProperty().SetInformation(information)
+            informationID = vtk.vtkInformation()
+            informationID.Set(informationKeyID,str(i+1))
+            lesionActor.GetProperty().SetInformation(informationID)
+            lesionActors.append(lesionActor)
+
     # Apply probe filtering also.
-    if(probeLesions==True):
+    if(requestedVisualizationType == "Lesion Colored - Continuous"):
         niftiReader = vtk.vtkNIFTIImageReader()
         niftiReader.SetFileName(subjectFolder + "\\structural\\T1IntensityDifference.nii")
         niftiReader.Update()
@@ -439,31 +482,16 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
         transformVolume.SetTransform(volumeTransform)
         transformVolume.Update()
 
-    for i in range(labelCount):
-        threshold = vtk.vtkThreshold()
-        threshold.SetInputData(transformFilter.GetOutput())
-        threshold.ThresholdBetween(i+1,i+1)
-        threshold.Update()
+        for i in range(labelCount):
+            threshold = vtk.vtkThreshold()
+            threshold.SetInputData(transformFilter.GetOutput())
+            threshold.ThresholdBetween(i+1,i+1)
+            threshold.Update()
 
-        geometryFilter = vtk.vtkGeometryFilter()
-        geometryFilter.SetInputData(threshold.GetOutput())
-        geometryFilter.Update()
+            geometryFilter = vtk.vtkGeometryFilter()
+            geometryFilter.SetInputData(threshold.GetOutput())
+            geometryFilter.Update()
 
-        # Check if probing lesion surface with intensity volume is requested or not.
-        if(probeLesions==False):
-            mapper = vtk.vtkOpenGLPolyDataMapper()
-            mapper.SetInputData(geometryFilter.GetOutput())
-            mapper.Update()
-            lesionActor = vtk.vtkActor()
-            lesionActor.SetMapper(mapper)
-            #information = vtk.vtkInformation()
-            #information.Set(informationKey,"lesions")
-            #lesionActor.GetProperty().SetInformation(information)
-            informationID = vtk.vtkInformation()
-            informationID.Set(informationKeyID,str(i+1))
-            lesionActor.GetProperty().SetInformation(informationID)
-            lesionActors.append(lesionActor)
-        else:
             # Apply probeFilter
             probeFilter = vtk.vtkProbeFilter()
             probeFilter.SetSourceConnection(transformVolume.GetOutputPort())
@@ -472,11 +500,7 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
 
             lesionMapper = vtk.vtkOpenGLPolyDataMapper()
             lesionMapper.SetInputConnection(probeFilter.GetOutputPort())
-            lookupTable = vtk.vtkLookupTable()
-            lookupTable.SetNumberOfTableValues(256)
-            lookupTable.Build()
             lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
-
             lesionActor = vtk.vtkActor()
             lesionActor.SetMapper(lesionMapper)
             #information = vtk.vtkInformation()
@@ -486,6 +510,42 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
             informationID.Set(informationKeyID,str(i+1))
             lesionActor.GetProperty().SetInformation(informationID)
             lesionActors.append(lesionActor)
+
+    # Lesion Colored - Discrete visualization.
+    if(requestedVisualizationType == "Lesion Colored - Discrete"):
+        mylookupTable = MakeLUTFromCTF(labelCount)
+        intensityDifferenceDiscrete = np.subtract(lesionAverageSurroundingIntensity,lesionAverageIntensity)
+        for i in range(labelCount):
+            threshold = vtk.vtkThreshold()
+            threshold.SetInputData(transformFilter.GetOutput())
+            threshold.ThresholdBetween(i+1,i+1)
+            threshold.Update()
+
+            geometryFilter = vtk.vtkGeometryFilter()
+            geometryFilter.SetInputData(threshold.GetOutput())
+            geometryFilter.Update()
+
+            lesionMapper = vtk.vtkOpenGLPolyDataMapper()
+            lesionMapper.SetInputConnection(geometryFilter.GetOutputPort())
+            lesionMapper.ScalarVisibilityOff()
+
+            myrgb = [0,0,0]
+            mylookupTable.GetColor(intensityDifferenceDiscrete[i], myrgb)
+
+            lesionActor = vtk.vtkActor()
+            lesionActor.SetMapper(lesionMapper)
+            lesionActor.GetProperty().SetColor(myrgb[0], myrgb[1], myrgb[2])
+            #information = vtk.vtkInformation()
+            #information.Set(informationKey,"lesions")
+            #lesionActor.GetProperty().SetInformation(information)
+            informationID = vtk.vtkInformation()
+            informationID.Set(informationKeyID,str(i+1))
+            lesionActor.GetProperty().SetInformation(informationID)
+            lesionActors.append(lesionActor)
+
+    # Lesion Colored - Distance visualization.
+    if(requestedVisualizationType == "Lesion Colored - Distance"):
+        pass
 
     return lesionActors
 
