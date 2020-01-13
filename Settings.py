@@ -51,7 +51,7 @@ def getSettings(visType):
   elif(visType == VisType.LESION_COLORED_DISCRETE): # Raw intensity color map on lesions.
     setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISCRETE)
   elif(visType == VisType.LESION_COLORED_DISTANCE): # Continuous color map of lesion contrast.
-    setting = Settings(True, True, False, False, True,  0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISTANCE)
+    setting = Settings(False, False, True, True, True,  0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISTANCE)
   elif(visType == VisType.LESION_SURFACE_MAPPING): # Lesions projected to surface view.
     setting = Settings(False, False, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_SURFACE_MAPPING)
   return setting
