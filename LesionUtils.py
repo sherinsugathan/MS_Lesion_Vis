@@ -10,6 +10,7 @@ import numpy as np
 import time
 import SimpleITK as sitk
 import time
+from nibabel import freesurfer
 
 '''
 ##########################################################################
@@ -210,7 +211,9 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                         if(actorName=="structural tracts"):
                             self.GetDefaultRenderer().RemoveActor(actor)
 
-                    streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1])
+                    lesionPointDataSet = self.rhactor.GetMapper().GetInput()
+                    #lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
+                    streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
                     information = vtk.vtkInformation()
                     information.Set(self.informationKey,"structural tracts")
                     streamActor.GetProperty().SetInformation(information)
@@ -260,7 +263,7 @@ def computeLesionProperties(subjectFolder):
     Returns: Nothing
 ##########################################################################
 '''
-def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None):
+def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None, lesionPointDataSet = None):
     temperatureDataFileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
     niftiReaderTemperature = vtk.vtkNIFTIImageReader()
     niftiReaderTemperature.SetFileName(temperatureDataFileName)
@@ -272,26 +275,13 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None):
     cellDataToPointData.SetInputConnection(cellDerivatives.GetOutputPort())
     cellDataToPointData.Update()
 
-    # CRAS translation for gradient data.
-    crasDataFile = open(subjectFolder + "\\meta\\crasGradient.txt" , 'r')
-    cras_t_vector = []
-    for t in crasDataFile:
-        cras_t_vector.append(t)
-    cras_t_vector = list(map(float, cras_t_vector))
-    transform2 = vtk.vtkTransform()
-    transform2.PostMultiply()
-    transform2.Translate(cras_t_vector[0], cras_t_vector[1], cras_t_vector[2])
-
-    # Transform for temperature data
+    # Transform for temperature/gradient data
+    QFormMatrixTemperature = niftiReaderTemperature.GetQFormMatrix()
+    qFormListTemperature = [0] * 16 #the matrix is 4x4
+    QFormMatrixTemperature.DeepCopy(qFormListTemperature, QFormMatrixTemperature)
     transformGradient = vtk.vtkTransform()
-    mrmlDataFileGradient = open (subjectFolder + "\\meta\\mrmlGradient.txt" , 'r')
-    mrmlDataFileGradient2 = open (subjectFolder + "\\meta\\mrmlGradient2.txt" , 'r')
-    arrayListGradient = list(np.asfarray(np.array(mrmlDataFileGradient.readline().split(",")),float))
-    arrayListGradient2 = list(np.asfarray(np.array(mrmlDataFileGradient2.readline().split(",")),float))
     transformGradient.PostMultiply()
-    transformGradient.SetMatrix(arrayListGradient)
-    transformGradient.Concatenate(arrayListGradient2)
-    transformGradient.Concatenate(transform2)
+    transformGradient.SetMatrix(qFormListTemperature)
     transformGradient.Update()
     
     # Create point source and actor
@@ -322,10 +312,16 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None):
     else:
         streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
     streamers.SetIntegrationDirectionToBoth()
-    streamers.SetSourceConnection(psource.GetOutputPort())
-    streamers.SetMaximumPropagation(100.0)
-    streamers.SetInitialIntegrationStep(0.2)
-    streamers.SetTerminalSpeed(.01)
+    #streamers.SetSourceConnection(psource.GetOutputPort())
+    streamers.SetSourceData(lesionPointDataSet)
+    
+    streamers.SetMaximumPropagation(10000.0)
+    streamers.SetInitialIntegrationStep(0.05)
+    streamers.SetTerminalSpeed(.51)
+
+    #streamers.SetMaximumPropagation(100.0)
+    #streamers.SetInitialIntegrationStep(0.2)
+    #streamers.SetTerminalSpeed(.01)
     streamers.Update()
     tubes = vtk.vtkTubeFilter()
     tubes.SetInputConnection(streamers.GetOutputPort())
@@ -653,3 +649,49 @@ def computeSlicePositionFrom3DCoordinates(subjectFolder, pt):
     readerT1.LoadPrivateTagsOn()
     imageT1 = sitk.ReadImage(fileNameT1)
     return imageT1.TransformPhysicalPointToIndex(pt)
+
+'''
+##########################################################################
+    Read annotation files from freesurfer.
+    Returns: Color arrays for left and right hemispheres.
+##########################################################################
+'''
+def initializeSurfaceAnnotationColors(subjectFolder):
+    fileNameRhAnnot = str(subjectFolder + "\\surfaces\\rh.aparc.annot")
+    fileNameLhAnnot = str(subjectFolder + "\\surfaces\\lh.aparc.annot")
+    # Read annotation files.
+    labelsRh, ctabRh, regionsRh = freesurfer.read_annot(fileNameRhAnnot, orig_ids=False)
+    labelsLh, ctabLh, regionsLh = freesurfer.read_annot(fileNameLhAnnot, orig_ids=False)
+    metaRh = dict(
+                (index, {"region": item[0], "color": item[1][:4].tolist()})
+                for index, item in enumerate(zip(regionsRh, ctabRh)))
+    metaLh = dict(
+                (index, {"region": item[0], "color": item[1][:4].tolist()})
+                for index, item in enumerate(zip(regionsLh, ctabLh)))
+    numberOfPointsRh = len(labelsRh)
+    numberOfPointsLh = len(labelsLh)
+
+    colorDataRh = vtk.vtkUnsignedCharArray()
+    colorDataRh.SetName('colorsRh')
+    colorDataRh.SetNumberOfComponents(3)
+    colorDataLh = vtk.vtkUnsignedCharArray()
+    colorDataLh.SetName('colorsLh')
+    colorDataLh.SetNumberOfComponents(3)
+
+    for index in range(numberOfPointsRh):
+        if(labelsRh[index] == -1):
+            clr = [25,5,25]
+        else:
+            clr = metaRh[labelsRh[index]]["color"]
+        colorDataRh.InsertNextTuple3(clr[0], clr[1], clr[2])
+
+    for index in range(numberOfPointsLh):
+        if(labelsLh[index] == -1):
+            clr = [25,5,25]
+        else:
+            clr = metaLh[labelsLh[index]]["color"]
+        colorDataLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+    
+    return colorDataRh, colorDataLh
+
+

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1130</width>
-    <height>1031</height>
+    <height>1036</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,153 +48,15 @@ border-style: solid;</string>
        <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="10" column="1">
-        <widget class="QPushButton" name="pushButton_LoadStructural">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_LoadStructural
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_LoadStructural {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_LoadStructural
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
+       <item row="27" column="1">
+        <widget class="QCheckBox" name="checkBox_PerLesion">
          <property name="text">
-          <string>Render Volume Data</string>
+          <string>Analyze Per Lesion</string>
          </property>
         </widget>
        </item>
-       <item row="21" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMin">
-           <property name="text">
-            <string>#</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterCurrent">
-           <property name="text">
-            <string>#</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMax">
-           <property name="text">
-            <string>#</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="30" column="1">
-        <widget class="Line" name="line">
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QPushButton" name="pushButton_LoadData">
-         <property name="font">
-          <font>
-           <family>Google Sans</family>
-           <pointsize>9</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_LoadData
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_LoadData {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_LoadData
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Render Surface Data</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Select Patient</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Surface Data</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Select Visualization</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="1">
-        <widget class="QComboBox" name="comboBox_LesionFilter">
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="lineEdit_DatasetFolder">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -202,44 +64,8 @@ border-style: solid;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">.QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-
-    border-left-width: 0px;
-    border-left-color: darkgray;
-    border-left-style: solid; /* just a single line */
-    border-top-right-radius: 3px; /* same radius as the QComboBox */
-    border-bottom-right-radius: 3px;
-}
-
-.QComboBox::down-arrow {
-	border-width: 0px;
-    image: url(./downArrow.png);
-}
-
-.QComboBox QAbstractItemView {
-    border: 2px solid rgb(20, 52, 30);
-    selection-background-color: rgb(20, 52, 30);
-}
-
-.QComboBox{
+          <string notr="true">color: rgb(149, 189, 149);
 border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-}
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QListView" name="listView">
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
 border-style: solid;
 border-width: 2px;
 border-radius: 4px;
@@ -247,112 +73,17 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="31" column="1">
-        <widget class="QLabel" name="imageLabel">
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>50</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
+       <item row="17" column="1">
+        <widget class="QLabel" name="label_8">
          <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignHCenter|Qt::AlignTop</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Set Patient Folder</string>
+          <string>MPR Modality</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="28" column="1">
-        <widget class="QPushButton" name="pushButton_Screenshot">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_Screenshot
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_Screenshot
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Render Capture</string>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="1">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Filter Lesions</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="25" column="1">
-        <widget class="QCheckBox" name="checkBox_persistSettings">
-         <property name="text">
-          <string>Persist settings for all subjects</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QPushButton" name="pushButton_LoadFolder">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_LoadFolder
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_LoadFolder {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_LoadFolder
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Browse...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="29" column="1">
+       <item row="30" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -363,27 +94,10 @@ border-style: solid;
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>10</height>
+           <height>1</height>
           </size>
          </property>
         </spacer>
-       </item>
-       <item row="27" column="1">
-        <widget class="QCheckBox" name="checkBox_PerLesion">
-         <property name="text">
-          <string>Analyze Per Lesion</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="1">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Structural Data</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
        </item>
        <item row="23" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -425,186 +139,6 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="logoLabel">
-         <property name="minimumSize">
-          <size>
-           <width>220</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Google Sans</family>
-           <pointsize>16</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
-         </property>
-         <property name="text">
-          <string>MS EXPERIMENTOR</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="1">
-        <widget class="QComboBox" name="comboBox_MPRModality">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">.QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-
-    border-left-width: 0px;
-    border-left-color: darkgray;
-    border-left-style: solid; /* just a single line */
-    border-top-right-radius: 3px; /* same radius as the QComboBox */
-    border-bottom-right-radius: 3px;
-}
-
-.QComboBox::down-arrow {
-	border-width: 0px;
-    image: url(./downArrow.png);
-}
-
-.QComboBox QAbstractItemView {
-    border: 2px solid rgb(20, 52, 30);
-    selection-background-color: rgb(20, 52, 30);
-}
-
-.QComboBox{
-border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-}
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QListView" name="listView_Structural">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>50</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_DatasetFolder">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
-         <property name="minimumSize">
-          <size>
-           <width>80</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_UnselectAllSubjects
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Unselect All</string>
-         </property>
-        </widget>
-       </item>
-       <item row="22" column="1">
-        <widget class="QSlider" name="horizontalSliderLesionFilter">
-         <property name="styleSheet">
-          <string notr="true">.QSlider::handle:horizontal {
-    background: #ffffff;
-    border: 10px solid #467955;
-    /*height: 5px;*/
-	width: 1px;
-    /*margin: -30px -30px;*/
-	/*border-radius: 30px;*/
-}
-
-.QSlider::groove:horizontal {
-    border: 1px solid #262626;
-    /*width: 10px;*/
-    background: rgb(20, 52, 30);
-    /*margin: 0 12px;*/
-}</string>
-         </property>
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="26" column="1">
-        <widget class="QCheckBox" name="checkBox_DepthPeeling">
-         <property name="text">
-          <string>Enable Depth Peeling</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
        <item row="6" column="1">
         <widget class="QComboBox" name="comboBox_AvailableSubjects">
          <property name="minimumSize">
@@ -643,6 +177,177 @@ border-style: solid;
 border-width: 2px;
 border-radius: 4px;
 }
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="22" column="1">
+        <widget class="QSlider" name="horizontalSliderLesionFilter">
+         <property name="styleSheet">
+          <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: rgb(20, 52, 30);
+    /*margin: 0 12px;*/
+}</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMin">
+           <property name="text">
+            <string>#</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterCurrent">
+           <property name="text">
+            <string>#</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMax">
+           <property name="text">
+            <string>#</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="29" column="1">
+        <widget class="QPushButton" name="pushButton_Screenshot">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_Screenshot
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_Screenshot
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Render Capture</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QPushButton" name="pushButton_LoadFolder">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_LoadFolder
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_LoadFolder {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_LoadFolder
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Browse...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Select Patient</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Set Patient Folder</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="31" column="1">
+        <widget class="Line" name="line">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <widget class="QListView" name="listView_Structural">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
 </string>
          </property>
         </widget>
@@ -707,13 +412,315 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="17" column="1">
-        <widget class="QLabel" name="label_8">
+       <item row="9" column="1">
+        <widget class="QPushButton" name="pushButton_LoadData">
+         <property name="font">
+          <font>
+           <family>Google Sans</family>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_LoadData
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_LoadData {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_LoadData
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
          <property name="text">
-          <string>MPR Modality</string>
+          <string>Render Surface Data</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="25" column="1">
+        <widget class="QCheckBox" name="checkBox_persistSettings">
+         <property name="text">
+          <string>Persist settings for all subjects</string>
+         </property>
+        </widget>
+       </item>
+       <item row="26" column="1">
+        <widget class="QCheckBox" name="checkBox_DepthPeeling">
+         <property name="text">
+          <string>Enable Depth Peeling</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
+        <widget class="QListView" name="listView">
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1">
+        <widget class="QComboBox" name="comboBox_MPRModality">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(./downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+}
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Surface Data</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Filter Lesions</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="1">
+        <widget class="QComboBox" name="comboBox_LesionFilter">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(./downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+}
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QPushButton" name="pushButton_LoadStructural">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_LoadStructural
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_LoadStructural {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_LoadStructural
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Render Volume Data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="32" column="1">
+        <widget class="QLabel" name="imageLabel">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignHCenter|Qt::AlignTop</set>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_UnselectAllSubjects
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Unselect All</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Structural Data</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="logoLabel">
+         <property name="minimumSize">
+          <size>
+           <width>220</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Google Sans</family>
+           <pointsize>16</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
+         </property>
+         <property name="text">
+          <string>MS EXPERIMENTOR</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Select Visualization</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="28" column="1">
+        <widget class="QCheckBox" name="checkBox_Parcellation">
+         <property name="text">
+          <string>Cortical Parcellation</string>
          </property>
         </widget>
        </item>

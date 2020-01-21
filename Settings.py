@@ -47,7 +47,7 @@ def getSettings(visType):
   if(visType == VisType.DEFAULT_FULL_DATA): # Default View
     setting = Settings(True, True, True, True, True, 1.0, 1.0, 1.0, 1.0, True, VisType.DEFAULT_FULL_DATA)
   elif(visType == VisType.LESION_COLORED_CONTINUOUS): # Transparent view with few surfaces.
-    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_CONTINUOUS)
+    setting = Settings(False, False, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_CONTINUOUS)
   elif(visType == VisType.LESION_COLORED_DISCRETE): # Raw intensity color map on lesions.
     setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISCRETE)
   elif(visType == VisType.LESION_COLORED_DISTANCE): # Continuous color map of lesion contrast.

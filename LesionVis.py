@@ -71,6 +71,7 @@ class Ui(Qt.QMainWindow):
         self.pushButton_UnselectAllSubjects.clicked.connect(self.on_click_UnselectAllSubjects) # Attaching button click Handlers
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
         self.checkBox_PerLesion.stateChanged.connect(self.perLesion_state_changed) # Attaching handler for per lesion.
+        self.checkBox_Parcellation.stateChanged.connect(self.parcellation_state_changed) # Attaching handler for parcellation display.
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
         # self.comboBox_VisType.addItem("Default View")
@@ -423,6 +424,13 @@ class Ui(Qt.QMainWindow):
                     transform.Translate(t_vector[0], t_vector[1], t_vector[2])
                     actor.SetUserTransform(transform)
                     f.close()
+                    if("rh.white" in fileNames[i]):
+                        #self.rhwhite = actor
+                        self.style.rhactor = actor  # TODO: Temporary code. To be removed soon.
+                    if("lh.white" in fileNames[i]):
+                        #self.lhwhite = actor
+                        self.style.lhactor = actor  # TODO: Temporary code. To be removed soon.
+
 
                 if(fileNames[i].endswith("lesions.obj")==False):
                     actor.GetProperty().SetInformation(information)
@@ -499,6 +507,8 @@ class Ui(Qt.QMainWindow):
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
+            # Initialize annotation data
+            self.colorsRh, self.colorsLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder)
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
             self.renderData(subjectFiles, self.settings)  # Render the actual data
 
@@ -780,13 +790,33 @@ class Ui(Qt.QMainWindow):
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.iren.Render()
 
-    # Handler for depth peeling checkbox
+    # Handler for per lesion analysis.
     @pyqtSlot()
     def perLesion_state_changed(self):
         if self.checkBox_PerLesion.isChecked():
             self.lesionSeededFiberTracts = True
         else:
             self.lesionSeededFiberTracts = False
+
+    # Handler for parcellation display
+    @pyqtSlot()
+    def parcellation_state_changed(self):
+        if(self.dataFolderInitialized == True):
+            if self.checkBox_Parcellation.isChecked():
+                for actorItem in self.actors:
+                    if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
+                        if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white"]:
+                            actorItem.GetMapper().ScalarVisibilityOn()
+                            actorItem.GetMapper().GetInput().GetPointData().SetScalars(self.colorsLh)
+                        if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["rh.pial", "rh.white"]:
+                            actorItem.GetMapper().ScalarVisibilityOn()
+                            actorItem.GetMapper().GetInput().GetPointData().SetScalars(self.colorsRh)
+            else:
+                for actorItem in self.actors:
+                    if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
+                        if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white", "rh.pial", "rh.white"]:
+                            actorItem.GetMapper().ScalarVisibilityOff()
+            self.iren.Render()
 
     # Handler for lesion filtering selected text changed.
     @pyqtSlot()
