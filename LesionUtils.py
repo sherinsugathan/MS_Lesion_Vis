@@ -211,8 +211,8 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                         if(actorName=="structural tracts"):
                             self.GetDefaultRenderer().RemoveActor(actor)
 
-                    lesionPointDataSet = self.rhactor.GetMapper().GetInput()
-                    #lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
+                    #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
+                    lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
                     streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
                     information = vtk.vtkInformation()
                     information.Set(self.informationKey,"structural tracts")
