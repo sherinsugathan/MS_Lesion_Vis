@@ -18,6 +18,7 @@ import nibabel as nib
 import numpy as np
 import json
 import ctypes
+import time
 from ctypes import wintypes
 
 from PyQt5 import QtWidgets, uic
@@ -315,6 +316,13 @@ class Ui(Qt.QMainWindow):
     # MAIN LOADER: Load and Render Data #
     #####################################
     def renderData(self, fileNames, settings=None):
+        # Performance log
+        start_time = time.time()
+        
+        subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
+        # Load data for MPRs.
+        self.LoadStructuralSlices(subjectFolder + "\\structural\\T1.nii")
+
         self.actors = []
         self.lesionCentroids = []
         self.lesionNumberOfPixels = []
@@ -327,7 +335,6 @@ class Ui(Qt.QMainWindow):
         self.lesionAverageIntensity  = []
         self.lesionAverageSurroundingIntensity = []
         self.lesionRegionNumberQuantized = []
-        subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # load precomputed lesion properties
         structureInfo = None
         with open(subjectFolder + "\\structure-def3.json") as fp: 
@@ -375,6 +382,18 @@ class Ui(Qt.QMainWindow):
 
         # Compute lesion properties (Deprecated. TODO - Remove Safely)
         # connectedComponentImage, connectedComponentFilter = LesionUtils.computeLesionProperties(subjectFolder)
+
+        translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
+        f = open(translationFilePath, "r")
+        t_vector = []
+        for t in f:
+            t_vector.append(t)
+        t_vector = list(map(float, t_vector))
+        transform = vtk.vtkTransform()
+        transform.PostMultiply()
+        transform.Translate(t_vector[0], t_vector[1], t_vector[2])
+        f.close()
+
         for i in range(len(fileNames)):
 
             # Check if files are wavefront OBJ and in the whitelist according to settings.
@@ -385,17 +404,20 @@ class Ui(Qt.QMainWindow):
                 reader.Update()
                 mapper = vtk.vtkOpenGLPolyDataMapper()
                 mapper.SetInputConnection(reader.GetOutputPort())
-                transform = vtk.vtkTransform()
-                transform.Identity()
-                mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
-                arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
-                transform.SetMatrix(arrayList)
-
+                #transform = vtk.vtkTransform()
+                #transform.Identity()
+                #mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+                #arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
+                #QFormMatrixT1 = self.niftyReaderT1.GetQFormMatrix()
+                #qFormListT1 = [0] * 16 #the matrix is 4x4
+                #QFormMatrixT1.DeepCopy(qFormListT1, QFormMatrixT1)
+                #print(arrayList)
+                #print(qFormListT1)
+                #transform.SetMatrix(qFormListT1)
                 actor = vtk.vtkActor()
                 actor.SetMapper(mapper)
-
-                transform.Identity()
-                actor.SetUserTransform(transform)
+                #transform.Identity()
+                #actor.SetUserTransform(transform)
 
                 information = vtk.vtkInformation()
                 # Apply transparency settings and add information.
@@ -413,17 +435,8 @@ class Ui(Qt.QMainWindow):
                     information.Set(self.informationKey,"rh.white")
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
-                    translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
-                    f = open(translationFilePath, "r")
-                    t_vector = []
-                    for t in f:
-                        t_vector.append(t)
-                    t_vector = list(map(float, t_vector))
-                    transform = vtk.vtkTransform()
-                    transform.PostMultiply()
-                    transform.Translate(t_vector[0], t_vector[1], t_vector[2])
                     actor.SetUserTransform(transform)
-                    f.close()
+                    #f.close()
                     if("rh.white" in fileNames[i]):
                         #self.rhwhite = actor
                         self.style.rhactor = actor  # TODO: Temporary code. To be removed soon.
@@ -444,7 +457,6 @@ class Ui(Qt.QMainWindow):
                 self.modelListBoxSurfaces.appendRow(item)
                 self.listView.setSelectionRectVisible(True)
                 self.modelListBoxSurfaces.itemChanged.connect(self.on_itemChanged)
-
 
         # Update overlay text and add it to the renderer
         self.overlayDataGlobal["Lesion Load"] = self.numberOfLesionElements
@@ -474,8 +486,9 @@ class Ui(Qt.QMainWindow):
         self.ren.ResetCamera()
         self.iren.Render()
 
-        # Load data for MPRs.
-        self.LoadStructuralSlices(subjectFolder + "\\structural\\T1.nii")
+
+        # End of performance log. Print elapsed time.
+        print("--- %s seconds ---" % (time.time() - start_time))
 
     # Handler for browse folder button click.
     @pyqtSlot()
@@ -543,14 +556,17 @@ class Ui(Qt.QMainWindow):
             subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
 
             t1StructuralNiftyFileName = subjectFolder + "\\structural\\T1.nii"
-            mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
+            #mrmlDataFileName = open ( subjectFolder + "\\meta\\mrml.txt" , 'r')
             niftiReader = vtk.vtkNIFTIImageReader()
             niftiReader.SetFileName(t1StructuralNiftyFileName)
             niftiReader.Update()
+            QFormMatrixT1 = niftiReader.GetQFormMatrix()
+            qFormListT1 = [0] * 16 #the matrix is 4x4
+            QFormMatrixT1.DeepCopy(qFormListT1, QFormMatrixT1)
 
             ijkras_transform = vtk.vtkTransform()
-            arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
-            ijkras_transform.SetMatrix(arrayList)
+            #arrayList = list(np.asfarray(np.array(mrmlDataFileName.readline().split(",")),float))
+            ijkras_transform.SetMatrix(qFormListT1)
             ijkras_transform.Update()
 
             # Ray cast volume mapper
@@ -576,7 +592,7 @@ class Ui(Qt.QMainWindow):
             self.listView_Structural.setSelectionRectVisible(True)
             self.model_structural.itemChanged.connect(self.on_itemChanged_Structural)
 
-            mrmlDataFileName.close()
+            #mrmlDataFileName.close()
 
             self.iren.Render()
             self.volumeDataLoaded=True # Indicate that volume data is loaded properly.
