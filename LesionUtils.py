@@ -345,23 +345,6 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None, lesi
 
 '''
 ##########################################################################
-    Compute transformations required for json data
-    Returns: Transform object.
-##########################################################################
-'''
-def computeJsonDataTransform(subjectFolder):
-    # Transform for temperature data
-    transformGradient = vtk.vtkTransform()
-    mrmlDataFileGradient2 = open (subjectFolder + "\\meta\\mrmlGradient2.txt" , 'r')
-    arrayListGradient2 = list(np.asfarray(np.array(mrmlDataFileGradient2.readline().split(",")),float))
-    arrayListGradient2[0]= arrayListGradient2[0] * -1 # A flip needed.
-    transformGradient.PostMultiply()
-    transformGradient.Concatenate(arrayListGradient2)
-    transformGradient.Update()
-    return transformGradient
-
-'''
-##########################################################################
     Compute transformation matrix for json data
     Returns: JSON data transformation matrix
 ##########################################################################
