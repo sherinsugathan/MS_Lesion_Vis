@@ -199,6 +199,24 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRA = vtk.vtkTextActor() # MPRA Slice number
         self.sliceNumberTextMPRB = vtk.vtkTextActor() # MPRB Slice number
         self.sliceNumberTextMPRC = vtk.vtkTextActor() # MPRC Slice number
+        self.sliceNumberTextMPRA.UseBorderAlignOff()
+        self.sliceNumberTextMPRA.SetPosition(5,5)
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+        self.renMPRA.AddActor2D(self.sliceNumberTextMPRA)
+        self.sliceNumberTextMPRB.UseBorderAlignOff()
+        self.sliceNumberTextMPRB.SetPosition(5,5)
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+        self.renMPRB.AddActor2D(self.sliceNumberTextMPRB)
+        self.sliceNumberTextMPRC.UseBorderAlignOff()
+        self.sliceNumberTextMPRC.SetPosition(5,5)
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFamilyToCourier()
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+        self.renMPRC.AddActor2D(self.sliceNumberTextMPRC)
 
         # Text overlay support in main renderer.
         self.overlayDataMain = {"Lesion ID":"NA", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA"}
@@ -297,20 +315,16 @@ class Ui(Qt.QMainWindow):
             interactorMPRC = vtk.vtkInteractorStyleImage()
             self.iren_MPRC.SetInteractorStyle(interactorMPRC)
 
-            self.renMPRA.ResetCamera()
-            self.renMPRB.ResetCamera()
-            self.renMPRC.ResetCamera()
-            self.renMPRA.GetActiveCamera().Zoom(1.5)
-            self.renMPRB.GetActiveCamera().Zoom(1.5)
-            self.renMPRC.GetActiveCamera().Zoom(1.5)
+            #self.renMPRA.ResetCamera()
+            #self.renMPRB.ResetCamera()
+            #self.renMPRC.ResetCamera()
+            #self.renMPRA.GetActiveCamera().Zoom(1.5)
+            #self.renMPRB.GetActiveCamera().Zoom(1.5)
+            #self.renMPRC.GetActiveCamera().Zoom(1.5)
 
             self.iren_MPRA.Render()
             self.iren_MPRB.Render()
             self.iren_MPRC.Render()
-        else:
-            self.resliceImageViewerMPRA.SetSlice(self.mprA_Slice_Slider.value())
-            self.resliceImageViewerMPRB.SetSlice(self.mprB_Slice_Slider.value())
-            self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
         
     #####################################
     # MAIN LOADER: Load and Render Data #
@@ -646,39 +660,21 @@ class Ui(Qt.QMainWindow):
     def on_sliderChangedMPRA(self):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRA.SetInput(str(self.mprA_Slice_Slider.value()))
-        self.sliceNumberTextMPRA.UseBorderAlignOff()
-        self.sliceNumberTextMPRA.SetPosition(5,5)
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
-        self.renMPRA.AddActor2D(self.sliceNumberTextMPRA)
-        self.LoadStructuralSlices("dummy", False)
+        self.resliceImageViewerMPRA.SetSlice(self.mprA_Slice_Slider.value())
 
     # Handler for MPRB Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRB(self):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRB.SetInput(str(self.mprB_Slice_Slider.value()))
-        self.sliceNumberTextMPRB.UseBorderAlignOff()
-        self.sliceNumberTextMPRB.SetPosition(5,5)
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
-        self.renMPRB.AddActor2D(self.sliceNumberTextMPRB)
-        self.LoadStructuralSlices("dummy", False)
+        self.resliceImageViewerMPRB.SetSlice(self.mprB_Slice_Slider.value())
 
     # Handler for MPRC Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRC(self):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRC.SetInput(str(self.mprC_Slice_Slider.value()))
-        self.sliceNumberTextMPRC.UseBorderAlignOff()
-        self.sliceNumberTextMPRC.SetPosition(5,5)
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(16)
-        self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
-        self.renMPRC.AddActor2D(self.sliceNumberTextMPRC)
-        self.LoadStructuralSlices("dummy", False)
+        self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
 
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
