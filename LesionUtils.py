@@ -11,6 +11,7 @@ import time
 import SimpleITK as sitk
 import time
 from nibabel import freesurfer
+from PyQt5.QtCore import QTimer
 
 '''
 ##########################################################################
@@ -132,6 +133,10 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.sliderA = sliderA
         self.sliderB = sliderB
         self.sliderC = sliderC
+        self.message = "tick"
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.onTimerEvent)
+        
 
     def addLesionData(self, subjectFolder, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness, lesionSeededFiberTracts):
         self.lesionCentroids = lesionCentroids
@@ -144,6 +149,21 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionRoundness = lesionRoundness
         self.subjectFolder = subjectFolder
         self.lesionSeededFiberTracts = lesionSeededFiberTracts
+
+    def onTimerEvent(self):
+        self.parcellationCurrentActor.RotateY(1)
+        self.iren.Render()
+
+        # if self.message == "tick":
+        #     self.message = "tock"
+        #     #self.brodmannTextActor.SetInput("Hello")
+        #     #print(self.message)
+        #     #self.iren.Render()
+        # else:
+        #     self.message = "tick"
+        #     #self.brodmannTextActor.SetInput("Sherin")
+        #     #print(self.message)
+        #     #self.iren.Render()
         
 
     def leftButtonPressEvent(self,obj,event):
@@ -151,10 +171,20 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 
         picker = vtk.vtkPropPicker()
         picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+
+        # pointPicker = vtk.vtkPointPicker()
+        # pointPicker.SetTolerance(0.0005)
+        # pointPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+        # worldPosition = pointPicker.GetPickPosition()
+        # print(pointPicker.GetPointId())
+        cellPicker = vtk.vtkCellPicker()
+        cellPicker.SetTolerance(0.0005)
+        cellPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+        #worldPosition = cellPicker.GetPickPosition()
+        #print(cellPicker.GetPointId())
         
         # get the new
         self.NewPickedActor = picker.GetActor()
-        
         # If something was selected
         if self.NewPickedActor:
             # If we picked something before, reset its property
@@ -167,13 +197,74 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
+
+            if("lh" in str(itemType)):
+                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
+                    self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
+                self.renMapOutcome.RemoveAllViewProps()
+                #print("Left")
+                if(self.labelsLh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
+                    #print("Not a valid point")
+                    pass
+                else:
+                    clr = self.metaLh[self.labelsLh[cellPicker.GetPointId()]]["color"]
+                    #print("Point ID is", cellPicker.GetPointId())
+                    #print(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])
+                    #print("Color is", clr)
+                    #print("Area is", self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])
+                    self.brodmannTextActor.SetInput(str(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])))
+                    polyDataActor = self.polyDataLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])]
+                    parcellationMapperLh = vtk.vtkOpenGLPolyDataMapper()
+                    parcellationMapperLh.SetInputData(polyDataActor)
+                    parcellationMapperLh.ScalarVisibilityOn()
+                    self.parcellationActorLh = vtk.vtkActor()
+                    self.parcellationActorLh.SetMapper(parcellationMapperLh)
+                    self.parcellationActorLh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
+                    self.parcellationActorLh.SetOrigin(self.parcellationActorLh.GetCenter())
+                    self.parcellationCurrentActor = self.parcellationActorLh
+                    self.renMapOutcome.AddViewProp(self.parcellationActorLh)
+                    self.renMapOutcome.AddActor(self.brodmannTextActor)
+                    self.renMapOutcome.ResetCamera()
+                    self.timer.start(200)
+            if("rh" in str(itemType)):
+                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
+                    self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
+                self.renMapOutcome.RemoveAllViewProps()
+                #print("Right")
+                if(self.labelsRh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
+                    #print("Not a valid point")
+                    pass
+                else:
+                    clr = self.metaRh[self.labelsRh[cellPicker.GetPointId()]]["color"]
+                    #print("Point ID is", cellPicker.GetPointId())
+                    #print(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])
+                    #print("Color is", clr)
+                    #print("Area is", self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])
+                    self.brodmannTextActor.SetInput(str(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])))
+                    polyDataActor = self.polyDataRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])]
+                    parcellationMapperRh = vtk.vtkOpenGLPolyDataMapper()
+                    parcellationMapperRh.SetInputData(polyDataActor)
+                    parcellationMapperRh.ScalarVisibilityOn()
+                    self.parcellationActorRh = vtk.vtkActor()
+                    self.parcellationActorRh.SetMapper(parcellationMapperRh)
+                    self.parcellationActorRh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
+                    self.parcellationActorRh.SetOrigin(self.parcellationActorRh.GetCenter())
+                    self.parcellationCurrentActor = self.parcellationActorRh
+                    self.renMapOutcome.AddViewProp(self.parcellationActorRh)
+                    self.renMapOutcome.AddActor(self.brodmannTextActor)
+                    self.renMapOutcome.ResetCamera()
+                    self.timer.start(200)
+            
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
+                self.timer.stop()
+                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
+                    self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
                 # Highlight the picked actor by changing its properties
                 self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
                 self.NewPickedActor.GetProperty().SetDiffuse(1.0)
                 self.NewPickedActor.GetProperty().SetSpecular(0.0)
                 self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
-                self.NewPickedActor.GetProperty().SetOpacity(0.5)
+                #self.NewPickedActor.GetProperty().SetOpacity(0.5)
                 #print(self.NewPickedActor.GetMapper().GetScalarRange())
                 #print(self.NewPickedActor)
                 #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
@@ -285,48 +376,51 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None, lesi
     transformGradient.Update()
     
     # Create point source and actor
-    psource = vtk.vtkPointSource()
-    if(seedCenter!=None):
-        psource.SetNumberOfPoints(1500)
-        psource.SetCenter(seedCenter)
-        psource.SetRadius(seedRadius)
-    else:
-        psource.SetNumberOfPoints(9500)
-        psource.SetCenter(127,80,150)
-        psource.SetRadius(80)
+    # psource = vtk.vtkPointSource()
+    # if(seedCenter!=None):
+    #     psource.SetNumberOfPoints(500)
+    #     psource.SetCenter(seedCenter)
+    #     psource.SetRadius(seedRadius)
+    # else:
+    #     psource.SetNumberOfPoints(500)
+    #     psource.SetCenter(127,80,150)
+    #     psource.SetRadius(80)
     #pointSourceMapper = vtk.vtkPolyDataMapper()
     #pointSourceMapper.SetInputConnection(psource.GetOutputPort())
     #pointSourceActor = vtk.vtkActor()
     #pointSourceActor.SetMapper(pointSourceMapper)
 
-    if(seedCenter!=None):
-        transformFilter = vtk.vtkTransformFilter()
-        transformFilter.SetInputConnection(cellDataToPointData.GetOutputPort())
-        transformFilter.SetTransform(transformGradient)
-        transformFilter.Update()
+    # if(seedCenter!=None):
+    transformFilter = vtk.vtkTransformFilter()
+    transformFilter.SetInputConnection(cellDataToPointData.GetOutputPort())
+    transformFilter.SetTransform(transformGradient)
+    transformFilter.Update()
 
     # Perform stream tracing
     streamers = vtk.vtkStreamTracer()
-    if(seedCenter!=None):
-        streamers.SetInputConnection(transformFilter.GetOutputPort())
-    else:
-        streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
-    streamers.SetIntegrationDirectionToBoth()
+    streamers.SetInputConnection(transformFilter.GetOutputPort())
+    # if(seedCenter!=None):
+    #     streamers.SetInputConnection(transformFilter.GetOutputPort())
+    # else:
+    #     streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
+    streamers.SetIntegrationDirectionToForward()
+    streamers.SetComputeVorticity(False)
     #streamers.SetSourceConnection(psource.GetOutputPort())
     streamers.SetSourceData(lesionPointDataSet)
     
-    streamers.SetMaximumPropagation(10000.0)
-    streamers.SetInitialIntegrationStep(0.05)
-    streamers.SetTerminalSpeed(.51)
+    # streamers.SetMaximumPropagation(100.0)
+    # streamers.SetInitialIntegrationStep(0.05)
+    # streamers.SetTerminalSpeed(.51)
 
-    #streamers.SetMaximumPropagation(100.0)
-    #streamers.SetInitialIntegrationStep(0.2)
-    #streamers.SetTerminalSpeed(.01)
+    streamers.SetMaximumPropagation(100.0)
+    streamers.SetInitialIntegrationStep(0.2)
+    streamers.SetTerminalSpeed(.01)
     streamers.Update()
     tubes = vtk.vtkTubeFilter()
     tubes.SetInputConnection(streamers.GetOutputPort())
-    tubes.SetRadius(0.3)
-    tubes.SetNumberOfSides(6)
+    tubes.SetRadius(0.5)
+    tubes.SetNumberOfSides(3)
+    tubes.CappingOn()
     tubes.SetVaryRadius(0)
     lut = vtk.vtkLookupTable()
     lut.SetHueRange(.667, 0.0)
@@ -336,10 +430,24 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None, lesi
     streamerMapper.SetLookupTable(lut)
     streamerActor = vtk.vtkActor()
     streamerActor.SetMapper(streamerMapper)
-    if(seedCenter!=None):
-        pass
-    else:
-        streamerActor.SetUserTransform(transformGradient)
+
+    
+    # if(seedCenter!=None):
+    #     pass
+    # else:
+    #     streamerActor.SetUserTransform(transformGradient)
+    streamerMapper.Update()
+    print(streamerActor.GetMapper().GetInput())
+
+    # writer = vtk.vtkXMLPolyDataWriter()
+    # writer.SetFileName("D:\\streamlines.vtp")
+    # writer.SetInputData(tubes.GetOutput())
+    # writer.Write()
+
+    # plyWriter = vtk.vtkPLYWriter()
+    # plyWriter.SetFileName("D:\\streamlines.ply")
+    # plyWriter.SetInputData(tubes.GetOutput())
+    # plyWriter.Write()
 
     return streamerActor
 
@@ -639,7 +747,7 @@ def computeSlicePositionFrom3DCoordinates(subjectFolder, pt):
     Returns: Color arrays for left and right hemispheres.
 ##########################################################################
 '''
-def initializeSurfaceAnnotationColors(subjectFolder):
+def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMapper):
     fileNameRhAnnot = str(subjectFolder + "\\surfaces\\rh.aparc.annot")
     fileNameLhAnnot = str(subjectFolder + "\\surfaces\\lh.aparc.annot")
     # Read annotation files.
@@ -653,12 +761,24 @@ def initializeSurfaceAnnotationColors(subjectFolder):
                 for index, item in enumerate(zip(regionsLh, ctabLh)))
     numberOfPointsRh = len(labelsRh)
     numberOfPointsLh = len(labelsLh)
+    uniqueLabelsRh = np.unique(labelsRh)
+    uniqueLabelsLh = np.unique(labelsLh)
+
+    vertexIdsRh = np.arange(numberOfPointsRh)
+    vertexIdsLh = np.arange(numberOfPointsLh)
+    listOfSegmentedParcellationVerticesRh = []
+    for val in uniqueLabelsRh:
+        vertices = vertexIdsRh[labelsRh == val]
+        listOfSegmentedParcellationVerticesRh.append(vertices)
+
+    listOfSegmentedParcellationVerticesLh = []
+    for val in uniqueLabelsLh:
+        vertices = vertexIdsLh[labelsLh == val]
+        listOfSegmentedParcellationVerticesLh.append(vertices)
 
     colorDataRh = vtk.vtkUnsignedCharArray()
-    colorDataRh.SetName('colorsRh')
     colorDataRh.SetNumberOfComponents(3)
     colorDataLh = vtk.vtkUnsignedCharArray()
-    colorDataLh.SetName('colorsLh')
     colorDataLh.SetNumberOfComponents(3)
 
     for index in range(numberOfPointsRh):
@@ -674,7 +794,74 @@ def initializeSurfaceAnnotationColors(subjectFolder):
         else:
             clr = metaLh[labelsLh[index]]["color"]
         colorDataLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+
+    areaRh = {}
+    polyDataRh = []
+    for i in range(len(listOfSegmentedParcellationVerticesRh)):
+        ids = vtk.vtkIdTypeArray()
+        ids.SetNumberOfComponents(1)
+        for elem in listOfSegmentedParcellationVerticesRh[i]:
+            ids.InsertNextValue(elem)
+
+
+        selectionNode = vtk.vtkSelectionNode()
+        selectionNode.SetFieldType(vtk.vtkSelectionNode.POINT)
+        selectionNode.SetContentType(vtk.vtkSelectionNode.INDICES)
+        selectionNode.SetSelectionList(ids)
+        selectionNode.GetProperties().Set(vtk.vtkSelectionNode.CONTAINING_CELLS(),1)
+        selection = vtk.vtkSelection()
+        selection.AddNode(selectionNode)
+        extractSelection = vtk.vtkExtractSelection()
+        extractSelection.SetInputData(0,rhwhiteMapper.GetInput())
+        extractSelection.SetInputData(1, selection)
+        extractSelection.Update()
+
+        selected = vtk.vtkUnstructuredGrid()
+        selected.ShallowCopy(extractSelection.GetOutput())
+        geometryFilter = vtk.vtkGeometryFilter()
+        geometryFilter.SetInputData(selected)
+        geometryFilter.Update()
+        mypolydata = geometryFilter.GetOutput()
+        polyDataRh.append(mypolydata)
+
+        measured_polydata = vtk.vtkMassProperties()
+        measured_polydata.SetInputData(mypolydata)
+        surfaceArea = measured_polydata.GetSurfaceArea()
+        areaRh[i] = surfaceArea
+
+    areaLh = {}
+    polyDataLh = []
+    for i in range(len(listOfSegmentedParcellationVerticesLh)):
+        ids = vtk.vtkIdTypeArray()
+        ids.SetNumberOfComponents(1)
+        for elem in listOfSegmentedParcellationVerticesLh[i]:
+            ids.InsertNextValue(elem)
+
+        selectionNode = vtk.vtkSelectionNode()
+        selectionNode.SetFieldType(vtk.vtkSelectionNode.POINT)
+        selectionNode.SetContentType(vtk.vtkSelectionNode.INDICES)
+        selectionNode.SetSelectionList(ids)
+        selectionNode.GetProperties().Set(vtk.vtkSelectionNode.CONTAINING_CELLS(),1)
+        selection = vtk.vtkSelection()
+        selection.AddNode(selectionNode)
+        extractSelection = vtk.vtkExtractSelection()
+        extractSelection.SetInputData(0,lhwhiteMapper.GetInput())
+        extractSelection.SetInputData(1, selection)
+        extractSelection.Update()
+
+        selected = vtk.vtkUnstructuredGrid()
+        selected.ShallowCopy(extractSelection.GetOutput())
+        geometryFilter = vtk.vtkGeometryFilter()
+        geometryFilter.SetInputData(selected)
+        geometryFilter.Update()
+        mypolydata = geometryFilter.GetOutput()
+        polyDataLh.append(mypolydata)
+
+        measured_polydata = vtk.vtkMassProperties()
+        measured_polydata.SetInputData(mypolydata)
+        surfaceArea = measured_polydata.GetSurfaceArea()
+        areaLh[i] = surfaceArea
     
-    return colorDataRh, colorDataLh
-
-
+    print("Completed")
+    
+    return colorDataRh, colorDataLh, labelsRh, labelsLh, regionsRh, regionsLh, metaRh, metaLh, uniqueLabelsRh, uniqueLabelsLh, areaRh, areaLh, polyDataRh, polyDataLh

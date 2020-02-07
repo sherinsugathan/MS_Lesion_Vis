@@ -21,11 +21,13 @@ import ctypes
 import time
 from ctypes import wintypes
 
+
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog, QCheckBox
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtGui
 from PyQt5 import Qt
+from PyQt5.QtCore import QTimer
 from os import system, name
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from freesurfer_surface import Surface, Vertex, Triangle
@@ -58,7 +60,12 @@ class Ui(Qt.QMainWindow):
         self.initVTK()
         
         self.showMaximized()
+        #self.message = "tick"
+        #self.timer = QTimer()
+        #self.timer.timeout.connect(self.onTimerEvent)
+        #self.timer.start(100)
         logging.info('VTK initialized successfully.')
+
 
     # Initialize the UI.    
     def initUI(self):
@@ -111,6 +118,16 @@ class Ui(Qt.QMainWindow):
         pmMain = Qt.QPixmap("AppLogo.png")
         self.logoLabel.setPixmap(pmMain.scaled(self.logoLabel.size().width(), self.logoLabel.size().height(), 1,1))
 
+    def onTimerEvent(self):
+        if self.message == "tick":
+            self.message = "tock"
+            #self.brodmannTextActor.SetInput("Hello")
+            #self.iren.Render()
+        else:
+            self.message = "tick"
+            #self.brodmannTextActor.SetInput("Sherin")
+            #self.iren.Render()
+
     # Initialize vtk
     def initVTK(self):
         # Define viewport ranges (3 MPRS and 1 volume rendering)
@@ -118,6 +135,7 @@ class Ui(Qt.QMainWindow):
         #self.mprB_Viewport=[0.0, 0.334, 0.333, 0.665]
         #self.mprC_Viewport=[0.0, 0.0, 0.1, 0.1]
         #self.VR_Viewport=[0.335, 0, 1.0, 1.0]
+        self.parcellation_Viewport = [0.8, 0, 1, 0.32]
 
         self.vl = Qt.QVBoxLayout()
         self.vl_MPRA = Qt.QVBoxLayout()
@@ -140,6 +158,7 @@ class Ui(Qt.QMainWindow):
         self.vtkWidgetMPRC.Initialize()
 
         self.ren = vtk.vtkRenderer() # Renderer for volume
+        self.renMapOutcome = vtk.vtkRenderer() # Renderer for displaying mapping outcomes.
         self.renMPRA = vtk.vtkRenderer() # Renderer for MPR A
         self.renMPRB = vtk.vtkRenderer() # Renderer for MPR B
         self.renMPRC = vtk.vtkRenderer() # Renderer for MPR C
@@ -149,6 +168,7 @@ class Ui(Qt.QMainWindow):
         self.renMPRB.SetBackground(0, 0, 0)
         self.renMPRC.SetBackground(0, 0, 0)
         #self.ren.SetViewport(self.VR_Viewport[0], self.VR_Viewport[1], self.VR_Viewport[2], self.VR_Viewport[3])
+        self.renMapOutcome.SetViewport(self.parcellation_Viewport[0], self.parcellation_Viewport[1], self.parcellation_Viewport[2], self.parcellation_Viewport[3])
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
@@ -164,6 +184,7 @@ class Ui(Qt.QMainWindow):
         self.vtkWidget.GetRenderWindow().SetMultiSamples(0)
 
         self.vtkWidget.GetRenderWindow().AddRenderer(self.ren)
+        #self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
         #self.vtkWidget.GetRenderWindow().AddRenderer(self.renOrientationCube)
         #self.vtkWidget.GetRenderWindow().AddRenderer(self.renMPRB)
         #self.vtkWidget.GetRenderWindow().AddRenderer(self.renMPRC)
@@ -200,21 +221,27 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRB = vtk.vtkTextActor() # MPRB Slice number
         self.sliceNumberTextMPRC = vtk.vtkTextActor() # MPRC Slice number
         self.sliceNumberTextMPRA.UseBorderAlignOff()
-        self.sliceNumberTextMPRA.SetPosition(5,5)
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRA.SetPosition(0,0)
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFamily(4)
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(14)
+        self.sliceNumberTextMPRA.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRA.AddActor2D(self.sliceNumberTextMPRA)
         self.sliceNumberTextMPRB.UseBorderAlignOff()
-        self.sliceNumberTextMPRB.SetPosition(5,5)
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRB.SetPosition(0,0)
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFamily(4)
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(14)
+        self.sliceNumberTextMPRB.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRB.AddActor2D(self.sliceNumberTextMPRB)
         self.sliceNumberTextMPRC.UseBorderAlignOff()
-        self.sliceNumberTextMPRC.SetPosition(5,5)
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontFamilyToCourier()
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(16)
+        self.sliceNumberTextMPRC.SetPosition(0,0)
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFamily(4)
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(14)
+        self.sliceNumberTextMPRC.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
         self.renMPRC.AddActor2D(self.sliceNumberTextMPRC)
 
@@ -227,17 +254,38 @@ class Ui(Qt.QMainWindow):
         self.numberOfLesions = 0
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
-        self.textActorLesionStatistics.GetTextProperty().SetFontFamilyToCourier()
-        self.textActorLesionStatistics.GetTextProperty().SetFontSize(16)
+        self.textActorLesionStatistics.GetTextProperty().SetFontFamily(4)
+        self.textActorLesionStatistics.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.textActorLesionStatistics.GetTextProperty().SetFontSize(14)
+        self.textActorLesionStatistics.GetTextProperty().ShadowOn()
         self.textActorLesionStatistics.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
         self.textActorGlobal.UseBorderAlignOff()
-        self.textActorGlobal.GetTextProperty().SetFontFamilyToCourier()
-        self.textActorGlobal.GetTextProperty().SetFontSize(16)
+        self.textActorGlobal.GetTextProperty().SetFontFamily(4)
+        self.textActorGlobal.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.textActorGlobal.GetTextProperty().SetFontSize(14)
+        self.textActorGlobal.GetTextProperty().ShadowOn()
         self.textActorGlobal.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+
+        ui_path = os.path.dirname(os.path.abspath(__file__))
+        fontPath = os.path.join(ui_path, "GoogleSans-Regular.ttf")
+        self.brodmannTextActor = vtk.vtkTextActor()
+        self.brodmannTextActor.UseBorderAlignOn()
+        self.brodmannTextActor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+        self.brodmannTextActor.SetPosition(0.5,0)
+        self.brodmannTextActor.GetTextProperty().SetFontFamily(4)
+        self.brodmannTextActor.GetTextProperty().SetFontFile(fontPath)
+        self.brodmannTextActor.GetTextProperty().SetFontSize(20)
+        self.brodmannTextActor.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+        self.brodmannTextActor.GetTextProperty().SetJustificationToCentered()
+        #self.brodmannTextActor.SetInput("NA")
 
         self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts, self.mprA_Slice_Slider, self.mprB_Slice_Slider, self.mprC_Slice_Slider)
         self.style.SetDefaultRenderer(self.ren)
+        self.style.brodmannTextActor = self.brodmannTextActor
+        self.style.vtkWidget = self.vtkWidget
+        self.style.renMapOutcome = self.renMapOutcome
+        self.renMapOutcome.AddActor2D(self.brodmannTextActor)
         self.iren.SetInteractorStyle(self.style)
 
         self.ren.ResetCamera()
@@ -315,12 +363,12 @@ class Ui(Qt.QMainWindow):
             interactorMPRC = vtk.vtkInteractorStyleImage()
             self.iren_MPRC.SetInteractorStyle(interactorMPRC)
 
-            #self.renMPRA.ResetCamera()
-            #self.renMPRB.ResetCamera()
-            #self.renMPRC.ResetCamera()
-            #self.renMPRA.GetActiveCamera().Zoom(1.5)
-            #self.renMPRB.GetActiveCamera().Zoom(1.5)
-            #self.renMPRC.GetActiveCamera().Zoom(1.5)
+            self.renMPRA.ResetCamera()
+            self.renMPRB.ResetCamera()
+            self.renMPRC.ResetCamera()
+            self.renMPRA.GetActiveCamera().Zoom(1.5)
+            self.renMPRB.GetActiveCamera().Zoom(1.5)
+            self.renMPRC.GetActiveCamera().Zoom(1.5)
 
             self.iren_MPRA.Render()
             self.iren_MPRB.Render()
@@ -438,15 +486,19 @@ class Ui(Qt.QMainWindow):
                 if "lh.pial" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.lh_pial_transparency)
                     information.Set(self.informationKey,"lh.pial")
+                    self.lhpialMapper = mapper
                 if "rh.pial" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.rh_pial_transparency)
                     information.Set(self.informationKey,"rh.pial")
+                    self.rhpialMapper = mapper
                 if "lh.white" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.lh_white_transparency)
                     information.Set(self.informationKey,"lh.white")
+                    self.lhwhiteMapper = mapper
                 if "rh.white" in fileNames[i]:
                     actor.GetProperty().SetOpacity(settings.rh_white_transparency)
                     information.Set(self.informationKey,"rh.white")
+                    self.rhwhiteMapper = mapper
 
                 if "pial" in fileNames[i] or "white" in fileNames[i]:
                     actor.SetUserTransform(transform)
@@ -534,10 +586,23 @@ class Ui(Qt.QMainWindow):
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
-            # Initialize annotation data
-            self.colorsRh, self.colorsLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder)
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
             self.renderData(subjectFiles, self.settings)  # Render the actual data
+            # Initialize annotation data
+            self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhwhiteMapper, self.lhwhiteMapper)
+            self.style.labelsRh = self.labelsRh
+            self.style.regionsRh = self.regionsRh
+            self.style.metaRh = self.metaRh
+            self.style.uniqueLabelsRh = self.uniqueLabelsRh
+            self.style.areaRh = self.areaRh
+            self.style.labelsLh = self.labelsLh
+            self.style.regionsLh = self.regionsLh
+            self.style.metaLh = self.metaLh
+            self.style.uniqueLabelsLh = self.uniqueLabelsLh
+            self.style.areaLh = self.areaLh
+            self.style.polyDataRh = self.polyDataRh
+            self.style.polyDataLh = self.polyDataLh
+            self.style.renMapOutcome = self.renMapOutcome
 
         # Load orientation cube only once.
         if(self.dataFolderInitialized==False):
