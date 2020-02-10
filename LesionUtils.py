@@ -168,10 +168,8 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
-
         picker = vtk.vtkPropPicker()
         picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-
         # pointPicker = vtk.vtkPointPicker()
         # pointPicker.SetTolerance(0.0005)
         # pointPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
@@ -437,7 +435,6 @@ def computeStreamlines(subjectFolder, seedCenter = None, seedRadius = None, lesi
     # else:
     #     streamerActor.SetUserTransform(transformGradient)
     streamerMapper.Update()
-    print(streamerActor.GetMapper().GetInput())
 
     # writer = vtk.vtkXMLPolyDataWriter()
     # writer.SetFileName("D:\\streamlines.vtp")

@@ -917,87 +917,26 @@ border-radius: 10px;</string>
      </layout>
     </item>
     <item>
-     <widget class="QStackedWidget" name="stackedWidget_MainRenderers">
+     <widget class="QFrame" name="frame">
       <property name="minimumSize">
        <size>
-        <width>50</width>
+        <width>600</width>
         <height>0</height>
        </size>
       </property>
-      <property name="currentIndex">
-       <number>0</number>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(6, 16, 9);
+border-color: rgb(20, 52, 30);
+border-style: solid;
+border-width: 2px;
+border-radius: 10px;</string>
       </property>
-      <widget class="QWidget" name="mainVR">
-       <layout class="QGridLayout" name="gridLayout_5">
-        <item row="0" column="0">
-         <widget class="QFrame" name="frame">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>600</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="page_2">
-       <layout class="QGridLayout" name="gridLayout_7">
-        <item row="0" column="0">
-         <widget class="QFrame" name="frame_DualLeft">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QFrame" name="frame_DualRight">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
      </widget>
     </item>
     <item>
