@@ -14,7 +14,6 @@ class LesionMapper:
   def AddData(self):
     #print("Hello add")
     self.renDualRight.SetActiveCamera(self.renDualLeft.GetActiveCamera())
-
     self.interactionStyleLeft = LesionMappingInteraction()
     self.interactionStyleLeft.renderer = self.renDualLeft
     self.interactionStyleLeft.informationKey = self.informationKey
@@ -54,9 +53,13 @@ class LesionMapper:
     self.renDualLeft.Render()
     self.renDualRight.Render()
 
-  def RemoveData(self):
+  def ClearData(self):
     self.renDualLeft.RemoveAllViewProps()
     self.renDualRight.RemoveAllViewProps()
+
+  def Refresh(self):
+      self.renDualLeft.Render()
+      self.renDualRight.Render()
 
 class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
  
@@ -103,8 +106,8 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 vtk_colorsLh.SetNumberOfComponents(3)
                 vtk_colorsRh = vtk.vtkUnsignedCharArray()
                 vtk_colorsRh.SetNumberOfComponents(3)
-                clrGreen = [0,255,0]
-                clrRed = [255,0,0]
+                clrGreen = [70, 121, 85]
+                clrRed = [255, 0, 0]
                 for actorItem in self.actors:
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white"]:

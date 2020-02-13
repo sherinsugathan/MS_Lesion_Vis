@@ -608,6 +608,7 @@ class Ui(Qt.QMainWindow):
             self.ren.RemoveVolume(self.volume) # Remove existing volume from scene.
             self.model_structural.removeRows(0,self.model_structural.rowCount())
         self.volumeDataLoaded=False # Initialize volume load status to false.
+        self.stackedWidget_MainRenderers.setCurrentIndex(0) # Set current widget = large renderer
         self.dualLoadedOnce = False # Boolean indicating whether dual mode initialized atleast once.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
@@ -927,6 +928,8 @@ class Ui(Qt.QMainWindow):
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white", "rh.pial", "rh.white"]:
                             actorItem.GetMapper().ScalarVisibilityOff()
+            if(self.lesionMapperDual): # Update dual view also.
+                self.lesionMapperDual.Refresh()
             self.iren.Render()
 
     # Handler for dual view mode.
@@ -936,6 +939,7 @@ class Ui(Qt.QMainWindow):
             if self.checkBox_LesionMappingDualView.isChecked():
                 self.stackedWidget_MainRenderers.setCurrentIndex(1)
                 if(self.dualLoadedOnce==False):
+                    print("Refresh")
                     self.lesionMapperDual = LesionMapper.LesionMapper()
                     self.lesionMapperDual.actors = self.actors
                     self.lesionMapperDual.renDualLeft = self.renDualLeft
@@ -947,6 +951,7 @@ class Ui(Qt.QMainWindow):
                     self.lesionMapperDual.lesionAffectedPointIdsLh = self.lesionAffectedPointIdsLh
                     self.lesionMapperDual.lesionAffectedPointIdsRh = self.lesionAffectedPointIdsRh
                     #lesionMapperDual.informationUniqueKey = self.informationUniqueKey
+                    self.lesionMapperDual.ClearData()
                     self.lesionMapperDual.AddData()
                     self.dualLoadedOnce = True
             else:
