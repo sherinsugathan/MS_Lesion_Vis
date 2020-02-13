@@ -169,10 +169,10 @@ def extractLesions(subjectFolder, labelCount):
 ##########################################################################
 '''
 
-subjectName = "01040VANE_DATA"
+subjectName = "08037ROGU_DATA"
 subjectFolder = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subjectName
 # Files
-streamlinesFile = "D:\\streamlines.vtp"
+#streamlinesFile = "D:\\streamlines.vtp"
 surfaceFileLh = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subjectName + "\\surfaces\\lh.white.obj"
 surfaceFileRh = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subjectName + "\\surfaces\\rh.white.obj"
 translationFilePath = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subjectName + "\\meta\\cras.txt"

@@ -304,6 +304,9 @@ class Ui(Qt.QMainWindow):
         self.brodmannTextActor.GetTextProperty().SetJustificationToCentered()
         #self.brodmannTextActor.SetInput("NA")
 
+        self.actorPropertiesMain = []
+        self.actorPropertiesDual = []
+
         self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts, self.mprA_Slice_Slider, self.mprB_Slice_Slider, self.mprC_Slice_Slider)
         self.style.SetDefaultRenderer(self.ren)
         self.style.brodmannTextActor = self.brodmannTextActor
@@ -355,7 +358,9 @@ class Ui(Qt.QMainWindow):
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             # Define Interactor
             interactorMPRA = vtk.vtkInteractorStyleImage()
+            interactorMPRA.SetInteractionModeToImageSlicing()
             self.iren_MPRA.SetInteractorStyle(interactorMPRA)
+            self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
             
             ################################
             # MPR B    #####################
@@ -372,7 +377,9 @@ class Ui(Qt.QMainWindow):
             self.mprB_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
             # Define Interactor
             interactorMPRB = vtk.vtkInteractorStyleImage()
+            interactorMPRB.SetInteractionModeToImageSlicing()
             self.iren_MPRB.SetInteractorStyle(interactorMPRB)
+            self.resliceImageViewerMPRB.SetupInteractor(self.iren_MPRB)
 
             ################################
             # MPR C    #####################
@@ -389,7 +396,9 @@ class Ui(Qt.QMainWindow):
             self.mprC_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
             # Define Interactor
             interactorMPRC = vtk.vtkInteractorStyleImage()
+            interactorMPRC.SetInteractionModeToImageSlicing()
             self.iren_MPRC.SetInteractorStyle(interactorMPRC)
+            self.resliceImageViewerMPRC.SetupInteractor(self.iren_MPRC)
 
             self.renMPRA.ResetCamera()
             self.renMPRB.ResetCamera()
@@ -625,6 +634,13 @@ class Ui(Qt.QMainWindow):
             # Initialize annotation data
             self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhwhiteMapper, self.lhwhiteMapper)
             #self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhpialMapper, self.lhpialMapper)
+            # If parcellation enabled
+            if self.checkBox_Parcellation.isChecked():
+                self.rhwhiteMapper.ScalarVisibilityOn()
+                self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
+                self.lhwhiteMapper.ScalarVisibilityOn()
+                self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)
+
             self.style.labelsRh = self.labelsRh
             self.style.regionsRh = self.regionsRh
             self.style.metaRh = self.metaRh
@@ -658,7 +674,7 @@ class Ui(Qt.QMainWindow):
             self.axes.SetInteractor(self.iren)
             self.axes.EnabledOn()
             #self.axes.InteractiveOn()
-            self.iren.Render()
+        self.iren.Render()
 
         self.dataFolderInitialized=True
         # Handler for load data button click
@@ -928,7 +944,7 @@ class Ui(Qt.QMainWindow):
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white", "rh.pial", "rh.white"]:
                             actorItem.GetMapper().ScalarVisibilityOff()
-            if(self.lesionMapperDual): # Update dual view also.
+            if(self.dualLoadedOnce == True): # Update dual view also.
                 self.lesionMapperDual.Refresh()
             self.iren.Render()
 
@@ -938,8 +954,8 @@ class Ui(Qt.QMainWindow):
         if(self.dataFolderInitialized == True):
             if self.checkBox_LesionMappingDualView.isChecked():
                 self.stackedWidget_MainRenderers.setCurrentIndex(1)
+                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors)
                 if(self.dualLoadedOnce==False):
-                    print("Refresh")
                     self.lesionMapperDual = LesionMapper.LesionMapper()
                     self.lesionMapperDual.actors = self.actors
                     self.lesionMapperDual.renDualLeft = self.renDualLeft
@@ -950,12 +966,20 @@ class Ui(Qt.QMainWindow):
                     self.lesionMapperDual.informationKeyID = self.informationUniqueKey
                     self.lesionMapperDual.lesionAffectedPointIdsLh = self.lesionAffectedPointIdsLh
                     self.lesionMapperDual.lesionAffectedPointIdsRh = self.lesionAffectedPointIdsRh
+                    
                     #lesionMapperDual.informationUniqueKey = self.informationUniqueKey
                     self.lesionMapperDual.ClearData()
                     self.lesionMapperDual.AddData()
+                    self.actorPropertiesDual = LesionUtils.saveActorProperties(self.lesionMapperDual.actors)
                     self.dualLoadedOnce = True
+                else:
+                    LesionUtils.restoreActorProperties(self.lesionMapperDual.actors, self.actorPropertiesDual) 
             else:
                 self.stackedWidget_MainRenderers.setCurrentIndex(0)
+                LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
+                if(self.checkBox_Parcellation.isChecked()):
+                    self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
+                    self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)    
                 #self.lesionMapperDual.RemoveData()
                 # if self.checkBox_LesionMappingDualView.isChecked():
                 #     if(self.vtkWidget.GetRenderWindow().HasRenderer(self.ren) == True):

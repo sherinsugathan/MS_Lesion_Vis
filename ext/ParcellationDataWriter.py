@@ -11,8 +11,7 @@ from nibabel import freesurfer
 # print(mydict[23])
 # quit()
 
-
-subjectName = "01016SACH_DATA"
+subjectName = "08037ROGU_DATA"
 subjectFolder = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subjectName
 # Files
 parcellationJSONFileNameLh = subjectFolder + "\\" + "parcellationLh.json"

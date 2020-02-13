@@ -805,7 +805,7 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
         selectionNode.SetFieldType(vtk.vtkSelectionNode.POINT)
         selectionNode.SetContentType(vtk.vtkSelectionNode.INDICES)
         selectionNode.SetSelectionList(ids)
-        selectionNode.GetProperties().Set(vtk.vtkSelectionNode.CONTAINING_CELLS(),1)
+        selectionNode.GetProperties().Set(vtk.vtkSelectionNode.CONTAINING_CELLS(), 1)
         selection = vtk.vtkSelection()
         selection.AddNode(selectionNode)
         extractSelection = vtk.vtkExtractSelection()
@@ -862,3 +862,27 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
     print("Completed")
     
     return colorDataRh, colorDataLh, labelsRh, labelsLh, regionsRh, regionsLh, metaRh, metaLh, uniqueLabelsRh, uniqueLabelsLh, areaRh, areaLh, polyDataRh, polyDataLh
+
+'''
+##########################################################################
+    Copy actor properties.
+    Returns: propery collection
+##########################################################################
+'''
+def saveActorProperties(actors):
+    properties = []
+    for actor in actors:
+        actorProperty = vtk.vtkProperty()
+        actorProperty.DeepCopy(actor.GetProperty())
+        properties.append(actorProperty)
+    return properties
+
+'''
+##########################################################################
+    Apply actor properties from saved property.
+    Returns: None
+##########################################################################
+'''
+def restoreActorProperties(actors, properties):
+    for index in range(len(properties)):
+        actors[index].GetProperty().DeepCopy(properties[index])
