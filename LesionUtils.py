@@ -76,7 +76,7 @@ def runLesionConnectivityAnalysis(probeFilterObject):
 
 '''
 ##########################################################################
-    Update overlay text on a specific renderer.
+    Update overlay text on a specific renderer. (TO BE DEPRECTAED SAFELY)
     Returns: Nothing
 ##########################################################################
 '''
@@ -89,6 +89,19 @@ def updateOverlayText(renderWindow, overlayDictionary, overlayGlobalDictionary, 
     for key in overlayGlobalDictionary.keys():
         overlayTextGlobal = overlayTextGlobal + str(key) + ": " + str(overlayGlobalDictionary[key]) + "\n"
     globalTextActor.SetInput(overlayTextGlobal)
+
+
+'''
+##########################################################################
+    Update overlay text dictionary.
+    Returns: Nothing
+##########################################################################
+'''
+def setOverlayText(overlayDictionary, overlayTextActor): 
+    overlayText =""
+    for key in overlayDictionary.keys():
+        overlayText = overlayText + str(key) + ": " + str(overlayDictionary[key]) + "\n"
+    overlayTextActor.SetInput(overlayText)
 
 '''
 ##########################################################################
@@ -187,6 +200,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         if self.NewPickedActor:
             # If we picked something before, reset its property
             if self.LastPickedActor:
+                self.LastPickedActor.GetMapper().ScalarVisibilityOn()
                 self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
             
             # Save the property of the picked actor so that we can

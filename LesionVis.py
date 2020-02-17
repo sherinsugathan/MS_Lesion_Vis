@@ -20,6 +20,7 @@ import numpy as np
 import json
 import ctypes
 import time
+import copy
 from ctypes import wintypes
 
 
@@ -247,7 +248,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRA.UseBorderAlignOff()
         self.sliceNumberTextMPRA.SetPosition(0,0)
         self.sliceNumberTextMPRA.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRA.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -255,7 +256,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRB.UseBorderAlignOff()
         self.sliceNumberTextMPRB.SetPosition(0,0)
         self.sliceNumberTextMPRB.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRB.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -263,7 +264,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRC.UseBorderAlignOff()
         self.sliceNumberTextMPRC.SetPosition(0,0)
         self.sliceNumberTextMPRC.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRC.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -279,20 +280,20 @@ class Ui(Qt.QMainWindow):
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
         self.textActorLesionStatistics.GetTextProperty().SetFontFamily(4)
-        self.textActorLesionStatistics.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.textActorLesionStatistics.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
         self.textActorLesionStatistics.GetTextProperty().SetFontSize(14)
         self.textActorLesionStatistics.GetTextProperty().ShadowOn()
         self.textActorLesionStatistics.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
         self.textActorGlobal.UseBorderAlignOff()
         self.textActorGlobal.GetTextProperty().SetFontFamily(4)
-        self.textActorGlobal.GetTextProperty().SetFontFile("GoogleSans-Regular.ttf")
+        self.textActorGlobal.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
         self.textActorGlobal.GetTextProperty().SetFontSize(14)
         self.textActorGlobal.GetTextProperty().ShadowOn()
         self.textActorGlobal.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        fontPath = os.path.join(ui_path, "GoogleSans-Regular.ttf")
+        fontPath = os.path.join(ui_path, "fonts\\RobotoMono-Medium.ttf")
         self.brodmannTextActor = vtk.vtkTextActor()
         self.brodmannTextActor.UseBorderAlignOn()
         self.brodmannTextActor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
@@ -418,9 +419,9 @@ class Ui(Qt.QMainWindow):
         # Performance log
         start_time = time.time()
         
-        subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
+        self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # Load data for MPRs.
-        self.LoadStructuralSlices(subjectFolder + "\\structural\\T1.nii")
+        self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T1.nii")
 
         self.actors = []
         self.lesionCentroids = []
@@ -438,11 +439,11 @@ class Ui(Qt.QMainWindow):
         self.lesionAffectedPointIdsRh = []
         # load precomputed lesion properties
         structureInfo = None
-        with open(subjectFolder + "\\structure-def4.json") as fp: 
+        with open(self.subjectFolder + "\\structure-def4.json") as fp: 
             structureInfo = json.load(fp)
         self.numberOfLesionElements = len(structureInfo)
 
-        jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(subjectFolder)
+        jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(self.subjectFolder)
         
         for jsonElementIndex in (range(1,self.numberOfLesionElements+1)):
             for p in structureInfo[str(jsonElementIndex)]:
@@ -466,10 +467,10 @@ class Ui(Qt.QMainWindow):
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
 
-        self.style.addLesionData(subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
+        self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
         self.requestedVisualizationType = str(self.comboBox_VisType.currentText())
-        self.lesionActors = LesionUtils.extractLesions(subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, self.lesionRegionNumberQuantized, True)
+        self.lesionActors = LesionUtils.extractLesions(self.subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, self.lesionRegionNumberQuantized, True)
         for actor in self.lesionActors:
             self.actors.append(actor)
         # Also add lesions string to the loaded items listbox.
@@ -486,7 +487,7 @@ class Ui(Qt.QMainWindow):
         # Compute lesion properties (Deprecated. TODO - Remove Safely)
         # connectedComponentImage, connectedComponentFilter = LesionUtils.computeLesionProperties(subjectFolder)
 
-        translationFilePath = os.path.join(subjectFolder, "meta\\cras.txt")
+        translationFilePath = os.path.join(self.subjectFolder, "meta\\cras.txt")
         f = open(translationFilePath, "r")
         t_vector = []
         for t in f:
@@ -501,7 +502,7 @@ class Ui(Qt.QMainWindow):
 
             # Check if files are wavefront OBJ and in the whitelist according to settings.
             if fileNames[i].endswith(".obj") and os.path.basename(fileNames[i]) in settings.getSurfaceWhiteList():
-                loadFilePath = os.path.join(subjectFolder, fileNames[i])      
+                loadFilePath = os.path.join(self.subjectFolder, fileNames[i])      
                 reader = vtk.vtkOBJReader()
                 reader.SetFileName(loadFilePath)
                 reader.Update()
@@ -576,7 +577,7 @@ class Ui(Qt.QMainWindow):
         self.ren.AddActor2D(self.textActorGlobal)
         # Check if full streamline computation is requested.
         if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
-            fiberActor = LesionUtils.computeStreamlines(subjectFolder)
+            fiberActor = LesionUtils.computeStreamlines(self.subjectFolder)
             information = vtk.vtkInformation()
             information.Set(self.informationKey,"structural tracts")
             fiberActor.GetProperty().SetInformation(information)
@@ -618,6 +619,7 @@ class Ui(Qt.QMainWindow):
             self.model_structural.removeRows(0,self.model_structural.rowCount())
         self.volumeDataLoaded=False # Initialize volume load status to false.
         self.stackedWidget_MainRenderers.setCurrentIndex(0) # Set current widget = large renderer
+        self.checkBox_LesionMappingDualView.setCheckState(QtCore.Qt.Unchecked)
         self.dualLoadedOnce = False # Boolean indicating whether dual mode initialized atleast once.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
@@ -857,6 +859,8 @@ class Ui(Qt.QMainWindow):
             self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
             for actorItem in self.actors:
                 if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
+                    if(self.listView.model().itemFromIndex(self.listView.currentIndex()) == None):
+                        return
                     if actorItem.GetProperty().GetInformation().Get(self.informationKey) in self.listView.model().itemFromIndex(self.listView.currentIndex()).text():
                         actorItem.GetProperty().SetOpacity(self.dial.value()/float(500))
                         break
@@ -966,6 +970,28 @@ class Ui(Qt.QMainWindow):
                     self.lesionMapperDual.informationKeyID = self.informationUniqueKey
                     self.lesionMapperDual.lesionAffectedPointIdsLh = self.lesionAffectedPointIdsLh
                     self.lesionMapperDual.lesionAffectedPointIdsRh = self.lesionAffectedPointIdsRh
+                    self.lesionMapperDual.subjectFolder = self.subjectFolder
+                    self.lesionMapperDual.labelsRh = self.labelsRh
+                    self.lesionMapperDual.regionsRh = self.regionsRh
+                    self.lesionMapperDual.metaRh = self.metaRh
+                    self.lesionMapperDual.uniqueLabelsRh = self.uniqueLabelsRh
+                    self.lesionMapperDual.areaRh = self.areaRh
+                    self.lesionMapperDual.labelsLh = self.labelsLh
+                    self.lesionMapperDual.regionsLh = self.regionsLh
+                    self.lesionMapperDual.metaLh = self.metaLh
+                    self.lesionMapperDual.uniqueLabelsLh = self.uniqueLabelsLh
+                    self.lesionMapperDual.areaLh = self.areaLh
+                    self.lesionMapperDual.polyDataRh = self.polyDataRh
+                    self.lesionMapperDual.polyDataLh = self.polyDataLh
+                    self.lesionMapperDual.numberOfLesionElements = self.numberOfLesionElements
+                    self.lesionMapperDual.lesionCentroids = self.lesionCentroids
+                    self.lesionMapperDual.lesionNumberOfPixels = self.lesionNumberOfPixels
+                    self.lesionMapperDual.lesionElongation = self.lesionElongation
+                    self.lesionMapperDual.lesionPerimeter = self.lesionPerimeter
+                    self.lesionMapperDual.lesionSphericalRadius = self.lesionSphericalRadius
+                    self.lesionMapperDual.lesionSphericalPerimeter = self.lesionSphericalPerimeter
+                    self.lesionMapperDual.lesionFlatness = self.lesionFlatness
+                    self.lesionMapperDual.lesionRoundness = self.lesionRoundness
                     
                     #lesionMapperDual.informationUniqueKey = self.informationUniqueKey
                     self.lesionMapperDual.ClearData()

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1130</width>
+    <width>1202</width>
     <height>1038</height>
    </rect>
   </property>
@@ -920,7 +920,7 @@ border-radius: 10px;</string>
      <widget class="QStackedWidget" name="stackedWidget_MainRenderers">
       <property name="minimumSize">
        <size>
-        <width>50</width>
+        <width>650</width>
         <height>0</height>
        </size>
       </property>
@@ -939,7 +939,7 @@ border-radius: 10px;</string>
           </property>
           <property name="minimumSize">
            <size>
-            <width>600</width>
+            <width>650</width>
             <height>0</height>
            </size>
           </property>
@@ -1000,83 +1000,6 @@ border-radius: 10px;</string>
       </widget>
      </widget>
     </item>
-    <item>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item row="1" column="0">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QLabel" name="label_9">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>15</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>3D Tools</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_ResetView">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QPushButton:hover#pushButton_ResetView
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_ResetView {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_ResetView
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-          </property>
-          <property name="text">
-           <string>Cam</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -1084,7 +1007,7 @@ border-style: solid;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1130</width>
+     <width>1202</width>
      <height>22</height>
     </rect>
    </property>
