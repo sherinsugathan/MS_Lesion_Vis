@@ -261,14 +261,12 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
 
             if("lh" in str(itemType)):
-                print("left hemisphere")
                 parcellationIndex = self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])
                 self.overlayDataMainRightParcellationImpact["Selected Brain Region:"] = str(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
                 self.overlayDataMainRightParcellationImpact["Lesion Influence:"] = str("{0:.2f}".format(self.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
                 self.overlayDataMainRightParcellationImpact["Number of Lesions Influencing:"] = self.parcellationLesionInfluenceCountLh[parcellationIndex]
                 self.overlayDataMainRightParcellationImpact["Lesion IDs:"] = list(self.parcellationAssociatedLesionsLh[parcellationIndex].keys())
             if("rh" in str(itemType)):
-                print("right hemisphere")
                 parcellationIndex = self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])
                 self.overlayDataMainRightParcellationImpact["Selected Brain Region:"] = str(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
                 self.overlayDataMainRightParcellationImpact["Lesion Influence:"] = str("{0:.2f}".format(self.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
@@ -313,17 +311,14 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 for actorItem in self.actors:
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white"]:
-                            #pointDataArray = actorItem.GetMapper().GetInput().GetPointData().GetArray("MetaImage")
                             numberOfPointsLh = actorItem.GetMapper().GetInput().GetNumberOfPoints()
                             for index in range(numberOfPointsLh):
-                                #print(self.lesionAffectedPointIdsLh)
                                 if(index in self.lesionAffectedPointIdsLh[int(lesionID)-1]):
                                     vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
                                 else:
                                     vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
                             actorItem.GetMapper().GetInput().GetPointData().SetScalars(vtk_colorsLh)
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["rh.pial", "rh.white"]:
-                            #pointDataArray = actorItem.GetMapper().GetInput().GetPointData().GetArray("MetaImage")
                             numberOfPointsRh = actorItem.GetMapper().GetInput().GetNumberOfPoints()
                             for index in range(numberOfPointsRh):
                                 if(index in self.lesionAffectedPointIdsRh[int(lesionID)-1]):
