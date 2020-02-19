@@ -110,6 +110,7 @@ class Ui(Qt.QMainWindow):
         self.comboBox_MPRModality.addItem("T1 Sequence")
         self.comboBox_MPRModality.addItem("T2 Sequence")
         self.comboBox_MPRModality.addItem("FLAIR Sequence")
+        self.comboBox_MPRModality.currentTextChanged.connect(self.on_modalityChanged)
 
         self.mprA_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRA)
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
@@ -345,6 +346,9 @@ class Ui(Qt.QMainWindow):
         if(isNiftyReadRequired==True):
             self.niftyReaderT1.SetFileName(fileName)
             self.niftyReaderT1.Update()
+            range = self.niftyReaderT1.GetOutput().GetPointData().GetScalars().GetRange()
+            window = range[1] - range[0]
+            level = range[0] + (window/2.0)
             ################################
             # MPR A    #####################
             ################################
@@ -353,7 +357,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
             self.resliceImageViewerMPRA.SetSliceOrientation(2)
             self.resliceImageViewerMPRA.SliceScrollOnMouseWheelOn()
-            self.resliceImageViewerMPRA.SetColorLevel(255)
+            self.resliceImageViewerMPRA.SetColorWindow(window)
+            self.resliceImageViewerMPRA.SetColorLevel(level)
             self.mprA_Slice_Slider.setMaximum(self.resliceImageViewerMPRA.GetSliceMax())
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
@@ -370,8 +375,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRB.SetRenderWindow(self.vtkWidgetMPRB.GetRenderWindow())
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
-            self.resliceImageViewerMPRB.SetColorLevel(255)
-            
+            self.resliceImageViewerMPRB.SetColorWindow(window)
+            self.resliceImageViewerMPRB.SetColorLevel(level)
             self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
             self.mprB_Slice_Slider.setMaximum(self.resliceImageViewerMPRB.GetSliceMax())
             self.resliceImageViewerMPRB.SetSlice(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
@@ -390,7 +395,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRC.SetRenderWindow(self.vtkWidgetMPRC.GetRenderWindow())
             self.resliceImageViewerMPRC.SetRenderer(self.renMPRC)
             self.resliceImageViewerMPRC.SetSliceOrientation(0)
-            self.resliceImageViewerMPRC.SetColorLevel(255)
+            self.resliceImageViewerMPRC.SetColorWindow(window)
+            self.resliceImageViewerMPRC.SetColorLevel(level)
             self.mprC_Slice_Slider.setMaximum(self.resliceImageViewerMPRC.GetSliceMax())
             self.resliceImageViewerMPRC.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRC.SetSlice(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
@@ -422,6 +428,7 @@ class Ui(Qt.QMainWindow):
         self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # Load data for MPRs.
         self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T1.nii")
+        self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1
 
         self.actors = []
         self.lesionCentroids = []
@@ -852,6 +859,17 @@ class Ui(Qt.QMainWindow):
             LesionUtils.filterLesionsAndRender(removeIndices, self.actors, self.informationUniqueKey, self.ren)
             self.iren.Render()
         
+    # Handler for modality change for slice views.
+    @pyqtSlot()
+    def on_modalityChanged(self):
+        if(self.dataFolderInitialized == True):
+            if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
+                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T1.nii")
+            if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
+                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T2.nii")
+            if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
+                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\3DFLAIR.nii")
+
     # Handler for Dial moved.
     @pyqtSlot()
     def on_DialMoved(self):
