@@ -893,6 +893,22 @@ def saveActorProperties(actors):
 
 '''
 ##########################################################################
+    Copy actor sclalar data properties.
+    Returns: propery collection
+##########################################################################
+'''
+def saveActorScalarDataProperties(actors):
+    properties = []
+    scalarDataCollection = []
+    for actor in actors:
+        #actorProperty = vtk.vtkProperty()
+        #actorProperty.DeepCopy(actor.GetProperty())
+        scalarDataCollection.append(actor.GetMapper().GetInput().GetPointData().GetScalars())
+        properties.append(actor.GetMapper().GetScalarVisibility())
+    return properties, scalarDataCollection
+
+'''
+##########################################################################
     Apply actor properties from saved property.
     Returns: None
 ##########################################################################
@@ -900,3 +916,15 @@ def saveActorProperties(actors):
 def restoreActorProperties(actors, properties):
     for index in range(len(properties)):
         actors[index].GetProperty().DeepCopy(properties[index])
+
+'''
+##########################################################################
+    Apply scalr properties from saved property.
+    Returns: None
+##########################################################################
+'''
+def restoreActorScalarDataProperties(actors, properties, scalarDataCollection):
+    for index in range(len(properties)):
+        #actors[index].GetProperty().DeepCopy(properties[index])
+        actors[index].GetMapper().SetScalarVisibility(properties[index])
+        actors[index].GetMapper().GetInput().GetPointData().SetScalars(scalarDataCollection[index])

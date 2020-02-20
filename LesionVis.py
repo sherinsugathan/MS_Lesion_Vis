@@ -14,6 +14,7 @@ import Settings
 import Subject
 import LesionUtils
 import LesionMapper
+from LesionMapper import LesionMapper
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 import nibabel as nib
 import numpy as np
@@ -628,6 +629,7 @@ class Ui(Qt.QMainWindow):
         self.stackedWidget_MainRenderers.setCurrentIndex(0) # Set current widget = large renderer
         self.checkBox_LesionMappingDualView.setCheckState(QtCore.Qt.Unchecked)
         self.dualLoadedOnce = False # Boolean indicating whether dual mode initialized atleast once.
+        self.mainLoadedOnce = False # Boolean indicating whether main mode initialized atleast once.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
@@ -976,51 +978,28 @@ class Ui(Qt.QMainWindow):
         if(self.dataFolderInitialized == True):
             if self.checkBox_LesionMappingDualView.isChecked():
                 self.stackedWidget_MainRenderers.setCurrentIndex(1)
-                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors)
+                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
+                self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
                 if(self.dualLoadedOnce==False):
-                    self.lesionMapperDual = LesionMapper.LesionMapper()
-                    self.lesionMapperDual.actors = self.actors
-                    self.lesionMapperDual.renDualLeft = self.renDualLeft
-                    self.lesionMapperDual.renDualRight = self.renDualRight
-                    self.lesionMapperDual.iren_LesionMapDualLeft = self.iren_LesionMapDualLeft
-                    self.lesionMapperDual.iren_LesionMapDualRight = self.iren_LesionMapDualRight
-                    self.lesionMapperDual.informationKey = self.informationKey
-                    self.lesionMapperDual.informationKeyID = self.informationUniqueKey
-                    self.lesionMapperDual.lesionAffectedPointIdsLh = self.lesionAffectedPointIdsLh
-                    self.lesionMapperDual.lesionAffectedPointIdsRh = self.lesionAffectedPointIdsRh
-                    self.lesionMapperDual.subjectFolder = self.subjectFolder
-                    self.lesionMapperDual.labelsRh = self.labelsRh
-                    self.lesionMapperDual.regionsRh = self.regionsRh
-                    self.lesionMapperDual.metaRh = self.metaRh
-                    self.lesionMapperDual.uniqueLabelsRh = self.uniqueLabelsRh
-                    self.lesionMapperDual.areaRh = self.areaRh
                     self.lesionMapperDual.labelsLh = self.labelsLh
-                    self.lesionMapperDual.regionsLh = self.regionsLh
-                    self.lesionMapperDual.metaLh = self.metaLh
-                    self.lesionMapperDual.uniqueLabelsLh = self.uniqueLabelsLh
                     self.lesionMapperDual.areaLh = self.areaLh
-                    self.lesionMapperDual.polyDataRh = self.polyDataRh
                     self.lesionMapperDual.polyDataLh = self.polyDataLh
-                    self.lesionMapperDual.numberOfLesionElements = self.numberOfLesionElements
-                    self.lesionMapperDual.lesionCentroids = self.lesionCentroids
-                    self.lesionMapperDual.lesionNumberOfPixels = self.lesionNumberOfPixels
-                    self.lesionMapperDual.lesionElongation = self.lesionElongation
-                    self.lesionMapperDual.lesionPerimeter = self.lesionPerimeter
-                    self.lesionMapperDual.lesionSphericalRadius = self.lesionSphericalRadius
-                    self.lesionMapperDual.lesionSphericalPerimeter = self.lesionSphericalPerimeter
-                    self.lesionMapperDual.lesionFlatness = self.lesionFlatness
-                    self.lesionMapperDual.lesionRoundness = self.lesionRoundness
-                    
-                    #lesionMapperDual.informationUniqueKey = self.informationUniqueKey
+                    self.lesionMapperDual = LesionMapper(self)
                     self.lesionMapperDual.ClearData()
                     self.lesionMapperDual.AddData()
-                    self.actorPropertiesDual = LesionUtils.saveActorProperties(self.lesionMapperDual.actors)
+                    #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
                     self.dualLoadedOnce = True
                 else:
-                    LesionUtils.restoreActorProperties(self.lesionMapperDual.actors, self.actorPropertiesDual) 
+                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
+                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
             else:
                 self.stackedWidget_MainRenderers.setCurrentIndex(0)
-                LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
+                if(self.mainLoadedOnce == True):
+                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
+                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
+                self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
+                self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
+                self.mainLoadedOnce = True
                 if(self.checkBox_Parcellation.isChecked()):
                     self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
                     self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)    
