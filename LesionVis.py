@@ -981,9 +981,6 @@ class Ui(Qt.QMainWindow):
                 self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
                 self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
                 if(self.dualLoadedOnce==False):
-                    self.lesionMapperDual.labelsLh = self.labelsLh
-                    self.lesionMapperDual.areaLh = self.areaLh
-                    self.lesionMapperDual.polyDataLh = self.polyDataLh
                     self.lesionMapperDual = LesionMapper(self)
                     self.lesionMapperDual.ClearData()
                     self.lesionMapperDual.AddData()
