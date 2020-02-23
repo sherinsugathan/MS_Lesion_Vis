@@ -125,7 +125,26 @@ def captureScreenshot(renderWindow):
 
 '''
 ##########################################################################
-    Class for implementing custom interactor.
+    Class for implementing custom interactor for MPRs
+##########################################################################
+'''
+class MyMPRInteractorStyle(vtk.vtkInteractorStyleImage):
+ 
+    def __init__(self,parent=None):
+        self.AddObserver("MouseWheelForwardEvent", self.wheelForward)
+        self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
+    
+    def wheelForward(self,obj,event):
+        print("Asd")
+        self.SetInteractionModeToImageSlicing()
+        self.OnMouseWheelForward()
+
+    def leftButtonPressEvent(self,obj,event):
+        print("left click")
+
+'''
+##########################################################################
+    Class for implementing custom interactor for main VR.
 ##########################################################################
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
@@ -928,3 +947,30 @@ def restoreActorScalarDataProperties(actors, properties, scalarDataCollection):
         #actors[index].GetProperty().DeepCopy(properties[index])
         actors[index].GetMapper().SetScalarVisibility(properties[index])
         actors[index].GetMapper().GetInput().GetPointData().SetScalars(scalarDataCollection[index])
+
+'''
+##########################################################################
+    Blend MRI volume with mask data using the specified opacity
+    Returns: blendedVolume
+##########################################################################
+'''
+def computeVolumeMaskBlend(currentSliceVolume, voxelSpaceCorrectedMask, opacity):
+    thresholdFilter = vtk.vtkImageThreshold()
+    thresholdFilter.SetInputConnection(voxelSpaceCorrectedMask.GetOutputPort())
+    thresholdFilter.ThresholdByUpper(1)
+    thresholdFilter.SetInValue(255)
+    thresholdFilter.Update()
+
+    thresholdImageCastFilter = vtk.vtkImageCast()
+    thresholdImageCastFilter.SetInputData(thresholdFilter.GetOutput())
+    thresholdImageCastFilter.SetOutputScalarTypeToShort()
+    thresholdImageCastFilter.Update() 
+
+    imgBlender = vtk.vtkImageBlend()
+    imgBlender.SetOpacity(0, 0)
+    imgBlender.SetOpacity(1, opacity)
+    imgBlender.AddInputConnection(currentSliceVolume.GetOutputPort())
+    imgBlender.AddInputConnection(thresholdImageCastFilter.GetOutputPort())
+    imgBlender.Update()
+
+    return imgBlender

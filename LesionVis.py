@@ -240,6 +240,8 @@ class Ui(Qt.QMainWindow):
         self.lesionSeededFiberTracts = False
 
         self.niftyReaderT1 = vtk.vtkNIFTIImageReader() # Common niftyReader.
+        self.currentSliceVolume = vtk.vtkNIFTIImageReader()
+        self.voxelSpaceCorrectedMask = vtk.vtkNIFTIImageReader()
         self.modelListBoxSurfaces = QtGui.QStandardItemModel() # List box for showing loaded surfaces.
         self.listView.setModel(self.modelListBoxSurfaces)
         self.listView.selectionModel().selectionChanged.connect(self.onSurfaceListSelectionChanged) # Event handler for surface list view selection changed.
@@ -342,18 +344,35 @@ class Ui(Qt.QMainWindow):
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
         self.overlayDataGlobal["OpenGL Renderer"] = openglRendererInUse
 
+    def ScrollSlice(self, obj, ev):
+        print("Before Event")
+        obj.OnMouseWheelForward()
+
     # Load and Render Structural data as image slices.
-    def LoadStructuralSlices(self, fileName, isNiftyReadRequired=True):
-        if(isNiftyReadRequired==True):
+    def LoadStructuralSlices(self, subjectFolder, modality, IsOverlayEnabled = False):
+        if(True):
+            fileName = subjectFolder + "\\structural\\"+modality+".nii"
+            fileNameOverlay = subjectFolder + "\\lesionMask\\ConnectedComponents"+modality+"VoxelSpaceCorrected.nii"
             self.niftyReaderT1.SetFileName(fileName)
             self.niftyReaderT1.Update()
-            range = self.niftyReaderT1.GetOutput().GetPointData().GetScalars().GetRange()
+            self.currentSliceVolume.SetFileName(fileName)
+            self.currentSliceVolume.Update()
+            self.voxelSpaceCorrectedMask.SetFileName(fileNameOverlay)
+            self.voxelSpaceCorrectedMask.Update()
+
+            # currentVolume = None
+            # if(IsOverlayEnabled == True):
+            #     currentVolume = self.voxelSpaceCorrectedMask
+            # else:
+            #     currentVolume = self.currentSliceVolume
+            blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
+            range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
             window = range[1] - range[0]
             level = range[0] + (window/2.0)
             ################################
             # MPR A    #####################
             ################################
-            self.resliceImageViewerMPRA.SetInputData(self.niftyReaderT1.GetOutput())
+            self.resliceImageViewerMPRA.SetInputData(blendedVolume.GetOutput())
             self.resliceImageViewerMPRA.SetRenderWindow(self.vtkWidgetMPRA.GetRenderWindow())
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
             self.resliceImageViewerMPRA.SetSliceOrientation(2)
@@ -364,15 +383,20 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             # Define Interactor
-            interactorMPRA = vtk.vtkInteractorStyleImage()
+            #interactorMPRA = vtk.vtkInteractorStyleImage()
+            interactorMPRA = LesionUtils.MyMPRInteractorStyle()
+            interactorMPRA.SetDefaultRenderer(self.renMPRA)
             interactorMPRA.SetInteractionModeToImageSlicing()
+            #interactorMPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
             self.iren_MPRA.SetInteractorStyle(interactorMPRA)
-            self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
+            #self.iren_MPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
+            #self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
+            #self.iren_MPRA.Initialize()
             
             ################################
             # MPR B    #####################
             ################################
-            self.resliceImageViewerMPRB.SetInputData(self.niftyReaderT1.GetOutput())
+            self.resliceImageViewerMPRB.SetInputData(blendedVolume.GetOutput())
             self.resliceImageViewerMPRB.SetRenderWindow(self.vtkWidgetMPRB.GetRenderWindow())
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
@@ -392,7 +416,7 @@ class Ui(Qt.QMainWindow):
             # MPR C    #####################
             ################################
             self.resliceImageViewerMPRC.SetResliceModeToAxisAligned()
-            self.resliceImageViewerMPRC.SetInputData(self.niftyReaderT1.GetOutput())
+            self.resliceImageViewerMPRC.SetInputData(blendedVolume.GetOutput())
             self.resliceImageViewerMPRC.SetRenderWindow(self.vtkWidgetMPRC.GetRenderWindow())
             self.resliceImageViewerMPRC.SetRenderer(self.renMPRC)
             self.resliceImageViewerMPRC.SetSliceOrientation(0)
@@ -428,7 +452,7 @@ class Ui(Qt.QMainWindow):
         
         self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # Load data for MPRs.
-        self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T1.nii")
+        self.LoadStructuralSlices(self.subjectFolder, "T1", True)
         self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1
 
         self.actors = []
@@ -770,13 +794,13 @@ class Ui(Qt.QMainWindow):
     def on_itemChanged_Structural(self,  item):
         state = ['UNCHECKED', 'TRISTATE',  'CHECKED'][item.checkState()]
         if(state == 'UNCHECKED'):
-            removeIndex = item.index()
+            #removeIndex = item.index()
             self.ren.RemoveVolume(self.volume)
             #self.ren.ResetCamera()
             self.frame.setLayout(self.vl)
             self.iren.Render()
         else:
-            addIndex = item.index()
+            #addIndex = item.index()
             self.ren.AddVolume(self.volume)
             #self.ren.ResetCamera()
             self.frame.setLayout(self.vl)
@@ -866,11 +890,11 @@ class Ui(Qt.QMainWindow):
     def on_modalityChanged(self):
         if(self.dataFolderInitialized == True):
             if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
-                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T1.nii")
+                self.LoadStructuralSlices(self.subjectFolder, "T1")
             if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
-                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\T2.nii")
+                self.LoadStructuralSlices(self.subjectFolder, "T2")
             if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
-                self.LoadStructuralSlices(self.subjectFolder + "\\structural\\3DFLAIR.nii")
+                self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
 
     # Handler for Dial moved.
     @pyqtSlot()
