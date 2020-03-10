@@ -341,6 +341,8 @@ class Ui(Qt.QMainWindow):
         self.iren_LesionMapDualLeft.Initialize()
         self.iren_LesionMapDualRight.Initialize()
 
+        self.imageLabel.hide()
+
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
         self.overlayDataGlobal["OpenGL Renderer"] = openglRendererInUse
 
@@ -367,8 +369,11 @@ class Ui(Qt.QMainWindow):
             #     currentVolume = self.currentSliceVolume
             blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
             range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
-            window = range[1] - range[0]
+            print("RANGE", range[1], range[0])
+
+            window = (range[1] - range[0])/2.0
             level = range[0] + (window/2.0)
+            print(window, level)
             ################################
             # MPR A    #####################
             ################################
@@ -383,15 +388,20 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             # Define Interactor
-            #interactorMPRA = vtk.vtkInteractorStyleImage()
-            interactorMPRA = LesionUtils.MyMPRInteractorStyle()
-            interactorMPRA.SetDefaultRenderer(self.renMPRA)
+            # #interactorMPRA = vtk.vtkInteractorStyleImage()
+            # interactorMPRA = LesionUtils.MyMPRInteractorStyle()
+            # interactorMPRA.SetDefaultRenderer(self.renMPRA)
+            # interactorMPRA.SetInteractionModeToImageSlicing()
+            # #interactorMPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
+            # self.iren_MPRA.SetInteractorStyle(interactorMPRA)
+            # #self.iren_MPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
+            # #self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
+            # #self.iren_MPRA.Initialize()
+
+            interactorMPRA = vtk.vtkInteractorStyleImage()
             interactorMPRA.SetInteractionModeToImageSlicing()
-            #interactorMPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
             self.iren_MPRA.SetInteractorStyle(interactorMPRA)
-            #self.iren_MPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
-            #self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
-            #self.iren_MPRA.Initialize()
+            self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
             
             ################################
             # MPR B    #####################
@@ -502,7 +512,9 @@ class Ui(Qt.QMainWindow):
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
         self.requestedVisualizationType = str(self.comboBox_VisType.currentText())
-        self.lesionActors = LesionUtils.extractLesions(self.subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, self.lesionRegionNumberQuantized, True)
+        #self.lesionActors = LesionUtils.extractLesions(self.subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, self.lesionRegionNumberQuantized, True)
+        self.lesionActors = LesionUtils.extractLesions2(self.subjectFolder, self.informationUniqueKey)
+        LesionUtils.lesionColorMapping(self.subjectFolder, self.numberOfLesionElements, self.requestedVisualizationType, self.lesionActors)
         for actor in self.lesionActors:
             self.actors.append(actor)
         # Also add lesions string to the loaded items listbox.
@@ -609,6 +621,7 @@ class Ui(Qt.QMainWindow):
         self.ren.AddActor2D(self.textActorGlobal)
         # Check if full streamline computation is requested.
         if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
+            print("Computing streamlines")
             fiberActor = LesionUtils.computeStreamlines(self.subjectFolder)
             information = vtk.vtkInformation()
             information.Set(self.informationKey,"structural tracts")
@@ -629,6 +642,26 @@ class Ui(Qt.QMainWindow):
 
         # End of performance log. Print elapsed time.
         print("--- %s seconds ---" % (time.time() - start_time))
+
+    def updateLesionColors(self):
+        visType = None
+        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Continuous"):
+            visType = "Cont"
+        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Discrete"):
+            visType = "Disc"
+        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Distance"):
+            visType = "Dist"      
+        modality = None
+        if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
+            modality = "T1"
+        if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
+            modality = "T2"
+        if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
+            modality = "FLAIR"
+
+        colorFilePath = self.subjectFolder + "\\surfaces\\colorArray" + visType + modality + ".pkl"
+        LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
+        self.iren.Render()
 
     # Handler for browse folder button click.
     @pyqtSlot()
@@ -891,10 +924,13 @@ class Ui(Qt.QMainWindow):
         if(self.dataFolderInitialized == True):
             if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
                 self.LoadStructuralSlices(self.subjectFolder, "T1")
+                self.updateLesionColors()
             if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
                 self.LoadStructuralSlices(self.subjectFolder, "T2")
+                self.updateLesionColors()
             if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
                 self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
+                self.updateLesionColors()
 
     # Handler for Dial moved.
     @pyqtSlot()
@@ -977,6 +1013,9 @@ class Ui(Qt.QMainWindow):
     # Handler for parcellation display
     @pyqtSlot()
     def parcellation_state_changed(self):
+        print("READ", self.resliceImageViewerMPRA.GetColorWindow())
+        print("READ", self.resliceImageViewerMPRA.GetColorLevel())
+
         if(self.dataFolderInitialized == True):
             if self.checkBox_Parcellation.isChecked():
                 for actorItem in self.actors:

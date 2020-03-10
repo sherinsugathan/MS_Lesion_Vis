@@ -11,7 +11,8 @@ import time
 import SimpleITK as sitk
 import time
 from nibabel import freesurfer
-from PyQt5.QtCore import QTimer
+#from PyQt5.QtCore import QTimer
+import pickle
 
 '''
 ##########################################################################
@@ -165,9 +166,9 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.sliderA = sliderA
         self.sliderB = sliderB
         self.sliderC = sliderC
-        self.message = "tick"
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.onTimerEvent)
+        # self.message = "tick"
+        # self.timer = QTimer()
+        # self.timer.timeout.connect(self.onTimerEvent)
         
 
     def addLesionData(self, subjectFolder, lesionCentroids, lesionNumberOfPixels, lesionElongation, lesionPerimeter, lesionSphericalRadius, lesionSphericalPerimeter, lesionFlatness, lesionRoundness, lesionSeededFiberTracts):
@@ -182,9 +183,9 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.subjectFolder = subjectFolder
         self.lesionSeededFiberTracts = lesionSeededFiberTracts
 
-    def onTimerEvent(self):
-        self.parcellationCurrentActor.RotateY(1)
-        self.iren.Render()
+    # def onTimerEvent(self):
+    #     self.parcellationCurrentActor.RotateY(1)
+    #     self.iren.Render()
 
         # if self.message == "tick":
         #     self.message = "tock"
@@ -256,7 +257,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     self.renMapOutcome.AddViewProp(self.parcellationActorLh)
                     self.renMapOutcome.AddActor(self.brodmannTextActor)
                     self.renMapOutcome.ResetCamera()
-                    self.timer.start(200)
+                    #self.timer.start(200)
             if("rh" in str(itemType)):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
@@ -284,10 +285,10 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     self.renMapOutcome.AddViewProp(self.parcellationActorRh)
                     self.renMapOutcome.AddActor(self.brodmannTextActor)
                     self.renMapOutcome.ResetCamera()
-                    self.timer.start(200)
+                    #self.timer.start(200)
             
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
-                self.timer.stop()
+                #self.timer.stop()
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
                     self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
                 # Highlight the picked actor by changing its properties
@@ -550,6 +551,29 @@ def MakeLUTFromCTFDistance(tableSize):
 
 '''
 ##########################################################################
+    Compute colors based on hyper, hyper and iso intensity classifications.
+    Returns: None
+##########################################################################
+'''
+def MakeCellData(min, max, colors, polyDataObject):
+    '''
+    Create the cell data using the colors from the lookup table.
+    :param: tableSize - The table size
+    :param: lut - The lookup table.
+    :param: colors - A reference to a vtkUnsignedCharArray().
+    '''
+    pointCount = polyDataObject.GetPointData().GetScalars().GetNumberOfTuples()
+    for i in range(pointCount):
+        val = polyDataObject.GetPointData().GetScalars().GetTuple1(i)
+        if(val < min): # HYPO sample
+            colors.InsertNextTuple3(255,0,0)
+        if(val > min and val < max): # ISO sample
+            colors.InsertNextTuple3(255,255,255)
+        if(val > max): # HYPER sample
+            colors.InsertNextTuple3(0,255,0)
+
+'''
+##########################################################################
     Extract lesions by processing labelled lesion mask data.
     Returns: Lesion actors.
 ##########################################################################
@@ -571,8 +595,8 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     for i in range(labelCount):
         surface.SetValue(i,i+1)
     surface.Update()
-    component = vtk.vtkPolyData()
-    component.DeepCopy(surface.GetOutput())
+    #component = vtk.vtkPolyData()
+    #component.DeepCopy(surface.GetOutput())
 
     transform = vtk.vtkTransform()
     transform.Identity()
@@ -626,6 +650,10 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
         transformVolume.Update()
 
         for i in range(labelCount):
+            colorData = vtk.vtkUnsignedCharArray()
+            colorData.SetName('colors') # Any name will work here.
+            colorData.SetNumberOfComponents(3)
+
             threshold = vtk.vtkThreshold()
             threshold.SetInputData(transformFilter.GetOutput())
             threshold.ThresholdBetween(i+1,i+1)
@@ -643,7 +671,11 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
 
             lesionMapper = vtk.vtkOpenGLPolyDataMapper()
             lesionMapper.SetInputConnection(probeFilter.GetOutputPort())
-            lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
+
+            MakeCellData(-50, 50, colorData, probeFilter.GetOutput())
+
+            #lesionMapper.SetScalarRange(probeFilter.GetOutput().GetScalarRange())
+            lesionMapper.GetInput().GetPointData().SetScalars(colorData)
             lesionActor = vtk.vtkActor()
             lesionActor.SetMapper(lesionMapper)
             #information = vtk.vtkInformation()
@@ -718,6 +750,72 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
             lesionActors.append(lesionActor)
 
     return lesionActors
+
+
+'''
+##########################################################################
+    Read lesion data and create actors.
+    Returns: Lesion actors.
+##########################################################################
+'''
+def extractLesions2(subjectFolder, informationKeyID):
+    lesionSurfaceDataFilePath = subjectFolder + "\\surfaces\\lesions.vtm"
+    mbr = vtk.vtkXMLMultiBlockDataReader()
+    mbr.SetFileName(lesionSurfaceDataFilePath)
+    mbr.Update()
+
+    lesionActors = []
+    mb = mbr.GetOutput()
+    # print("DATACOUNT" , mb.GetNumberOfBlocks())
+    for i in range(mb.GetNumberOfBlocks()):
+        polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
+        if polyData and polyData.GetNumberOfPoints():
+            lesionMapper = vtk.vtkOpenGLPolyDataMapper()
+            lesionMapper.SetInputData(polyData)
+            lesionActor = vtk.vtkActor()
+            lesionActor.SetMapper(lesionMapper)
+            informationID = vtk.vtkInformation()
+            informationID.Set(informationKeyID,str(i+1))
+            lesionActor.GetProperty().SetInformation(informationID)
+            lesionActors.append(lesionActor)
+
+    return lesionActors
+
+
+'''
+##########################################################################
+    Map colors to loaded lesions.
+    Returns: None.
+##########################################################################
+'''
+def lesionColorMapping(subjectFolder, labelCount, requestedVisualizationType, lesionActors):
+    if(requestedVisualizationType == "Full Data View - Raw"):
+        pass
+    if(requestedVisualizationType == "Lesion Colored - Continuous"):
+        colorFilePath = subjectFolder + "\\surfaces\\colorArrayContT1.pkl"
+        loadColorFileAndAssignToLesions(colorFilePath, lesionActors)
+    if(requestedVisualizationType == "Lesion Colored - Discrete"):
+        pass
+    if(requestedVisualizationType == "Lesion Colored - Distance"):
+        pass
+
+'''
+##########################################################################
+    Read a color file and assign to lesion actors.
+    Returns: None.
+##########################################################################
+'''
+def loadColorFileAndAssignToLesions(colorFilePath, lesionActors):
+    with open(colorFilePath, "rb") as f:
+        colorDataFile = pickle.load(f)
+    for i in range(len(colorDataFile)):
+        colorData = vtk.vtkUnsignedCharArray()
+        colorData.SetName('Colors') # Any name will work here.
+        colorData.SetNumberOfComponents(3)
+        #colorData.SetArray(colorDataFile[i], int(colorDataFile[i].size/3), True)
+        for j in range(len(colorDataFile[i])):
+            colorData.InsertNextTuple3(colorDataFile[i][j][0],colorDataFile[i][j][1],colorDataFile[i][j][2])
+        lesionActors[i].GetMapper().GetInput().GetPointData().SetScalars(colorData)
 
 
 '''
@@ -966,10 +1064,15 @@ def computeVolumeMaskBlend(currentSliceVolume, voxelSpaceCorrectedMask, opacity)
     thresholdImageCastFilter.SetOutputScalarTypeToShort()
     thresholdImageCastFilter.Update() 
 
+    currentSliceVolumeCastFilter = vtk.vtkImageCast()
+    currentSliceVolumeCastFilter.SetInputData(currentSliceVolume.GetOutput())
+    currentSliceVolumeCastFilter.SetOutputScalarTypeToShort()
+    currentSliceVolumeCastFilter.Update() 
+
     imgBlender = vtk.vtkImageBlend()
     imgBlender.SetOpacity(0, 0)
     imgBlender.SetOpacity(1, opacity)
-    imgBlender.AddInputConnection(currentSliceVolume.GetOutputPort())
+    imgBlender.AddInputConnection(currentSliceVolumeCastFilter.GetOutputPort())
     imgBlender.AddInputConnection(thresholdImageCastFilter.GetOutputPort())
     imgBlender.Update()
 

@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1202</width>
+    <width>1248</width>
     <height>1038</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Multiple Sclerosis Experimentor - NOT FOR CLINICAL USE</string>
+   <string>Multiple Sclerosis Experimentor - Not For Clinical Use</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -1007,7 +1007,7 @@ border-radius: 10px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1202</width>
+     <width>1248</width>
      <height>22</height>
     </rect>
    </property>
