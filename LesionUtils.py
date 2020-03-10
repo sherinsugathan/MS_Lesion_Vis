@@ -770,13 +770,42 @@ def extractLesions2(subjectFolder, informationKeyID):
     for i in range(mb.GetNumberOfBlocks()):
         polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
         if polyData and polyData.GetNumberOfPoints():
+
+            # smoothFilter = vtk.vtkSmoothPolyDataFilter()
+            # smoothFilter.SetInputData(polyData)
+            # smoothFilter.SetNumberOfIterations(5)
+            # smoothFilter.SetRelaxationFactor(0.1)
+            # smoothFilter.FeatureEdgeSmoothingOff()
+            # smoothFilter.BoundarySmoothingOn()
+            # smoothFilter.Update()
+
+            smoothFilter = vtk.vtkSmoothPolyDataFilter()
+            smoothFilter.SetInputData(polyData)
+            smoothFilter.SetNumberOfIterations(55)
+            smoothFilter.SetRelaxationFactor(0.1)
+            smoothFilter.FeatureEdgeSmoothingOn()
+            smoothFilter.SetEdgeAngle(90)
+            smoothFilter.BoundarySmoothingOn()
+            smoothFilter.Update()
+
+            normalGenerator = vtk.vtkPolyDataNormals()
+            normalGenerator.SetInputData(smoothFilter.GetOutput())
+            normalGenerator.ComputePointNormalsOn()
+            normalGenerator.ComputeCellNormalsOff()
+            normalGenerator.AutoOrientNormalsOn()
+            normalGenerator.ConsistencyOn()
+            normalGenerator.SplittingOff()
+            normalGenerator.Update()
+
             lesionMapper = vtk.vtkOpenGLPolyDataMapper()
-            lesionMapper.SetInputData(polyData)
+            lesionMapper.SetInputData(normalGenerator.GetOutput())
             lesionActor = vtk.vtkActor()
             lesionActor.SetMapper(lesionMapper)
             informationID = vtk.vtkInformation()
             informationID.Set(informationKeyID,str(i+1))
             lesionActor.GetProperty().SetInformation(informationID)
+            lesionActor.GetProperty().SetInterpolationToGouraud()
+            #lesionActor.GetProperty().SetInterpolationToPhong()
             lesionActors.append(lesionActor)
 
     return lesionActors
