@@ -476,12 +476,12 @@ class Ui(Qt.QMainWindow):
         self.lesionRoundness = []
         self.lesionAverageIntensity  = []
         self.lesionAverageSurroundingIntensity = []
-        self.lesionRegionNumberQuantized = []
+        #self.lesionRegionNumberQuantized = []
         self.lesionAffectedPointIdsLh = []
         self.lesionAffectedPointIdsRh = []
         # load precomputed lesion properties
         structureInfo = None
-        with open(self.subjectFolder + "\\structure-def4.json") as fp: 
+        with open(self.subjectFolder + "\\structure-def3.json") as fp: 
             structureInfo = json.load(fp)
         self.numberOfLesionElements = len(structureInfo)
 
@@ -505,7 +505,7 @@ class Ui(Qt.QMainWindow):
                 self.lesionRoundness.append(p["Roundness"])
                 self.lesionAverageIntensity.append(p["AverageLesionIntensity"])
                 self.lesionAverageSurroundingIntensity.append(p["AverageSurroundingIntensity"])
-                self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
+                #self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
 

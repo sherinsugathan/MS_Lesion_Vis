@@ -5,9 +5,9 @@ import json
 import sys
 import argparse
 
-subjectRootFolder = "D:\\DATASET\\MS_SegmentationChallengeDataset"
-#listOfSubjects = ["07040DORE_DATA","07043SEME_DATA"]
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+subjectRootFolder = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
+#listOfSubjects = ["01040VANE_DATA"]
+listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 
 for subjectName in listOfSubjects:
     subjectFolder = subjectRootFolder + "\\" + subjectName
@@ -15,10 +15,16 @@ for subjectName in listOfSubjects:
     # T1 structural data
     T1_fileName = subjectFolder + '\\structural\\T1.nii'
     imageT1 = sitk.ReadImage(T1_fileName)
-
+    
     # Lesion Mask data
     lesionMask_FileName = subjectFolder + "\\lesionMask\\ConsensusResampled cropped.nii"
     imageLesionMask = sitk.ReadImage(lesionMask_FileName)
+
+    if("integer" in imageLesionMask.GetPixelIDTypeAsString()):
+        print("CONVERSION DONE")
+        castImageFilter = sitk.CastImageFilter()
+        castImageFilter.SetOutputPixelType(sitk.sitkFloat32)
+        imageLesionMask = castImageFilter.Execute(imageLesionMask)
 
     # Temperature gradient
     temperature_FileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
@@ -28,8 +34,8 @@ for subjectName in listOfSubjects:
     binaryThresholdFilter = sitk.BinaryThresholdImageFilter()
     binaryThresholdFilter.SetOutsideValue(0)
     binaryThresholdFilter.SetInsideValue(1)
-    binaryThresholdFilter.SetLowerThreshold(0.5)
-    binaryThresholdFilter.SetUpperThreshold(1)
+    binaryThresholdFilter.SetLowerThreshold(0.001)
+    binaryThresholdFilter.SetUpperThreshold(200)
     binaryImage = binaryThresholdFilter.Execute(imageLesionMask)
 
     # Connected component filter.
@@ -45,6 +51,7 @@ for subjectName in listOfSubjects:
     # Label statistics filter.
     labelShapeStatisticsFilter = sitk.LabelShapeStatisticsImageFilter()
     labelShapeStatisticsFilter.Execute(connectedComponentImage)
+
 
     # extract individual values and store in central database (for this participant)
     data = {}
@@ -96,5 +103,5 @@ for subjectName in listOfSubjects:
     # now store the data structure for the program to use
     with open(subjectFolder + '\\structure-def.json', 'w') as fp:
         json.dump(data, fp, indent=4)
-    print("Completed processing " + subjectName + ". " + str(objectCount) + " lesions found...")
+    print("Completed processing " + subjectName + "()"+ imageLesionMask.GetPixelIDTypeAsString() + ". " + str(objectCount) + " lesions found...")
 print("Done 100%")

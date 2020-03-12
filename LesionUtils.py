@@ -798,7 +798,8 @@ def extractLesions2(subjectFolder, informationKeyID):
             normalGenerator.Update()
 
             lesionMapper = vtk.vtkOpenGLPolyDataMapper()
-            lesionMapper.SetInputData(normalGenerator.GetOutput())
+            #lesionMapper.SetInputData(normalGenerator.GetOutput())
+            lesionMapper.SetInputData(polyData)
             lesionActor = vtk.vtkActor()
             lesionActor.SetMapper(lesionMapper)
             informationID = vtk.vtkInformation()

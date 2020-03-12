@@ -19,12 +19,12 @@ from nibabel import freesurfer
 
 
 rootPath = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
-#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-listOfSubjects = ["01016SACH_DATA"]
+listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+#listOfSubjects = ["01016SACH_DATA"]
 
 for subject in listOfSubjects:
     structureInfo = None
-    with open(rootPath + subject + "\\structure-def4.json") as fp: 
+    with open(rootPath + subject + "\\structure-def.json") as fp: 
         structureInfo = json.load(fp)
     numberOfLesionElements = len(structureInfo)
 

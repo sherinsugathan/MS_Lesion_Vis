@@ -21,11 +21,11 @@ def MakeCellData(min, max, colors, polyDataObject):
     for i in range(pointCount):
         val = polyDataObject.GetPointData().GetScalars().GetTuple1(i)
         if(val < min): # HYPO sample
-            colors.InsertNextTuple3(255,0,0)
+            colors.InsertNextTuple3(103,169,207)
         if(val >= min and val <= max): # ISO sample
-            colors.InsertNextTuple3(255,255,255)
+            colors.InsertNextTuple3(247,247,247)
         if(val > max): # HYPER sample
-            colors.InsertNextTuple3(0,255,0)
+            colors.InsertNextTuple3(239,138,98)
 
 def MakeCellDataDiscrete(min, max, colors, lesionIntensityDifferences):
     '''
@@ -37,32 +37,32 @@ def MakeCellDataDiscrete(min, max, colors, lesionIntensityDifferences):
     for i in range(len(intensityDifferenceDiscrete)):
         val = intensityDifferenceDiscrete[i]
         if(val < min): # HYPO sample
-            colors.InsertNextTuple3(255,0,0)
+            colors.InsertNextTuple3(103,169,207)
         if(val >= min and val <= max): # ISO sample
-            colors.InsertNextTuple3(255,255,255)
+            colors.InsertNextTuple3(247,247,247)
         if(val > max): # HYPER sample
-            colors.InsertNextTuple3(0,255,0)
+            colors.InsertNextTuple3(239,138,98)
 
 
 rootPath = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
-#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-listOfSubjects = ["01016SACH_DATA"]
+listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+#listOfSubjects = ["01040VANE_DATA"]
 contVolumeFileNames = ["T1IntensityDifference.nii", "T2IntensityDifference.nii", "3DFLAIRIntensityDifference.nii"]
 
 
 for subject in listOfSubjects:
     structureInfo = None
-    with open(rootPath + subject + "\\structure-def4.json") as fp: 
+    with open(rootPath + subject + "\\structure-def3.json") as fp: 
         structureInfo = json.load(fp)
     numberOfLesionElements = len(structureInfo)
-    lesionAverageIntensity = []
-    lesionAverageSurroundingIntensity = []
-    lesionRegionNumberQuantized = []
-    for jsonElementIndex in (range(1, numberOfLesionElements+1)):
-        for p in structureInfo[str(jsonElementIndex)]:
-            lesionAverageIntensity.append(p["AverageLesionIntensity"])
-            lesionAverageSurroundingIntensity.append(p["AverageSurroundingIntensity"])
-            lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
+    # lesionAverageIntensity = []
+    # lesionAverageSurroundingIntensity = []
+    # lesionRegionNumberQuantized = []
+    # for jsonElementIndex in (range(1, numberOfLesionElements+1)):
+    #     for p in structureInfo[str(jsonElementIndex)]:
+    #         lesionAverageIntensity.append(p["AverageLesionIntensity"])
+    #         lesionAverageSurroundingIntensity.append(p["AverageSurroundingIntensity"])
+    #         lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
 
     connectedComponentsMaskFile = rootPath + subject + "\\lesionMask\\ConnectedComponents.nii"
     # Load lesion mask
@@ -111,11 +111,12 @@ for subject in listOfSubjects:
         transformVolume.Update()
 
         colorList = []
-        intensityDifferenceDiscrete = np.subtract(lesionAverageSurroundingIntensity,lesionAverageIntensity)
-        colorDataDiscrete = vtk.vtkUnsignedCharArray()
-        colorDataDiscrete.SetName('Colors') # Any name will work here.
-        colorDataDiscrete.SetNumberOfComponents(3)
-        MakeCellDataDiscrete(-50, 50, colorDataDiscrete, intensityDifferenceDiscrete)
+        #intensityDifferenceDiscrete = np.subtract(lesionAverageSurroundingIntensity,lesionAverageIntensity)
+        #colorDataDiscrete = vtk.vtkUnsignedCharArray()
+        #colorDataDiscrete.SetName('Colors') # Any name will work here.
+        #colorDataDiscrete.SetNumberOfComponents(3)
+        #MakeCellDataDiscrete(-50, 50, colorDataDiscrete, intensityDifferenceDiscrete)
+        print("NUMBER OF LESIONS", numberOfLesionElements)
         for i in range(numberOfLesionElements):
             colorData = vtk.vtkUnsignedCharArray()
             colorData.SetName('Colors') # Any name will work here.
@@ -138,8 +139,11 @@ for subject in listOfSubjects:
 
             MakeCellData(-50, 50, colorData, probeFilter.GetOutput()) 
             colorList.append(np.array(colorData))
+            
             #multiBlockDataset.SetBlock(i,lesionMapper.GetInput())
             #print(subject, "PROCESSING LESION", i,"/",numberOfLesionElements)
+
+            print("COLOR list length", colorData.GetNumberOfTuples())
 
         writeItem = None
         if("T1" in contVolumeFileName):
