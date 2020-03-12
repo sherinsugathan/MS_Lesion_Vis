@@ -26,7 +26,7 @@ from ctypes import wintypes
 
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QFileDialog, QCheckBox
+from PyQt5.QtWidgets import QFileDialog, QCheckBox, QButtonGroup, QAbstractButton
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtGui
 from PyQt5 import Qt
@@ -108,11 +108,6 @@ class Ui(Qt.QMainWindow):
         self.comboBox_LesionFilter.addItem("Flatness")
         self.comboBox_LesionFilter.addItem("Roundness")
 
-        self.comboBox_MPRModality.addItem("T1 Sequence")
-        self.comboBox_MPRModality.addItem("T2 Sequence")
-        self.comboBox_MPRModality.addItem("FLAIR Sequence")
-        self.comboBox_MPRModality.currentTextChanged.connect(self.on_modalityChanged)
-
         self.mprA_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRA)
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
         self.mprC_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRC)
@@ -181,15 +176,15 @@ class Ui(Qt.QMainWindow):
         self.renDualLeft = vtk.vtkRenderer() # Renderer for dual view lesion map left
         self.renDualRight = vtk.vtkRenderer() # Renderer for dual view lesion map right
         self.renOrientationCube = vtk.vtkRenderer()
-        self.ren.SetBackground(0, 0, 0)
+        self.ren.SetBackground(0.0235,0.0711,0.0353)
         
-        self.renMPRA.SetBackground(0, 0, 0)
-        self.renMPRB.SetBackground(0, 0, 0)
-        self.renMPRC.SetBackground(0, 0, 0)
+        self.renMPRA.SetBackground(0,0,0)
+        self.renMPRB.SetBackground(0,0,0)
+        self.renMPRC.SetBackground(0,0,0)
         #self.ren.SetViewport(self.VR_Viewport[0], self.VR_Viewport[1], self.VR_Viewport[2], self.VR_Viewport[3])
         self.renMapOutcome.SetViewport(self.parcellation_Viewport[0], self.parcellation_Viewport[1], self.parcellation_Viewport[2], self.parcellation_Viewport[3])
-        self.renDualLeft.SetBackground(0, 0, 0)
-        self.renDualRight.SetBackground(0, 0, 0)
+        self.renDualLeft.SetBackground(0.0235,0.0711,0.0353)
+        self.renDualRight.SetBackground(0.0235,0.0711,0.0353)
         #self.renDual.SetBackground(0, 1, 0)
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
@@ -333,6 +328,20 @@ class Ui(Qt.QMainWindow):
         self.renDualRight.ResetCamera() # Lesion Mapping Dual Camera Right Reset
         self.frame_DualRight.setLayout(self.vl_LesionMapDualRight)
 
+        self.buttonGroupModality = QButtonGroup()
+        self.buttonGroupModality.addButton(self.pushButton_T1)
+        self.buttonGroupModality.addButton(self.pushButton_T2)
+        self.buttonGroupModality.addButton(self.pushButton_FLAIR)
+        self.buttonGroupModality.setExclusive(True)
+        self.buttonGroupModality.buttonClicked.connect(self.on_buttonGroupModalityChanged)
+
+        self.buttonGroupVis = QButtonGroup()
+        self.buttonGroupVis.addButton(self.pushButton_Continuous)
+        self.buttonGroupVis.addButton(self.pushButton_Discrete)
+        self.buttonGroupVis.addButton(self.pushButton_Distance)
+        self.buttonGroupVis.setExclusive(True)
+        self.buttonGroupVis.buttonClicked.connect(self.on_buttonGroupVisChanged)
+
         self.show()
         self.iren.Initialize()
         self.iren_MPRA.Initialize()
@@ -369,11 +378,11 @@ class Ui(Qt.QMainWindow):
             #     currentVolume = self.currentSliceVolume
             blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
             range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
-            print("RANGE", range[1], range[0])
+            #print("RANGE", range[1], range[0])
 
             window = (range[1] - range[0])/2.0
             level = range[0] + (window/2.0)
-            print(window, level)
+            #print(window, level)
             ################################
             # MPR A    #####################
             ################################
@@ -463,7 +472,7 @@ class Ui(Qt.QMainWindow):
         self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # Load data for MPRs.
         self.LoadStructuralSlices(self.subjectFolder, "T1", True)
-        self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1
+        #self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1   # TODO : Remove this old UI element
 
         self.actors = []
         self.lesionCentroids = []
@@ -652,11 +661,11 @@ class Ui(Qt.QMainWindow):
         if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Distance"):
             visType = "Dist"      
         modality = None
-        if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
+        if(self.buttonGroupModality.checkedButton().text() == "T1"):
             modality = "T1"
-        if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
+        if(self.buttonGroupModality.checkedButton().text() == "T2"):
             modality = "T2"
-        if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
+        if(self.buttonGroupModality.checkedButton().text() == "FLAIR"):
             modality = "FLAIR"
 
         colorFilePath = self.subjectFolder + "\\surfaces\\colorArray" + visType + modality + ".pkl"
@@ -917,20 +926,27 @@ class Ui(Qt.QMainWindow):
             # Filter lesions.
             LesionUtils.filterLesionsAndRender(removeIndices, self.actors, self.informationUniqueKey, self.ren)
             self.iren.Render()
-        
-    # Handler for modality change for slice views.
-    @pyqtSlot()
-    def on_modalityChanged(self):
+
+    # Handler for modality change(slices and VR) inside button group
+    @pyqtSlot(QAbstractButton)
+    def on_buttonGroupModalityChanged(self, btn):
+        # if(self.dataFolderInitialized == False):
+        #     print(btn.text())
         if(self.dataFolderInitialized == True):
-            if(self.comboBox_MPRModality.currentText()=="T1 Sequence"):
+            if(btn.text()=="T1"):
                 self.LoadStructuralSlices(self.subjectFolder, "T1")
                 self.updateLesionColors()
-            if(self.comboBox_MPRModality.currentText()=="T2 Sequence"):
+            if(btn.text()=="T2"):
                 self.LoadStructuralSlices(self.subjectFolder, "T2")
                 self.updateLesionColors()
-            if(self.comboBox_MPRModality.currentText()=="FLAIR Sequence"):
+            if(btn.text()=="FLAIR"):
                 self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
                 self.updateLesionColors()
+
+    # Handler for visualization change inside button group
+    @pyqtSlot(QAbstractButton)
+    def on_buttonGroupVisChanged(self, btn):
+        print(btn.text())
 
     # Handler for Dial moved.
     @pyqtSlot()
