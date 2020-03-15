@@ -117,6 +117,17 @@ class Ui(Qt.QMainWindow):
         self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
         pmMain = Qt.QPixmap("AppLogo.png")
         self.logoLabel.setPixmap(pmMain.scaled(self.logoLabel.size().width(), self.logoLabel.size().height(), 1,1))
+        modeIconSize = Qt.QSize(50, 50)
+        normalModeIcon = Qt.QPixmap("icons/normalMode.png")
+        dualModeIcon = Qt.QPixmap("icons/dualMode.png")
+        unfoldModeIcon = Qt.QPixmap("icons/2DMode.png")
+
+        self.pushButton_NormalMode.setIcon(QtGui.QIcon(normalModeIcon))
+        self.pushButton_DualMode.setIcon(QtGui.QIcon(dualModeIcon))
+        self.pushButton_2DMode.setIcon(QtGui.QIcon(unfoldModeIcon))
+        self.pushButton_NormalMode.setIconSize(modeIconSize)
+        self.pushButton_DualMode.setIconSize(modeIconSize)
+        self.pushButton_2DMode.setIconSize(modeIconSize)
 
     def onTimerEvent(self):
         if self.message == "tick":
@@ -342,6 +353,13 @@ class Ui(Qt.QMainWindow):
         self.buttonGroupVis.setExclusive(True)
         self.buttonGroupVis.buttonClicked.connect(self.on_buttonGroupVisChanged)
 
+        self.buttonGroupModes = QButtonGroup()
+        self.buttonGroupModes.addButton(self.pushButton_NormalMode)
+        self.buttonGroupModes.addButton(self.pushButton_DualMode)
+        self.buttonGroupModes.addButton(self.pushButton_2DMode)
+        self.buttonGroupModes.setExclusive(True)
+        self.buttonGroupModes.buttonClicked.connect(self.on_buttonGroupModesChanged)
+
         self.show()
         self.iren.Initialize()
         self.iren_MPRA.Initialize()
@@ -488,6 +506,13 @@ class Ui(Qt.QMainWindow):
         #self.lesionRegionNumberQuantized = []
         self.lesionAffectedPointIdsLh = []
         self.lesionAffectedPointIdsRh = []
+        self.lesionAverageLesionIntensityT1 = []
+        self.lesionAverageSuroundingIntensityT1 = []
+        self.lesionAverageLesionIntensityT2 = []
+        self.lesionAverageSuroundingIntensityT2 = []
+        self.lesionAverageLesionIntensityFLAIR = []
+        self.lesionAverageSuroundingIntensityFLAIR = []
+
         # load precomputed lesion properties
         structureInfo = None
         with open(self.subjectFolder + "\\structure-def3.json") as fp: 
@@ -517,6 +542,12 @@ class Ui(Qt.QMainWindow):
                 #self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
+                self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
+                self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
+                self.lesionAverageLesionIntensityT2.append(p["AverageLesionIntensityT2"])
+                self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
+                self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
+                self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
 
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
@@ -652,14 +683,14 @@ class Ui(Qt.QMainWindow):
         # End of performance log. Print elapsed time.
         print("--- %s seconds ---" % (time.time() - start_time))
 
-    def updateLesionColors(self):
-        visType = None
-        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Continuous"):
-            visType = "Cont"
-        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Discrete"):
-            visType = "Disc"
-        if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Distance"):
-            visType = "Dist"      
+    def updateLesionColorsContinuous(self):
+        # visType = None
+        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Continuous"):
+        #     visType = "Cont"
+        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Discrete"):
+        #     visType = "Disc"
+        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Distance"):
+        #     visType = "Dist"      
         modality = None
         if(self.buttonGroupModality.checkedButton().text() == "T1"):
             modality = "T1"
@@ -668,7 +699,34 @@ class Ui(Qt.QMainWindow):
         if(self.buttonGroupModality.checkedButton().text() == "FLAIR"):
             modality = "FLAIR"
 
-        colorFilePath = self.subjectFolder + "\\surfaces\\colorArray" + visType + modality + ".pkl"
+        colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayCont" + modality + ".pkl"
+        LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
+        self.iren.Render()
+
+    def updateLesionColorsDiscrete(self):
+        thresholdMin = -10
+        thresholdMax = 10
+        numberOfLesions = len(self.lesionActors)
+        for dataIndex in range(numberOfLesions):
+            self.lesionActors[dataIndex].GetMapper().ScalarVisibilityOff()
+
+            if(self.buttonGroupModality.checkedButton().text() == "T1"):
+                intensityDifference = self.lesionAverageLesionIntensityT1[dataIndex] - self.lesionAverageSuroundingIntensityT1[dataIndex]
+            if(self.buttonGroupModality.checkedButton().text() == "T2"):
+                intensityDifference = self.lesionAverageLesionIntensityT2[dataIndex] - self.lesionAverageSuroundingIntensityT2[dataIndex]
+            if(self.buttonGroupModality.checkedButton().text() == "FLAIR"):
+                intensityDifference = self.lesionAverageLesionIntensityFLAIR[dataIndex] - self.lesionAverageSuroundingIntensityFLAIR[dataIndex]
+
+            if(intensityDifference < thresholdMin):
+                self.lesionActors[dataIndex].GetProperty().SetColor(103/255.0, 169/255.0, 207/255.0)
+            if(intensityDifference >= thresholdMin and intensityDifference <=thresholdMax):
+                self.lesionActors[dataIndex].GetProperty().SetColor(247/255.0, 247/255.0, 247/255.0)
+            if(intensityDifference >= thresholdMax):
+                self.lesionActors[dataIndex].GetProperty().SetColor(239/255.0, 138/255.0, 98/255.0)
+        self.iren.Render()
+
+    def updateLesionColorsDistance(self):
+        colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayDistMRI.pkl"
         LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
         self.iren.Render()
 
@@ -930,23 +988,42 @@ class Ui(Qt.QMainWindow):
     # Handler for modality change(slices and VR) inside button group
     @pyqtSlot(QAbstractButton)
     def on_buttonGroupModalityChanged(self, btn):
-        # if(self.dataFolderInitialized == False):
-        #     print(btn.text())
         if(self.dataFolderInitialized == True):
             if(btn.text()=="T1"):
                 self.LoadStructuralSlices(self.subjectFolder, "T1")
-                self.updateLesionColors()
+                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                    self.updateLesionColorsContinuous()
+                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                    self.updateLesionColorsDiscrete()
             if(btn.text()=="T2"):
                 self.LoadStructuralSlices(self.subjectFolder, "T2")
-                self.updateLesionColors()
+                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                    self.updateLesionColorsContinuous()
+                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                    self.updateLesionColorsDiscrete()
             if(btn.text()=="FLAIR"):
                 self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
-                self.updateLesionColors()
+                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                    self.updateLesionColorsContinuous()
+                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                    self.updateLesionColorsDiscrete()
 
-    # Handler for visualization change inside button group
+    # Handler for color visualization change inside button group
     @pyqtSlot(QAbstractButton)
     def on_buttonGroupVisChanged(self, btn):
-        print(btn.text())
+        if(self.dataFolderInitialized == True):
+            if(btn.text()=="Continuous"):
+                self.updateLesionColorsContinuous()
+            if(btn.text()=="Discrete"):
+                self.updateLesionColorsDiscrete()
+            if(btn.text()=="Distance"):
+                self.updateLesionColorsDistance()
+
+    # Handler for mode change inside button group
+    @pyqtSlot(QAbstractButton)
+    def on_buttonGroupModesChanged(self, btn):
+        #print(btn.id())
+        print(self.buttonGroupModes.checkedId())
 
     # Handler for Dial moved.
     @pyqtSlot()

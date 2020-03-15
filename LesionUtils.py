@@ -845,6 +845,7 @@ def loadColorFileAndAssignToLesions(colorFilePath, lesionActors):
         #colorData.SetArray(colorDataFile[i], int(colorDataFile[i].size/3), True)
         for j in range(len(colorDataFile[i])):
             colorData.InsertNextTuple3(colorDataFile[i][j][0],colorDataFile[i][j][1],colorDataFile[i][j][2])
+        lesionActors[i].GetMapper().ScalarVisibilityOn()
         lesionActors[i].GetMapper().GetInput().GetPointData().SetScalars(colorData)
 
 
