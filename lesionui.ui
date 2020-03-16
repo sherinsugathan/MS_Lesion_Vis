@@ -22,8 +22,8 @@
 color:white;</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_8">
+    <item row="0" column="0">
      <widget class="QGroupBox" name="groupBox">
       <property name="maximumSize">
        <size>
@@ -333,6 +333,7 @@ border-radius: 4px;
 background-color: rgb(54, 113, 38);
 }
 QPushButton:pressed#pushButton_DualMode {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_DualMode {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
 QPushButton#pushButton_DualMode
 {
 background-color: rgb(10, 61, 29);
@@ -350,6 +351,17 @@ border-style: solid;
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons/dualMode.png</normaloff>
+             <normalon>icons/dualModeEnabled.png</normalon>icons/dualMode.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -373,6 +385,7 @@ border-style: solid;
 background-color: rgb(54, 113, 38);
 }
 QPushButton:pressed#pushButton_NormalMode {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_NormalMode {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
 QPushButton#pushButton_NormalMode
 {
 background-color: rgb(10, 61, 29);
@@ -390,6 +403,17 @@ border-style: solid;
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons/normalMode.png</normaloff>
+             <normalon>icons/normalModeEnabled.png</normalon>icons/normalMode.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -434,6 +458,17 @@ border-style: solid;
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons/2DMode.png</normaloff>
+             <normalon>icons/2DModeEnabled.png</normalon>icons/2DMode.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -839,7 +874,7 @@ border-radius: 4px;
       </layout>
      </widget>
     </item>
-    <item>
+    <item row="0" column="1">
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="4" column="0">
        <widget class="QSlider" name="mprC_Slice_Slider">
@@ -1005,7 +1040,7 @@ border-radius: 10px;</string>
       </item>
      </layout>
     </item>
-    <item>
+    <item row="0" column="2">
      <widget class="QStackedWidget" name="stackedWidget_MainRenderers">
       <property name="minimumSize">
        <size>
@@ -1016,7 +1051,7 @@ border-radius: 10px;</string>
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="mainVR">
+      <widget class="QWidget" name="continuousMode">
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="2" column="0">
          <widget class="QFrame" name="frame">
@@ -1386,7 +1421,7 @@ border-style: solid;
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2">
+      <widget class="QWidget" name="dualMode">
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
          <widget class="QFrame" name="frame_DualLeft">
@@ -1407,6 +1442,33 @@ border-radius: 10px;</string>
         </item>
         <item row="0" column="1">
          <widget class="QFrame" name="frame_DualRight">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(6, 16, 9);
+border-color: rgb(20, 52, 30);
+border-style: solid;
+border-width: 2px;
+border-radius: 10px;</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_9">
+        <item row="0" column="0">
+         <widget class="QFrame" name="frame_3">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(6, 16, 9);
 border-color: rgb(20, 52, 30);

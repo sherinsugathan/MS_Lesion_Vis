@@ -117,17 +117,6 @@ class Ui(Qt.QMainWindow):
         self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
         pmMain = Qt.QPixmap("AppLogo.png")
         self.logoLabel.setPixmap(pmMain.scaled(self.logoLabel.size().width(), self.logoLabel.size().height(), 1,1))
-        modeIconSize = Qt.QSize(50, 50)
-        normalModeIcon = Qt.QPixmap("icons/normalMode.png")
-        dualModeIcon = Qt.QPixmap("icons/dualMode.png")
-        unfoldModeIcon = Qt.QPixmap("icons/2DMode.png")
-
-        self.pushButton_NormalMode.setIcon(QtGui.QIcon(normalModeIcon))
-        self.pushButton_DualMode.setIcon(QtGui.QIcon(dualModeIcon))
-        self.pushButton_2DMode.setIcon(QtGui.QIcon(unfoldModeIcon))
-        self.pushButton_NormalMode.setIconSize(modeIconSize)
-        self.pushButton_DualMode.setIconSize(modeIconSize)
-        self.pushButton_2DMode.setIconSize(modeIconSize)
 
     def onTimerEvent(self):
         if self.message == "tick":
@@ -683,14 +672,7 @@ class Ui(Qt.QMainWindow):
         # End of performance log. Print elapsed time.
         print("--- %s seconds ---" % (time.time() - start_time))
 
-    def updateLesionColorsContinuous(self):
-        # visType = None
-        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Continuous"):
-        #     visType = "Cont"
-        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Discrete"):
-        #     visType = "Disc"
-        # if(str(self.comboBox_VisType.currentText())=="Lesion Colored - Distance"):
-        #     visType = "Dist"      
+    def updateLesionColorsContinuous(self):   
         modality = None
         if(self.buttonGroupModality.checkedButton().text() == "T1"):
             modality = "T1"
@@ -709,7 +691,6 @@ class Ui(Qt.QMainWindow):
         numberOfLesions = len(self.lesionActors)
         for dataIndex in range(numberOfLesions):
             self.lesionActors[dataIndex].GetMapper().ScalarVisibilityOff()
-
             if(self.buttonGroupModality.checkedButton().text() == "T1"):
                 intensityDifference = self.lesionAverageLesionIntensityT1[dataIndex] - self.lesionAverageSuroundingIntensityT1[dataIndex]
             if(self.buttonGroupModality.checkedButton().text() == "T2"):
@@ -1013,17 +994,54 @@ class Ui(Qt.QMainWindow):
     def on_buttonGroupVisChanged(self, btn):
         if(self.dataFolderInitialized == True):
             if(btn.text()=="Continuous"):
+                self.pushButton_T1.setEnabled(True)
+                self.pushButton_T2.setEnabled(True)
+                self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsContinuous()
             if(btn.text()=="Discrete"):
+                self.pushButton_T1.setEnabled(True)
+                self.pushButton_T2.setEnabled(True)
+                self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsDiscrete()
             if(btn.text()=="Distance"):
+                self.pushButton_T1.setEnabled(False)
+                self.pushButton_T2.setEnabled(False)
+                self.pushButton_FLAIR.setEnabled(False)
                 self.updateLesionColorsDistance()
 
     # Handler for mode change inside button group
     @pyqtSlot(QAbstractButton)
     def on_buttonGroupModesChanged(self, btn):
         #print(btn.id())
-        print(self.buttonGroupModes.checkedId())
+        #print(self.buttonGroupModes.checkedId())
+        if(self.dataFolderInitialized == True):
+            if(self.buttonGroupModes.checkedId() == -2): # Normal Mode
+                self.stackedWidget_MainRenderers.setCurrentIndex(0)
+                if(self.mainLoadedOnce == True):
+                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
+                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
+                self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
+                self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
+                self.mainLoadedOnce = True
+                if(self.checkBox_Parcellation.isChecked()):
+                    self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
+                    self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)
+            if(self.buttonGroupModes.checkedId() == -3): # Dual Mode
+                self.stackedWidget_MainRenderers.setCurrentIndex(1)
+                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
+                self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
+                if(self.dualLoadedOnce==False):
+                    self.lesionMapperDual = LesionMapper(self)
+                    self.lesionMapperDual.ClearData()
+                    self.lesionMapperDual.AddData()
+                    #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
+                    self.dualLoadedOnce = True
+                else:
+                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
+                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
+            if(self.buttonGroupModes.checkedId() == -4): # 2D Mode
+                self.stackedWidget_MainRenderers.setCurrentIndex(2)
+            self.iren.Render()
 
     # Handler for Dial moved.
     @pyqtSlot()
