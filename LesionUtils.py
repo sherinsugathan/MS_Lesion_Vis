@@ -781,10 +781,10 @@ def extractLesions2(subjectFolder, informationKeyID):
 
             smoothFilter = vtk.vtkSmoothPolyDataFilter()
             smoothFilter.SetInputData(polyData)
-            smoothFilter.SetNumberOfIterations(55)
+            smoothFilter.SetNumberOfIterations(80)
             smoothFilter.SetRelaxationFactor(0.1)
             smoothFilter.FeatureEdgeSmoothingOn()
-            smoothFilter.SetEdgeAngle(90)
+            #smoothFilter.SetEdgeAngle(90)
             smoothFilter.BoundarySmoothingOn()
             smoothFilter.Update()
 

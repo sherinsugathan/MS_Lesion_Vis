@@ -235,17 +235,10 @@ border-radius: 4px;
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="checkBox_persistSettings">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="checkBox_Parcellation">
            <property name="text">
-            <string>Persist Settings</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="checkBox_PerLesion">
-           <property name="text">
-            <string>Map Lesions</string>
+            <string>Parcellations</string>
            </property>
           </widget>
          </item>
@@ -259,17 +252,17 @@ border-radius: 4px;
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="checkBox_Parcellation">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="checkBox_PerLesion">
            <property name="text">
-            <string>Parcellations</string>
+            <string>Map Lesions</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="checkBox_LesionMappingDualView">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="checkBox_persistSettings">
            <property name="text">
-            <string>Dual Mode</string>
+            <string>Persist Settings</string>
            </property>
           </widget>
          </item>
@@ -419,7 +412,7 @@ border-style: solid;
             <bool>true</bool>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -1300,7 +1293,7 @@ border-style: solid;
               <bool>true</bool>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -1351,7 +1344,7 @@ border-style: solid;
               <bool>true</bool>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -1468,7 +1461,7 @@ border-radius: 10px;</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
-         <widget class="QFrame" name="frame_3">
+         <widget class="QFrame" name="frame_2x2">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(6, 16, 9);
 border-color: rgb(20, 52, 30);

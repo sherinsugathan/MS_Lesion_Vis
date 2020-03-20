@@ -15,6 +15,8 @@ import Subject
 import LesionUtils
 import LesionMapper
 from LesionMapper import LesionMapper
+import TwoDModeMapper
+from TwoDModeMapper import TwoDModeMapper
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 import nibabel as nib
 import numpy as np
@@ -83,7 +85,6 @@ class Ui(Qt.QMainWindow):
         self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
         self.checkBox_PerLesion.stateChanged.connect(self.perLesion_state_changed) # Attaching handler for per lesion.
         self.checkBox_Parcellation.stateChanged.connect(self.parcellation_state_changed) # Attaching handler for parcellation display.
-        self.checkBox_LesionMappingDualView.stateChanged.connect(self.dual_view_state_changed) # Attaching handler for dual view display.
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
         # self.comboBox_VisType.addItem("Default View")
@@ -145,6 +146,7 @@ class Ui(Qt.QMainWindow):
         self.vl_MPRC = Qt.QVBoxLayout()
         self.vl_LesionMapDualLeft = Qt.QVBoxLayout()
         self.vl_LesionMapDualRight = Qt.QVBoxLayout()
+        # self.vl_lesion2x2 = Qt.QVBoxLayout()
 
         # Frame widgets
         self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
@@ -153,6 +155,7 @@ class Ui(Qt.QMainWindow):
         self.vtkWidgetMPRC = QVTKRenderWindowInteractor(self.frame_MPRC)
         self.vtkWidgetLesionMapDualLeft = QVTKRenderWindowInteractor(self.frame_DualLeft)
         self.vtkWidgetLesionMapDualRight = QVTKRenderWindowInteractor(self.frame_DualRight)
+        # self.vtkWidget2x2 = QVTKRenderWindowInteractor(self.frame_2x2)
         # Orientation cube.
         self.axesActor = vtk.vtkAnnotatedCubeActor()
         self.vl.addWidget(self.vtkWidget)
@@ -161,12 +164,14 @@ class Ui(Qt.QMainWindow):
         self.vl_MPRC.addWidget(self.vtkWidgetMPRC)
         self.vl_LesionMapDualLeft.addWidget(self.vtkWidgetLesionMapDualLeft)
         self.vl_LesionMapDualRight.addWidget(self.vtkWidgetLesionMapDualRight)
+        # self.vl_lesion2x2.addWidget(self.vtkWidget2x2)
         self.vtkWidget.Initialize()
         self.vtkWidgetMPRA.Initialize()
         self.vtkWidgetMPRB.Initialize()
         self.vtkWidgetMPRC.Initialize()
         self.vtkWidgetLesionMapDualLeft.Initialize()
         self.vtkWidgetLesionMapDualRight.Initialize()
+        # self.vtkWidget2x2.Initialize()
 
         self.ren = vtk.vtkRenderer() # Renderer for volume
         self.renMapOutcome = vtk.vtkRenderer() # Renderer for displaying mapping outcomes.
@@ -175,16 +180,18 @@ class Ui(Qt.QMainWindow):
         self.renMPRC = vtk.vtkRenderer() # Renderer for MPR C
         self.renDualLeft = vtk.vtkRenderer() # Renderer for dual view lesion map left
         self.renDualRight = vtk.vtkRenderer() # Renderer for dual view lesion map right
+        #self.ren2x2 = vtk.vtkRenderer() # Renderer for unfolded view 2d mode.
         self.renOrientationCube = vtk.vtkRenderer()
-        self.ren.SetBackground(0.0235,0.0711,0.0353)
+        self.ren.SetBackground(0.0039,0.0196,0.0078)
         
         self.renMPRA.SetBackground(0,0,0)
         self.renMPRB.SetBackground(0,0,0)
         self.renMPRC.SetBackground(0,0,0)
         #self.ren.SetViewport(self.VR_Viewport[0], self.VR_Viewport[1], self.VR_Viewport[2], self.VR_Viewport[3])
         self.renMapOutcome.SetViewport(self.parcellation_Viewport[0], self.parcellation_Viewport[1], self.parcellation_Viewport[2], self.parcellation_Viewport[3])
-        self.renDualLeft.SetBackground(0.0235,0.0711,0.0353)
-        self.renDualRight.SetBackground(0.0235,0.0711,0.0353)
+        self.renDualLeft.SetBackground(0.0039,0.0196,0.0078)
+        self.renDualRight.SetBackground(0.0039,0.0196,0.0078)
+        #self.ren2x2.SetBackground(0.0235,0.0711,0.0353)
         #self.renDual.SetBackground(0, 1, 0)
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
@@ -219,6 +226,8 @@ class Ui(Qt.QMainWindow):
         self.iren_LesionMapDualLeft = self.vtkWidgetLesionMapDualLeft.GetRenderWindow().GetInteractor()
         self.vtkWidgetLesionMapDualRight.GetRenderWindow().AddRenderer(self.renDualRight)
         self.iren_LesionMapDualRight = self.vtkWidgetLesionMapDualRight.GetRenderWindow().GetInteractor()
+        # self.vtkWidget2x2.GetRenderWindow().AddRenderer(self.ren2x2)
+        # self.iren_2x2 = self.vtkWidget2x2.GetRenderWindow().GetInteractor()
 
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
@@ -327,6 +336,8 @@ class Ui(Qt.QMainWindow):
         self.frame_DualLeft.setLayout(self.vl_LesionMapDualLeft)
         self.renDualRight.ResetCamera() # Lesion Mapping Dual Camera Right Reset
         self.frame_DualRight.setLayout(self.vl_LesionMapDualRight)
+        # self.ren2x2.ResetCamera() # 2x2 view camera reset
+        # self.frame_2x2.setLayout(self.vl_lesion2x2)
 
         self.buttonGroupModality = QButtonGroup()
         self.buttonGroupModality.addButton(self.pushButton_T1)
@@ -731,10 +742,11 @@ class Ui(Qt.QMainWindow):
             self.ren.RemoveVolume(self.volume) # Remove existing volume from scene.
             self.model_structural.removeRows(0,self.model_structural.rowCount())
         self.volumeDataLoaded=False # Initialize volume load status to false.
+        self.initializeModeButtons()
         self.stackedWidget_MainRenderers.setCurrentIndex(0) # Set current widget = large renderer
-        self.checkBox_LesionMappingDualView.setCheckState(QtCore.Qt.Unchecked)
-        self.dualLoadedOnce = False # Boolean indicating whether dual mode initialized atleast once.
-        self.mainLoadedOnce = False # Boolean indicating whether main mode initialized atleast once.
+        self.dualLoadedOnce = False # Initialize Boolean indicating whether dual mode initialized atleast once.
+        self.mainLoadedOnce = False # Initialize Boolean indicating whether main mode initialized atleast once.
+        self.twoDModeLoadedOnce = False # Initialize Boolean indicating whether 2D mode initialized atleast once.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
@@ -793,6 +805,7 @@ class Ui(Qt.QMainWindow):
         self.iren.Render()
 
         self.dataFolderInitialized=True
+        
         # Handler for load data button click
    
     # Handler for load structural data
@@ -1017,31 +1030,96 @@ class Ui(Qt.QMainWindow):
         if(self.dataFolderInitialized == True):
             if(self.buttonGroupModes.checkedId() == -2): # Normal Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(0)
-                if(self.mainLoadedOnce == True):
-                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
-                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
-                self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
-                self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
-                self.mainLoadedOnce = True
-                if(self.checkBox_Parcellation.isChecked()):
-                    self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
-                    self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)
+                self.activateMainMode()
+
             if(self.buttonGroupModes.checkedId() == -3): # Dual Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(1)
-                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
-                self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
-                if(self.dualLoadedOnce==False):
-                    self.lesionMapperDual = LesionMapper(self)
-                    self.lesionMapperDual.ClearData()
-                    self.lesionMapperDual.AddData()
-                    #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
-                    self.dualLoadedOnce = True
-                else:
-                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
-                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
+                self.activateDualMode()
+
             if(self.buttonGroupModes.checkedId() == -4): # 2D Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(2)
+                self.activate2DMode()
+
             self.iren.Render()
+
+    # Activate renderers in main mode
+    def activateMainMode(self):
+        self.mainLoadedOnce = True
+
+    # Activate renderers in dual mode
+    def activateDualMode(self):
+        #self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
+        #self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
+        if(self.dualLoadedOnce==False):
+            self.lesionMapperDual = LesionMapper(self)
+            self.lesionMapperDual.ClearData()
+            self.lesionMapperDual.AddData()
+            self.dualLoadedOnce = True
+
+    # Activate renderers in 2D mode
+    def activate2DMode(self):
+        if(self.twoDModeLoadedOnce == False):
+            self.twoDModeMapper = TwoDModeMapper(self)
+            self.twoDModeMapper.ClearData()
+            self.twoDModeMapper.AddData()
+            self.twoDModeLoadedOnce = True
+
+    # Initialize mode buttons.
+    def initializeModeButtons(self):
+        modalityButtons = self.buttonGroupModality.buttons()
+        visButtons = self.buttonGroupVis.buttons()
+        modeButtons = self.buttonGroupModes.buttons()
+        for btn in modalityButtons:
+            #btn.animateClick()
+            btn.setChecked(True)
+            break
+        for btn in visButtons:
+            #btn.animateClick()
+            btn.setChecked(True)
+            break
+        for btn in modeButtons:
+            #btn.animateClick()
+            btn.setChecked(True)
+            break
+        # self.buttonGroupModality.buttons()[1].setDown(False)
+        # self.buttonGroupModality.buttons()[2].setDown(False)
+        # self.buttonGroupVis.buttons()[0].setDown(True)
+        # self.buttonGroupVis.buttons()[1].setDown(False)
+        # self.buttonGroupVis.buttons()[2].setDown(False)
+        # self.buttonGroupModes.buttons()[0].setDown(True)
+        # self.buttonGroupModes.buttons()[1].setDown(False)
+        # self.buttonGroupModes.buttons()[2].setDown(False)
+
+    # # Activate renderers in main mode
+    # def activateMainMode(self):
+    #     print("I am here")
+    #     if(self.mainLoadedOnce == True):
+    #         LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
+    #         LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
+    #     self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
+    #     self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
+    #     self.mainLoadedOnce = True
+    #     if(self.checkBox_Parcellation.isChecked()):
+    #         self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
+    #         self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)
+
+    # # Activate renderers in dual mode
+    # def activateDualMode(self):
+    #     self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
+    #     self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
+    #     if(self.dualLoadedOnce==False):
+    #         self.lesionMapperDual = LesionMapper(self)
+    #         self.lesionMapperDual.ClearData()
+    #         self.lesionMapperDual.AddData()
+    #         #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
+    #         self.dualLoadedOnce = True
+    #     else:
+    #         LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
+    #         LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
+
+    # # Activate renderers in 2D mode
+    # def activate2DMode(self):
+    #     pass
 
     # Handler for Dial moved.
     @pyqtSlot()
@@ -1145,44 +1223,6 @@ class Ui(Qt.QMainWindow):
             if(self.dualLoadedOnce == True): # Update dual view also.
                 self.lesionMapperDual.Refresh()
             self.iren.Render()
-
-    # Handler for dual view mode.
-    @pyqtSlot()
-    def dual_view_state_changed(self):
-        if(self.dataFolderInitialized == True):
-            if self.checkBox_LesionMappingDualView.isChecked():
-                self.stackedWidget_MainRenderers.setCurrentIndex(1)
-                self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
-                self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
-                if(self.dualLoadedOnce==False):
-                    self.lesionMapperDual = LesionMapper(self)
-                    self.lesionMapperDual.ClearData()
-                    self.lesionMapperDual.AddData()
-                    #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
-                    self.dualLoadedOnce = True
-                else:
-                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
-                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
-            else:
-                self.stackedWidget_MainRenderers.setCurrentIndex(0)
-                if(self.mainLoadedOnce == True):
-                    LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
-                    LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
-                self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
-                self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
-                self.mainLoadedOnce = True
-                if(self.checkBox_Parcellation.isChecked()):
-                    self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
-                    self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)    
-                #self.lesionMapperDual.RemoveData()
-                # if self.checkBox_LesionMappingDualView.isChecked():
-                #     if(self.vtkWidget.GetRenderWindow().HasRenderer(self.ren) == True):
-                #         self.vtkWidget.GetRenderWindow().RemoveRenderer(self.ren)
-                #     if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
-                #         self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
-                #     self.vtkWidget.GetRenderWindow().AddRenderer(self.renDual)
-                #     self.style.SetDefaultRenderer(self.renDual)
-        self.iren.Render()
 
     # Handler for lesion filtering selected text changed.
     @pyqtSlot()
