@@ -26,10 +26,10 @@ class TwoDModeMapper():
     self.rendererUnfoldedRh = vtk.vtkRenderer()
     self.rendererUnfoldedLh = vtk.vtkRenderer()
 
-    self.rendererLesion.SetBackground(0.0039,0.0196,0.0078)
+    self.rendererLesion.SetBackground(0.0078,0.0470,0.0196)
     self.rendererSurface.SetBackground(0.0039,0.0196,0.0078)
     self.rendererUnfoldedRh.SetBackground(0.0039,0.0196,0.0078)
-    self.rendererUnfoldedLh.SetBackground(0.0039,0.0196,0.0078)
+    self.rendererUnfoldedLh.SetBackground(0.0078,0.0470,0.0196)
 
     self.rendererLesion.SetViewport(xmins[2], ymins[2], xmaxs[2], ymaxs[2])
     self.rendererSurface.SetViewport(xmins[0], ymins[0], xmaxs[0], ymaxs[0])
@@ -109,16 +109,75 @@ class TwoDModeMapper():
     #self.iren_LesionMapDualRight.Start()
     #self.iren_LesionMapDualLeft.Initialize()
     for actor in self.lesionvis.actors:
+
         itemType = actor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
         #lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationUniqueKey)
         if(itemType == None):
             #self.lesionvis.ren2x2.AddActor(actor)
+            actor.GetMapper().ScalarVisibilityOff()
             self.rendererLesion.AddActor(actor)
+
+
+    ui_path = os.path.dirname(os.path.abspath(__file__))
+    fontPath = os.path.join(ui_path, "fonts\\RobotoMono-Medium.ttf")
+    self.textActorLesion = vtk.vtkTextActor()
+    self.textActorSurface = vtk.vtkTextActor()
+    self.textActorRh = vtk.vtkTextActor()
+    self.textActorLh = vtk.vtkTextActor()
+
+    self.textActorLesion.UseBorderAlignOn()
+    self.textActorLesion.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    self.textActorLesion.SetPosition(0.01, 0.95)
+    self.textActorLesion.GetTextProperty().SetFontFamily(4)
+    self.textActorLesion.GetTextProperty().SetFontFile(fontPath)
+    self.textActorLesion.GetTextProperty().SetFontSize(18)
+    self.textActorLesion.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+    self.textActorLesion.GetTextProperty().SetJustificationToLeft()
+    self.textActorLesion.SetInput("3D LESIONS")
+
+    self.textActorSurface.UseBorderAlignOn()
+    self.textActorSurface.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    self.textActorSurface.SetPosition(0.01, 0.01)
+    self.textActorSurface.GetTextProperty().SetFontFamily(4)
+    self.textActorSurface.GetTextProperty().SetFontFile(fontPath)
+    self.textActorSurface.GetTextProperty().SetFontSize(18)
+    self.textActorSurface.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+    self.textActorSurface.GetTextProperty().SetJustificationToLeft()
+    self.textActorSurface.SetInput("PIAL SURFACE")
+
+    #self.textActorRh.UseBorderAlignOn()
+    self.textActorRh.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    self.textActorRh.SetPosition(0.99, 0.95)
+    self.textActorRh.GetTextProperty().SetFontFamily(4)
+    self.textActorRh.GetTextProperty().SetFontFile(fontPath)
+    self.textActorRh.GetTextProperty().SetFontSize(18)
+    self.textActorRh.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+    self.textActorRh.GetTextProperty().SetJustificationToRight()
+    self.textActorRh.SetInput("RIGHT HEM")
+
+    #self.textActorLh.UseBorderAlignOn()
+    self.textActorLh.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    self.textActorLh.SetPosition(0.99, 0.01)
+    self.textActorLh.GetTextProperty().SetFontFamily(4)
+    self.textActorLh.GetTextProperty().SetFontFile(fontPath)
+    self.textActorLh.GetTextProperty().SetFontSize(18)
+    self.textActorLh.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
+    self.textActorLh.GetTextProperty().SetJustificationToRight()
+    self.textActorLh.SetInput("LEFT HEM")
+
+    self.rendererLesion.AddActor(self.textActorLesion)
+    self.rendererSurface.AddActor(self.textActorSurface)
+    self.rendererUnfoldedRh.AddActor(self.textActorRh)
+    self.rendererUnfoldedLh.AddActor(self.textActorLh)
+
     pialSurfaceFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.pial.obj"
     pialSurfaceFilePathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.pial.obj"
     unfoldedFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annot.pial_unfolded.obj"
+    scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyData.vtp"
+    scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyData.vtp"
     unfoldedFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot.pial_unfolded.obj"
-
+    labelFilePathRh = self.lesionvis.subjectFolder +  "\\surfaces\\rh.aparc.annot"
+    labelFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot"
 
     # load Rh pial
     pialReaderRh = vtk.vtkOBJReader()
@@ -147,6 +206,7 @@ class TwoDModeMapper():
     unfoldedActorRh = vtk.vtkActor()
     unfoldedActorRh.SetMapper(unfoldedMapperRh)
     #numberOfPointsRh = unfoldedMapperRh.GetInput().GetNumberOfPoints()
+    #print(numberOfPointsRh)
 
     # load unfolded surface Lh
     unfoldReaderLh = vtk.vtkOBJReader()
@@ -158,6 +218,51 @@ class TwoDModeMapper():
     unfoldedActorLh.SetMapper(unfoldedMapperLh)
     #numberOfPointsLh = unfoldedMapperLh.GetInput().GetNumberOfPoints()
 
+    # Read scalar data from vtp file. (for coloring 2D unfolded surfaces)
+    xmlReaderScalarDataRh = vtk.vtkXMLPolyDataReader()
+    xmlReaderScalarDataRh.SetFileName(scalarDataPathRh)
+    xmlReaderScalarDataRh.Update()
+    xmlReaderScalarDataLh = vtk.vtkXMLPolyDataReader()
+    xmlReaderScalarDataLh.SetFileName(scalarDataPathLh)
+    xmlReaderScalarDataLh.Update()
+
+    # Color for Rh
+    vtk_colorsRh = vtk.vtkUnsignedCharArray()
+    vtk_colorsRh.SetNumberOfComponents(3)
+
+    # Color for Lh
+    vtk_colorsLh = vtk.vtkUnsignedCharArray()
+    vtk_colorsLh.SetNumberOfComponents(3)
+
+    # load annotation data Rh
+    labelsRh, ctabRh, regionsRh = freesurfer.read_annot(labelFilePathRh, orig_ids=False)
+    metaRh = dict(
+                (index, {"region": item[0], "color": item[1][:4].tolist()})
+                for index, item in enumerate(zip(regionsRh, ctabRh)))
+
+    # Read annotation data Lh
+    labelsLh, ctabLh, regionsLh = freesurfer.read_annot(labelFilePathLh, orig_ids=False)
+    metaLh = dict(
+                (index, {"region": item[0], "color": item[1][:4].tolist()})
+                for index, item in enumerate(zip(regionsLh, ctabLh)))
+
+    pDataRh = xmlReaderScalarDataRh.GetOutput()
+    pointCountRh = pDataRh.GetNumberOfPoints()
+    labelScalarArrayRh = pDataRh.GetPointData().GetScalars()
+
+    pDataLh = xmlReaderScalarDataLh.GetOutput()
+    pointCountLh = pDataLh.GetNumberOfPoints()
+    labelScalarArrayLh = pDataLh.GetPointData().GetScalars()
+
+    for index in range(pointCountRh):
+        clr = metaRh[labelScalarArrayRh.GetValue(index)]["color"]
+        vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
+    for index in range(pointCountLh):
+        clr = metaLh[labelScalarArrayLh.GetValue(index)]["color"]
+        vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+
+    unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+    unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
 
     self.rendererSurface.AddActor(pialActorRh)
     self.rendererSurface.AddActor(pialActorLh)
