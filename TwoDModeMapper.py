@@ -114,7 +114,7 @@ class TwoDModeMapper():
         #lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationUniqueKey)
         if(itemType == None):
             #self.lesionvis.ren2x2.AddActor(actor)
-            actor.GetMapper().ScalarVisibilityOff()
+            #actor.GetMapper().ScalarVisibilityOff()
             self.rendererLesion.AddActor(actor)
 
 

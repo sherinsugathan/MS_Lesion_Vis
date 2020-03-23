@@ -59,6 +59,7 @@ class LesionMapper():
             actor.GetProperty().SetOpacity(1)
             self.lesionvis.renDualRight.AddActor(actor)
 
+
     # Add text actors
     self.lesionvis.renDualLeft.AddActor2D(self.textActorLesionStatistics)
     self.lesionvis.renDualRight.AddActor2D(self.textActorParcellation)
@@ -100,6 +101,59 @@ class LesionMapper():
             self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
             self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
             self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
+
+    # Add legend data
+    legend = vtk.vtkLegendBoxActor()
+    legend.SetNumberOfEntries(2)
+    #legend.LockBorderOn()
+    legend.SetWidth(120)
+    legend.SetHeight(120)
+    colors = vtk.vtkNamedColors()
+
+    overlayTextProperty = vtk.vtkTextProperty()
+    overlayTextProperty.SetFontFamily(4)
+    overlayTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
+    overlayTextProperty.SetFontSize(16)
+    #overlayTextProperty.ShadowOn()
+    #overlayTextProperty.SetColor( 0.3372, 0.7490, 0.4627 )
+    #legendColor = []
+    legend.SetEntryTextProperty(overlayTextProperty)
+
+    legendBox = vtk.vtkCubeSource()
+    legendBox.SetXLength(20)
+    legendBox.SetYLength(20)
+    legendBox.SetZLength(20)
+    legendBox.Update()
+    # #colors.GetColor("tomato", legendColor)
+    # legend.SetEntry(0, legendBox.GetOutput(), "Normal Area", [173,221,142])
+    # #colors.GetColor("banana", colors.GetColor3d("tomato"))
+    # legend.SetEntry(1, legendBox.GetOutput(), "Influence Area", [222,45,38])
+
+    legend.SetEntryString(0, "Normal Area")
+    legend.SetEntryString(1, "Influence Area")
+    legend.SetEntrySymbol(0, legendBox.GetOutput())
+    legend.SetEntrySymbol(1, legendBox.GetOutput())
+    legend.SetEntryColor(0, colors.GetColor3d("forestgreen"))
+    legend.SetEntryColor(1, colors.GetColor3d("tomato"))
+    legend.BoxOff()
+    legend.BorderOff()
+
+
+    # place legend in lower right
+    legend.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+    #legend.GetPositionCoordinate().SetCoordinateSystemToView()
+    legend.GetPositionCoordinate().SetValue(0, 0)
+    #legend.GetPositionCoordinate().SetValue(0.5, -1.0)
+
+    legend.GetPosition2Coordinate().SetCoordinateSystemToNormalizedViewport()
+    #legend.GetPosition2Coordinate().SetCoordinateSystemToView()
+    legend.GetPosition2Coordinate().SetValue(0.25, 0.09)
+    #legend.GetPosition2Coordinate().SetValue(1.0, -0.5)
+
+    #legend.UseBackgroundOn()
+    #egend.SetBackgroundColor(colors.GetColor3d("warm_grey"))
+
+    self.lesionvis.renDualRight.AddActor(legend)
 
     self.lesionvis.renDualLeft.ResetCamera()
     self.lesionvis.renDualRight.ResetCamera()
@@ -202,8 +256,8 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 vtk_colorsLh.SetNumberOfComponents(3)
                 vtk_colorsRh = vtk.vtkUnsignedCharArray()
                 vtk_colorsRh.SetNumberOfComponents(3)
-                clrGreen = [70, 121, 85]
-                clrRed = [255, 0, 0]
+                clrGreen = [173, 221, 142]
+                clrRed = [222, 45, 38]
                 for actorItem in self.lesionvis.actors:
                     if(actorItem.GetProperty().GetInformation().Get(self.lesionvis.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.lesionvis.informationKey) in ["lh.pial", "lh.white"]:

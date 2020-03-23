@@ -398,8 +398,10 @@ class Ui(Qt.QMainWindow):
             range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
             #print("RANGE", range[1], range[0])
 
-            window = (range[1] - range[0])/2.0
-            level = range[0] + (window/2.0)
+            #self.window = (range[1] - range[0])/2.0
+            #self.level = range[0] + (self.window/2.0)
+            self.window = 400
+            self.level = 50
             #print(window, level)
             ################################
             # MPR A    #####################
@@ -409,8 +411,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
             self.resliceImageViewerMPRA.SetSliceOrientation(2)
             self.resliceImageViewerMPRA.SliceScrollOnMouseWheelOn()
-            self.resliceImageViewerMPRA.SetColorWindow(window)
-            self.resliceImageViewerMPRA.SetColorLevel(level)
+            self.resliceImageViewerMPRA.SetColorWindow(self.window)
+            self.resliceImageViewerMPRA.SetColorLevel(self.level)
             self.mprA_Slice_Slider.setMaximum(self.resliceImageViewerMPRA.GetSliceMax())
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
@@ -437,8 +439,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRB.SetRenderWindow(self.vtkWidgetMPRB.GetRenderWindow())
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
-            self.resliceImageViewerMPRB.SetColorWindow(window)
-            self.resliceImageViewerMPRB.SetColorLevel(level)
+            self.resliceImageViewerMPRB.SetColorWindow(self.window)
+            self.resliceImageViewerMPRB.SetColorLevel(self.level)
             self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
             self.mprB_Slice_Slider.setMaximum(self.resliceImageViewerMPRB.GetSliceMax())
             self.resliceImageViewerMPRB.SetSlice(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
@@ -457,8 +459,8 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRC.SetRenderWindow(self.vtkWidgetMPRC.GetRenderWindow())
             self.resliceImageViewerMPRC.SetRenderer(self.renMPRC)
             self.resliceImageViewerMPRC.SetSliceOrientation(0)
-            self.resliceImageViewerMPRC.SetColorWindow(window)
-            self.resliceImageViewerMPRC.SetColorLevel(level)
+            self.resliceImageViewerMPRC.SetColorWindow(self.window)
+            self.resliceImageViewerMPRC.SetColorLevel(self.level)
             self.mprC_Slice_Slider.setMaximum(self.resliceImageViewerMPRC.GetSliceMax())
             self.resliceImageViewerMPRC.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRC.SetSlice(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
@@ -1037,6 +1039,22 @@ class Ui(Qt.QMainWindow):
     # Activate renderers in main mode
     def activateMainMode(self):
         self.mainLoadedOnce = True
+        for actor in self.actors:
+            itemType = actor.GetProperty().GetInformation().Get(self.informationKey)
+            if(itemType == None):
+                pass
+            else:
+                actor.GetMapper().ScalarVisibilityOff() # No color mapping in main mode
+                if(actor.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial"]):
+                    actor.GetProperty().SetOpacity(self.settings.lh_pial_transparency)
+                if(actor.GetProperty().GetInformation().Get(self.informationKey) in ["lh.white"]):
+                    actor.GetProperty().SetOpacity(self.settings.lh_white_transparency)
+                if(actor.GetProperty().GetInformation().Get(self.informationKey) in ["rh.pial"]):
+                    actor.GetProperty().SetOpacity(self.settings.rh_pial_transparency)               
+                if(actor.GetProperty().GetInformation().Get(self.informationKey) in ["rh.white"]):
+                    actor.GetProperty().SetOpacity(self.settings.rh_white_transparency)
+                #self.lesionvis.renDualRight.AddActor(actor)
+        print("Loaded true")
 
     # Activate renderers in dual mode
     def activateDualMode(self):
@@ -1047,6 +1065,14 @@ class Ui(Qt.QMainWindow):
             self.lesionMapperDual.ClearData()
             self.lesionMapperDual.AddData()
             self.dualLoadedOnce = True
+            return
+        for actor in self.actors:
+            itemType = actor.GetProperty().GetInformation().Get(self.informationKey)
+            if(itemType == None):
+                pass
+            else:
+                actor.GetProperty().SetOpacity(1)
+                actor.GetMapper().ScalarVisibilityOn() # Color mapping enabled for dual mode                
 
     # Activate renderers in 2D mode
     def activate2DMode(self):
@@ -1194,9 +1220,6 @@ class Ui(Qt.QMainWindow):
     # Handler for parcellation display
     @pyqtSlot()
     def parcellation_state_changed(self):
-        print("READ", self.resliceImageViewerMPRA.GetColorWindow())
-        print("READ", self.resliceImageViewerMPRA.GetColorLevel())
-
         if(self.dataFolderInitialized == True):
             if self.checkBox_Parcellation.isChecked():
                 for actorItem in self.actors:
