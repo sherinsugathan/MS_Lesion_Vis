@@ -26,15 +26,20 @@ class TwoDModeMapper():
     self.rendererUnfoldedRh = vtk.vtkRenderer()
     self.rendererUnfoldedLh = vtk.vtkRenderer()
 
-    self.rendererLesion.SetBackground(0.0078,0.0470,0.0196)
-    self.rendererSurface.SetBackground(0.0039,0.0196,0.0078)
+    self.rendererSurface.SetBackground(0.0078,0.0470,0.0196)
+    self.rendererLesion.SetBackground(0.0039,0.0196,0.0078)
     self.rendererUnfoldedRh.SetBackground(0.0039,0.0196,0.0078)
     self.rendererUnfoldedLh.SetBackground(0.0078,0.0470,0.0196)
 
-    self.rendererLesion.SetViewport(xmins[2], ymins[2], xmaxs[2], ymaxs[2])
-    self.rendererSurface.SetViewport(xmins[0], ymins[0], xmaxs[0], ymaxs[0])
+    #self.rendererLesion.SetViewport(xmins[2], ymins[2], xmaxs[2], ymaxs[2])
+    #self.rendererSurface.SetViewport(xmins[0], ymins[0], xmaxs[0], ymaxs[0])
+    #self.rendererUnfoldedRh.SetViewport(xmins[3], ymins[3], xmaxs[3], ymaxs[3])
+    #self.rendererUnfoldedLh.SetViewport(xmins[1], ymins[1], xmaxs[1], ymaxs[1])
+
+    self.rendererUnfoldedLh.SetViewport(xmins[2], ymins[2], xmaxs[2], ymaxs[2])
+    self.rendererLesion.SetViewport(xmins[0], ymins[0], xmaxs[0], ymaxs[0])
     self.rendererUnfoldedRh.SetViewport(xmins[3], ymins[3], xmaxs[3], ymaxs[3])
-    self.rendererUnfoldedLh.SetViewport(xmins[1], ymins[1], xmaxs[1], ymaxs[1])
+    self.rendererSurface.SetViewport(xmins[1], ymins[1], xmaxs[1], ymaxs[1])
 
     self.vtkWidget2x2.GetRenderWindow().AddRenderer(self.rendererLesion)
     self.vtkWidget2x2.GetRenderWindow().AddRenderer(self.rendererSurface)
@@ -127,7 +132,7 @@ class TwoDModeMapper():
 
     self.textActorLesion.UseBorderAlignOn()
     self.textActorLesion.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
-    self.textActorLesion.SetPosition(0.01, 0.95)
+    self.textActorLesion.SetPosition(0.01, 0.01)
     self.textActorLesion.GetTextProperty().SetFontFamily(4)
     self.textActorLesion.GetTextProperty().SetFontFile(fontPath)
     self.textActorLesion.GetTextProperty().SetFontSize(18)
@@ -137,12 +142,12 @@ class TwoDModeMapper():
 
     self.textActorSurface.UseBorderAlignOn()
     self.textActorSurface.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
-    self.textActorSurface.SetPosition(0.01, 0.01)
+    self.textActorSurface.SetPosition(0.99, 0.01)
     self.textActorSurface.GetTextProperty().SetFontFamily(4)
     self.textActorSurface.GetTextProperty().SetFontFile(fontPath)
     self.textActorSurface.GetTextProperty().SetFontSize(18)
     self.textActorSurface.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
-    self.textActorSurface.GetTextProperty().SetJustificationToLeft()
+    self.textActorSurface.GetTextProperty().SetJustificationToRight()
     self.textActorSurface.SetInput("PIAL SURFACE")
 
     #self.textActorRh.UseBorderAlignOn()
@@ -157,12 +162,12 @@ class TwoDModeMapper():
 
     #self.textActorLh.UseBorderAlignOn()
     self.textActorLh.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
-    self.textActorLh.SetPosition(0.99, 0.01)
+    self.textActorLh.SetPosition(0.01, 0.95)
     self.textActorLh.GetTextProperty().SetFontFamily(4)
     self.textActorLh.GetTextProperty().SetFontFile(fontPath)
     self.textActorLh.GetTextProperty().SetFontSize(18)
     self.textActorLh.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
-    self.textActorLh.GetTextProperty().SetJustificationToRight()
+    self.textActorLh.GetTextProperty().SetJustificationToLeft()
     self.textActorLh.SetInput("LEFT HEM")
 
     self.rendererLesion.AddActor(self.textActorLesion)
@@ -205,6 +210,7 @@ class TwoDModeMapper():
     unfoldedMapperRh.SetInputConnection(unfoldReaderRh.GetOutputPort())
     unfoldedActorRh = vtk.vtkActor()
     unfoldedActorRh.SetMapper(unfoldedMapperRh)
+    #unfoldedActorRh.GetProperty().SetOpacity(0.5)
     #numberOfPointsRh = unfoldedMapperRh.GetInput().GetNumberOfPoints()
     #print(numberOfPointsRh)
 

@@ -825,21 +825,14 @@ def extractLesions2(subjectFolder, informationKeyID):
 
 
 '''
-##########################################################################
-    Map colors to loaded lesions.
+#########################[OBSOLETE] NOT IN USE NOW #################################################
+    Map colors to loaded lesions. 
     Returns: None.
 ##########################################################################
 '''
-def lesionColorMapping(subjectFolder, labelCount, requestedVisualizationType, lesionActors):
-    if(requestedVisualizationType == "Full Data View - Raw"):
-        pass
-    if(requestedVisualizationType == "Lesion Colored - Continuous"):
-        colorFilePath = subjectFolder + "\\surfaces\\colorArrayContT1.pkl"
-        loadColorFileAndAssignToLesions(colorFilePath, lesionActors)
-    if(requestedVisualizationType == "Lesion Colored - Discrete"):
-        pass
-    if(requestedVisualizationType == "Lesion Colored - Distance"):
-        pass
+def lesionColorMapping(subjectFolder, lesionActors):
+    colorFilePath = subjectFolder + "\\surfaces\\colorArrayContT1.pkl"
+    loadColorFileAndAssignToLesions(colorFilePath, lesionActors)
 
 '''
 ##########################################################################

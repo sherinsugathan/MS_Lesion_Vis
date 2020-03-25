@@ -87,18 +87,6 @@ class Ui(Qt.QMainWindow):
         self.checkBox_Parcellation.stateChanged.connect(self.parcellation_state_changed) # Attaching handler for parcellation display.
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
-        # self.comboBox_VisType.addItem("Default View")
-        # self.comboBox_VisType.addItem("Transparent Surfaces")
-        # self.comboBox_VisType.addItem("Lesion Intensity Raw Vis.")
-        # self.comboBox_VisType.addItem("Lesion Difference With NAWM")
-        # self.comboBox_VisType.addItem("Lesion Classification View")
-        # self.comboBox_VisType.addItem("Lesion Surface Mapping")
-        # self.comboBox_VisType.addItem("Study Lesion Impact")
-        self.comboBox_VisType.addItem("Full Data View - Raw")
-        self.comboBox_VisType.addItem("Lesion Colored - Continuous")
-        self.comboBox_VisType.addItem("Lesion Colored - Discrete")
-        self.comboBox_VisType.addItem("Lesion Colored - Distance")
-        self.comboBox_VisType.addItem("Lesion Surface Mapping")
 
         self.comboBox_LesionFilter.addItem("None")
         self.comboBox_LesionFilter.addItem("Voxel Count")
@@ -137,8 +125,6 @@ class Ui(Qt.QMainWindow):
         #self.mprC_Viewport=[0.0, 0.0, 0.1, 0.1]
         #self.VR_Viewport=[0.335, 0, 1.0, 1.0]
         self.parcellation_Viewport = [0.8, 0, 1, 0.32]
-        #self.dualViewportLeft = [0.0, 0.0, 0.5, 1.0]
-        #self.dualViewportRight = [0.5, 0.0, 1.0, 1.0]
 
         self.vl = Qt.QVBoxLayout()
         self.vl_MPRA = Qt.QVBoxLayout()
@@ -146,7 +132,6 @@ class Ui(Qt.QMainWindow):
         self.vl_MPRC = Qt.QVBoxLayout()
         self.vl_LesionMapDualLeft = Qt.QVBoxLayout()
         self.vl_LesionMapDualRight = Qt.QVBoxLayout()
-        # self.vl_lesion2x2 = Qt.QVBoxLayout()
 
         # Frame widgets
         self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
@@ -155,7 +140,7 @@ class Ui(Qt.QMainWindow):
         self.vtkWidgetMPRC = QVTKRenderWindowInteractor(self.frame_MPRC)
         self.vtkWidgetLesionMapDualLeft = QVTKRenderWindowInteractor(self.frame_DualLeft)
         self.vtkWidgetLesionMapDualRight = QVTKRenderWindowInteractor(self.frame_DualRight)
-        # self.vtkWidget2x2 = QVTKRenderWindowInteractor(self.frame_2x2)
+
         # Orientation cube.
         self.axesActor = vtk.vtkAnnotatedCubeActor()
         self.vl.addWidget(self.vtkWidget)
@@ -164,14 +149,13 @@ class Ui(Qt.QMainWindow):
         self.vl_MPRC.addWidget(self.vtkWidgetMPRC)
         self.vl_LesionMapDualLeft.addWidget(self.vtkWidgetLesionMapDualLeft)
         self.vl_LesionMapDualRight.addWidget(self.vtkWidgetLesionMapDualRight)
-        # self.vl_lesion2x2.addWidget(self.vtkWidget2x2)
+
         self.vtkWidget.Initialize()
         self.vtkWidgetMPRA.Initialize()
         self.vtkWidgetMPRB.Initialize()
         self.vtkWidgetMPRC.Initialize()
         self.vtkWidgetLesionMapDualLeft.Initialize()
         self.vtkWidgetLesionMapDualRight.Initialize()
-        # self.vtkWidget2x2.Initialize()
 
         self.ren = vtk.vtkRenderer() # Renderer for volume
         self.renMapOutcome = vtk.vtkRenderer() # Renderer for displaying mapping outcomes.
@@ -180,7 +164,7 @@ class Ui(Qt.QMainWindow):
         self.renMPRC = vtk.vtkRenderer() # Renderer for MPR C
         self.renDualLeft = vtk.vtkRenderer() # Renderer for dual view lesion map left
         self.renDualRight = vtk.vtkRenderer() # Renderer for dual view lesion map right
-        #self.ren2x2 = vtk.vtkRenderer() # Renderer for unfolded view 2d mode.
+
         self.renOrientationCube = vtk.vtkRenderer()
         self.ren.SetBackground(0.0039,0.0196,0.0078)
         
@@ -191,15 +175,10 @@ class Ui(Qt.QMainWindow):
         self.renMapOutcome.SetViewport(self.parcellation_Viewport[0], self.parcellation_Viewport[1], self.parcellation_Viewport[2], self.parcellation_Viewport[3])
         self.renDualLeft.SetBackground(0.0039,0.0196,0.0078)
         self.renDualRight.SetBackground(0.0039,0.0196,0.0078)
-        #self.ren2x2.SetBackground(0.0235,0.0711,0.0353)
-        #self.renDual.SetBackground(0, 1, 0)
+
         if self.checkBox_DepthPeeling.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
-        
-        #self.renMPRA.SetViewport(self.mprA_Viewport[0], self.mprA_Viewport[1], self.mprA_Viewport[2], self.mprA_Viewport[3])
-        #self.renMPRB.SetViewport(self.mprB_Viewport[0], self.mprB_Viewport[1], self.mprB_Viewport[2], self.mprB_Viewport[3])
-        #self.renMPRC.SetViewport(self.mprC_Viewport[0], self.mprC_Viewport[1], self.mprC_Viewport[2], self.mprC_Viewport[3])
 
         # GPU enable attempt
         #self.renderWindow = vtk.vtkGenericOpenGLRenderWindow()
@@ -226,8 +205,6 @@ class Ui(Qt.QMainWindow):
         self.iren_LesionMapDualLeft = self.vtkWidgetLesionMapDualLeft.GetRenderWindow().GetInteractor()
         self.vtkWidgetLesionMapDualRight.GetRenderWindow().AddRenderer(self.renDualRight)
         self.iren_LesionMapDualRight = self.vtkWidgetLesionMapDualRight.GetRenderWindow().GetInteractor()
-        # self.vtkWidget2x2.GetRenderWindow().AddRenderer(self.ren2x2)
-        # self.iren_2x2 = self.vtkWidget2x2.GetRenderWindow().GetInteractor()
 
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
@@ -553,10 +530,11 @@ class Ui(Qt.QMainWindow):
 
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
-        self.requestedVisualizationType = str(self.comboBox_VisType.currentText())
+        #self.requestedVisualizationType = str(self.comboBox_VisType.currentText())
         #self.lesionActors = LesionUtils.extractLesions(self.subjectFolder,self.numberOfLesionElements, self.informationKey,self.informationUniqueKey, self.requestedVisualizationType, self.lesionAverageIntensity, self.lesionAverageSurroundingIntensity, self.lesionRegionNumberQuantized, True)
         self.lesionActors = LesionUtils.extractLesions2(self.subjectFolder, self.informationUniqueKey)
-        LesionUtils.lesionColorMapping(self.subjectFolder, self.numberOfLesionElements, self.requestedVisualizationType, self.lesionActors)
+        LesionUtils.lesionColorMapping(self.subjectFolder, self.lesionActors)
+
         for actor in self.lesionActors:
             self.actors.append(actor)
         # Also add lesions string to the loaded items listbox.
@@ -661,8 +639,9 @@ class Ui(Qt.QMainWindow):
         frameHeight = self.frame.frameRect().height()
         self.textActorGlobal.SetPosition(10, frameHeight-100)
         self.ren.AddActor2D(self.textActorGlobal)
+
         # Check if full streamline computation is requested.
-        if(str(self.comboBox_VisType.currentText())=='Lesion Surface Mapping'):
+        if(False): # Enable to invoke streamline computation
             print("Computing streamlines")
             fiberActor = LesionUtils.computeStreamlines(self.subjectFolder)
             information = vtk.vtkInformation()
@@ -677,6 +656,45 @@ class Ui(Qt.QMainWindow):
         # Add all actors to renderer.
         for a in self.actors:
             self.ren.AddActor(a)
+
+        # Add legend
+        self.legend = vtk.vtkLegendBoxActor()
+        self.legend.SetNumberOfEntries(3)
+        self.legend.LockBorderOn()
+        overlayTextProperty = vtk.vtkTextProperty()
+        overlayTextProperty.SetFontFamily(4)
+        overlayTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        overlayTextProperty.SetFontSize(12)
+        overlayTextProperty.SetJustificationToLeft()
+        self.legend.SetEntryTextProperty(overlayTextProperty)
+        legendBox = vtk.vtkCubeSource()
+        legendBox.Update()
+        self.legend.SetEntryString(0, "Hypo Lesion")
+        self.legend.SetEntryString(1, "Iso Lesion")
+        self.legend.SetEntryString(2, "Hyper Lesion")
+        self.legend.SetEntrySymbol(0, legendBox.GetOutput())
+        self.legend.SetEntrySymbol(1, legendBox.GetOutput())
+        self.legend.SetEntrySymbol(2, legendBox.GetOutput())
+        self.legend.SetEntryColor(0, [161/255,217/255,155/255])
+        self.legend.SetEntryColor(1, [227/255,74/255,51/255])
+        self.legend.SetEntryColor(2, [227/255,74/255,51/255])
+        self.legend.BoxOff()
+        #self.legend.SetPadding(0)
+        self.legend.BorderOff()
+
+        self.legend.SetPosition(0.9, 0.01)
+        self.legend.SetPosition2(0.1,0.1)
+        # place legend in lower right
+        #self.legend.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+        #self.legend.GetPositionCoordinate().SetValue(0, 0)
+        #self.legend.GetPosition2Coordinate().SetCoordinateSystemToNormalizedViewport()
+        #self.legend.GetPosition2Coordinate().SetValue(0.25, 0.09)
+        
+        #self.legend.SetWidth(100)
+        #self.legend.SetHeight(100)
+        self.ren.AddActor(self.legend)
+        #legend.UseBackgroundOn()
+        #egend.SetBackgroundColor(colors.GetColor3d("warm_grey"))
 
         self.ren.ResetCamera()
         self.iren.Render()
@@ -754,7 +772,7 @@ class Ui(Qt.QMainWindow):
 
         # Fetch required display settings.
         if(self.dataFolderInitialized==False or self.checkBox_persistSettings.isChecked() == False):
-            self.settings = Settings.getSettings(Settings.visMapping(self.comboBox_VisType.currentText()))
+            self.settings = Settings.getSettings(Settings.visMapping("Lesion Colored - Continuous"))
             self.lesionFilterParamSettings = Settings.LesionFilterParamSettings(1000,1000,1000,1000,1000,1000,1000)
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
@@ -807,8 +825,6 @@ class Ui(Qt.QMainWindow):
         self.iren.Render()
 
         self.dataFolderInitialized=True
-        
-        # Handler for load data button click
    
     # Handler for load structural data
     @pyqtSlot()
@@ -1054,6 +1070,9 @@ class Ui(Qt.QMainWindow):
                 if(actor.GetProperty().GetInformation().Get(self.informationKey) in ["rh.white"]):
                     actor.GetProperty().SetOpacity(self.settings.rh_white_transparency)
                 #self.lesionvis.renDualRight.AddActor(actor)
+            # Reset legend positions
+            self.legend.SetPosition(0.9, 0.01)
+            self.legend.SetPosition2(0.1,0.1)
         print("Loaded true")
 
     # Activate renderers in dual mode
@@ -1072,7 +1091,10 @@ class Ui(Qt.QMainWindow):
                 pass
             else:
                 actor.GetProperty().SetOpacity(1)
-                actor.GetMapper().ScalarVisibilityOn() # Color mapping enabled for dual mode                
+                actor.GetMapper().ScalarVisibilityOn() # Color mapping enabled for dual mode      
+        # Reset legend positions
+        self.legend.SetPosition(0.8, 0.01)
+        self.legend.SetPosition2(0.2,0.1)          
 
     # Activate renderers in 2D mode
     def activate2DMode(self):
@@ -1088,56 +1110,14 @@ class Ui(Qt.QMainWindow):
         visButtons = self.buttonGroupVis.buttons()
         modeButtons = self.buttonGroupModes.buttons()
         for btn in modalityButtons:
-            #btn.animateClick()
             btn.setChecked(True)
             break
         for btn in visButtons:
-            #btn.animateClick()
             btn.setChecked(True)
             break
         for btn in modeButtons:
-            #btn.animateClick()
             btn.setChecked(True)
             break
-        # self.buttonGroupModality.buttons()[1].setDown(False)
-        # self.buttonGroupModality.buttons()[2].setDown(False)
-        # self.buttonGroupVis.buttons()[0].setDown(True)
-        # self.buttonGroupVis.buttons()[1].setDown(False)
-        # self.buttonGroupVis.buttons()[2].setDown(False)
-        # self.buttonGroupModes.buttons()[0].setDown(True)
-        # self.buttonGroupModes.buttons()[1].setDown(False)
-        # self.buttonGroupModes.buttons()[2].setDown(False)
-
-    # # Activate renderers in main mode
-    # def activateMainMode(self):
-    #     print("I am here")
-    #     if(self.mainLoadedOnce == True):
-    #         LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesMain)
-    #         LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesMain, self.actorScalarDataMain)
-    #     self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors) # Save actor properties of dual.
-    #     self.actorScalarPropertiesDual, self.actorScalarDataDual = LesionUtils.saveActorScalarDataProperties(self.actors)
-    #     self.mainLoadedOnce = True
-    #     if(self.checkBox_Parcellation.isChecked()):
-    #         self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
-    #         self.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsLh)
-
-    # # Activate renderers in dual mode
-    # def activateDualMode(self):
-    #     self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
-    #     self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
-    #     if(self.dualLoadedOnce==False):
-    #         self.lesionMapperDual = LesionMapper(self)
-    #         self.lesionMapperDual.ClearData()
-    #         self.lesionMapperDual.AddData()
-    #         #self.actorPropertiesDual = LesionUtils.saveActorProperties(self.actors)
-    #         self.dualLoadedOnce = True
-    #     else:
-    #         LesionUtils.restoreActorProperties(self.actors, self.actorPropertiesDual)
-    #         LesionUtils.restoreActorScalarDataProperties(self.actors, self.actorScalarPropertiesDual, self.actorScalarDataDual)
-
-    # # Activate renderers in 2D mode
-    # def activate2DMode(self):
-    #     pass
 
     # Handler for Dial moved.
     @pyqtSlot()
