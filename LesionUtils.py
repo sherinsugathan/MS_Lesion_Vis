@@ -1113,3 +1113,46 @@ def computeVolumeMaskBlend(currentSliceVolume, voxelSpaceCorrectedMask, opacity)
     imgBlender.Update()
 
     return imgBlender
+
+
+
+'''
+##########################################################################
+    Set legend properties based on visualization type(continuous, discrete and distance)
+    Returns: Nothing
+##########################################################################
+'''
+def setLegend(legendBox, legend, legendDistance, vis):
+    if(vis == "continuous" or vis == "discrete"):
+        legend.SetEntryString(0, "HYPO-INTENSE")
+        legend.SetEntryString(1, "ISO-INTENSE")
+        legend.SetEntryString(2, "HYPER-LESION")
+        legend.SetEntrySymbol(0, legendBox.GetOutput())
+        legend.SetEntrySymbol(1, legendBox.GetOutput())
+        legend.SetEntrySymbol(2, legendBox.GetOutput())
+        legend.SetEntryColor(0, [103/255,169/255,207/255])
+        legend.SetEntryColor(1, [247/255,247/255,247/255])
+        legend.SetEntryColor(2, [239/255,138/255,98/255])
+        legend.SetPosition(0.9, 0.01)
+        legend.SetPosition2(0.1,0.1)
+        legend.BoxOff()
+        legend.BorderOff()
+    if(vis == "distance"):
+        legendDistance.SetEntryString(0, "REGION 0")
+        legendDistance.SetEntryString(1, "REGION 1")
+        legendDistance.SetEntryString(2, "REGION 2")
+        legendDistance.SetEntryString(3, "REGION 3")
+        legendDistance.SetEntrySymbol(0, legendBox.GetOutput())
+        legendDistance.SetEntrySymbol(1, legendBox.GetOutput())
+        legendDistance.SetEntrySymbol(2, legendBox.GetOutput())
+        legendDistance.SetEntrySymbol(3, legendBox.GetOutput())
+        legendDistance.SetEntryColor(0, [166/255,206/255,227/255])
+        legendDistance.SetEntryColor(1, [27/255,158/255,119/255])
+        legendDistance.SetEntryColor(2, [217/255,95/255,2/255])
+        legendDistance.SetEntryColor(3, [117/255,112/255,179/255])   
+        legendDistance.SetPosition(0.92, 0.01)     
+        legendDistance.SetPosition2(0.08,0.1)
+        legendDistance.BoxOff()
+        legendDistance.BorderOff()
+
+        

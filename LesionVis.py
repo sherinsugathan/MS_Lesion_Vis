@@ -660,38 +660,19 @@ class Ui(Qt.QMainWindow):
         # Add legend
         self.legend = vtk.vtkLegendBoxActor()
         self.legend.SetNumberOfEntries(3)
-        self.legend.LockBorderOn()
-        overlayTextProperty = vtk.vtkTextProperty()
-        overlayTextProperty.SetFontFamily(4)
-        overlayTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
-        overlayTextProperty.SetFontSize(12)
-        overlayTextProperty.SetJustificationToLeft()
-        self.legend.SetEntryTextProperty(overlayTextProperty)
-        legendBox = vtk.vtkCubeSource()
-        legendBox.Update()
-        self.legend.SetEntryString(0, "Hypo Lesion")
-        self.legend.SetEntryString(1, "Iso Lesion")
-        self.legend.SetEntryString(2, "Hyper Lesion")
-        self.legend.SetEntrySymbol(0, legendBox.GetOutput())
-        self.legend.SetEntrySymbol(1, legendBox.GetOutput())
-        self.legend.SetEntrySymbol(2, legendBox.GetOutput())
-        self.legend.SetEntryColor(0, [161/255,217/255,155/255])
-        self.legend.SetEntryColor(1, [227/255,74/255,51/255])
-        self.legend.SetEntryColor(2, [227/255,74/255,51/255])
-        self.legend.BoxOff()
-        #self.legend.SetPadding(0)
-        self.legend.BorderOff()
+        self.legendDistance = vtk.vtkLegendBoxActor()
+        self.legendDistance.SetNumberOfEntries(4)
+        self.overlayLegendTextProperty = vtk.vtkTextProperty()
+        self.overlayLegendTextProperty.SetFontFamily(4)
+        self.overlayLegendTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        self.overlayLegendTextProperty.SetFontSize(12)
+        self.overlayLegendTextProperty.SetJustificationToLeft()
+        self.legend.SetEntryTextProperty(self.overlayLegendTextProperty)
+        self.legendDistance.SetEntryTextProperty(self.overlayLegendTextProperty)
+        self.legendBox = vtk.vtkCubeSource()
+        self.legendBox.Update()
 
-        self.legend.SetPosition(0.9, 0.01)
-        self.legend.SetPosition2(0.1,0.1)
-        # place legend in lower right
-        #self.legend.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
-        #self.legend.GetPositionCoordinate().SetValue(0, 0)
-        #self.legend.GetPosition2Coordinate().SetCoordinateSystemToNormalizedViewport()
-        #self.legend.GetPosition2Coordinate().SetValue(0.25, 0.09)
-        
-        #self.legend.SetWidth(100)
-        #self.legend.SetHeight(100)
+        LesionUtils.setLegend(self.legendBox, self.legend, self.legendDistance, "continuous")
         self.ren.AddActor(self.legend)
         #legend.UseBackgroundOn()
         #egend.SetBackgroundColor(colors.GetColor3d("warm_grey"))
@@ -714,6 +695,11 @@ class Ui(Qt.QMainWindow):
 
         colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayCont" + modality + ".pkl"
         LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
+
+        self.ren.RemoveActor(self.legendDistance)
+        self.ren.AddActor(self.legend)
+
+        LesionUtils.setLegend(self.legendBox, self.legend, self.legendDistance, "continuous")
         self.iren.Render()
 
     def updateLesionColorsDiscrete(self):
@@ -735,11 +721,30 @@ class Ui(Qt.QMainWindow):
                 self.lesionActors[dataIndex].GetProperty().SetColor(247/255.0, 247/255.0, 247/255.0)
             if(intensityDifference >= thresholdMax):
                 self.lesionActors[dataIndex].GetProperty().SetColor(239/255.0, 138/255.0, 98/255.0)
+        
+        self.ren.RemoveActor(self.legendDistance)
+        self.ren.AddActor(self.legend)
+
+        LesionUtils.setLegend(self.legendBox, self.legend, self.legendDistance, "discrete")
         self.iren.Render()
 
     def updateLesionColorsDistance(self):
         colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayDistMRI.pkl"
         LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
+        
+        LesionUtils.setLegend(self.legendBox, self.legend, self.legendDistance, "distance")
+        self.ren.RemoveActor(self.legend)
+        self.ren.AddActor(self.legendDistance)
+        # self.legend.SetNumberOfEntries(4)
+        # self.legend.SetEntryString(0, "REGION 0")
+        # self.legend.SetEntryString(1, "REGION 1")
+        # self.legend.SetEntryString(2, "REGION 2")
+        # self.legend.SetEntryString(3, "REGION 3")
+        # self.legend.SetEntryColor(0, [166/255,206/255,227/255])
+        # self.legend.SetEntryColor(1, [27/255,158/255,119/255])
+        # self.legend.SetEntryColor(2, [217/255,95/255,2/255])
+        # self.legend.SetEntryColor(3, [117/255,112/255,179/255])        
+        # self.legend.SetPosition2(0.1,0.1)
         self.iren.Render()
 
     # Handler for browse folder button click.
