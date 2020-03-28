@@ -337,6 +337,10 @@ class Ui(Qt.QMainWindow):
         self.buttonGroupModes.setExclusive(True)
         self.buttonGroupModes.buttonClicked.connect(self.on_buttonGroupModesChanged)
 
+        self.lesionMapperDual = None
+        self.twoDModeMapper = None
+        self.activeMode = -2
+
         self.show()
         self.iren.Initialize()
         self.iren_MPRA.Initialize()
@@ -1046,14 +1050,17 @@ class Ui(Qt.QMainWindow):
             if(self.buttonGroupModes.checkedId() == -2): # Normal Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(0)
                 self.activateMainMode()
+                self.activeMode = -2
 
             if(self.buttonGroupModes.checkedId() == -3): # Dual Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(1)
                 self.activateDualMode()
+                self.activeMode = -3
 
             if(self.buttonGroupModes.checkedId() == -4): # 2D Mode
                 self.stackedWidget_MainRenderers.setCurrentIndex(2)
                 self.activate2DMode()
+                self.activeMode = -4
 
             self.iren.Render()
 
@@ -1078,7 +1085,14 @@ class Ui(Qt.QMainWindow):
             # Reset legend positions
             self.legend.SetPosition(0.9, 0.01)
             self.legend.SetPosition2(0.1,0.1)
-        print("Loaded true")
+
+        if(self.activeMode == -3 and self.style != None):
+            self.style.LastPickedActor = self.lesionMapperDual.interactionStyleLeft.LastPickedActor
+            self.style.LastPickedProperty = self.lesionMapperDual.interactionStyleLeft.LastPickedProperty
+        if(self.activeMode == -4 and self.style != None):
+            self.style.LastPickedActor = self.twoDModeMapper.customInteractorStyle.LastPickedActor
+            self.style.LastPickedProperty = self.twoDModeMapper.customInteractorStyle.LastPickedProperty        
+        print("Loaded Main Mode")
 
     # Activate renderers in dual mode
     def activateDualMode(self):
@@ -1099,7 +1113,14 @@ class Ui(Qt.QMainWindow):
                 actor.GetMapper().ScalarVisibilityOn() # Color mapping enabled for dual mode      
         # Reset legend positions
         self.legend.SetPosition(0.8, 0.01)
-        self.legend.SetPosition2(0.2,0.1)          
+        self.legend.SetPosition2(0.2,0.1) 
+
+        if(self.activeMode == -2 and self.lesionMapperDual != None):
+            self.lesionMapperDual.interactionStyleLeft.LastPickedActor = self.style.LastPickedActor
+            self.lesionMapperDual.interactionStyleLeft.LastPickedProperty = self.style.LastPickedProperty
+        if(self.activeMode == -4 and self.lesionMapperDual != None):
+            self.lesionMapperDual.interactionStyleLeft.LastPickedActor = self.twoDModeMapper.customInteractorStyle.LastPickedActor
+            self.lesionMapperDual.interactionStyleLeft.LastPickedProperty = self.twoDModeMapper.customInteractorStyle.LastPickedProperty         
 
     # Activate renderers in 2D mode
     def activate2DMode(self):
@@ -1108,6 +1129,14 @@ class Ui(Qt.QMainWindow):
             self.twoDModeMapper.ClearData()
             self.twoDModeMapper.AddData()
             self.twoDModeLoadedOnce = True
+
+        if(self.activeMode == -2 and self.twoDModeMapper != None):
+            self.twoDModeMapper.customInteractorStyle.LastPickedActor = self.style.LastPickedActor
+            self.twoDModeMapper.customInteractorStyle.LastPickedProperty = self.style.LastPickedProperty
+        if(self.activeMode == -3 and self.twoDModeMapper != None):
+            self.twoDModeMapper.customInteractorStyle.LastPickedActor = self.lesionMapperDual.interactionStyleLeft.LastPickedActor
+            self.twoDModeMapper.customInteractorStyle.LastPickedProperty = self.lesionMapperDual.interactionStyleLeft.LastPickedProperty
+
 
     # Initialize mode buttons.
     def initializeModeButtons(self):

@@ -56,7 +56,7 @@ class TwoDModeMapper():
     self.lesionvis.frame_2x2.setLayout(self.vl_lesion2x2)
 
     self.iren_2x2.Initialize()
-    self.rendererTypes = {id(self.rendererLesion):"tbcamera", id(self.rendererSurface):"tbcamera", id(self.rendererUnfoldedRh):"image", id(self.rendererUnfoldedLh):"image"}
+    self.rendererTypes = {id(self.rendererLesion):"tbcameraLesion", id(self.rendererSurface):"tbcameraSurface", id(self.rendererUnfoldedRh):"image", id(self.rendererUnfoldedLh):"image"}
 
     #   self.textActorLesionStatistics = vtk.vtkTextActor() # Left dual Text actor to show lesion properties
     #   self.textActorParcellation = vtk.vtkTextActor() # Right dual text actor for showing parcellation data
@@ -483,10 +483,45 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
         renderer = self.iren.FindPokedRenderer(clickPos[0], clickPos[1])
-        print(self.rendererTypes[id(renderer)])
+        #print(self.rendererTypes[id(renderer)])
         self.SetDefaultRenderer(renderer)
-        if(self.rendererTypes[id(renderer)] == "tbcamera"):
+
+        picker = vtk.vtkPropPicker()
+        #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+        picker.Pick(clickPos[0], clickPos[1], 0, renderer)
+        
+        cellPicker = vtk.vtkCellPicker()
+        cellPicker.SetTolerance(0.0005)
+        cellPicker.Pick(clickPos[0], clickPos[1], 0, renderer)
+
+        # Check if current renderer is rendererLesion or rendererSurface
+        if(self.rendererTypes[id(renderer)] == "tbcameraLesion" or self.rendererTypes[id(renderer)] == "tbcameraSurface"):
             print("camera")
+        
+            # get the new
+            self.NewPickedActor = picker.GetActor()
+            
+            # If something was selected
+            if self.NewPickedActor:
+                # If we picked something before, reset its property
+                if self.LastPickedActor:
+                    self.LastPickedActor.GetMapper().ScalarVisibilityOn()
+                    self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+                
+                # Save the property of the picked actor so that we can
+                # restore it next time
+                self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+                # Highlight the picked actor by changing its properties
+                self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+                self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                self.NewPickedActor.GetProperty().SetSpecular(0.0)
+            
+                # save the last picked actor
+                self.LastPickedActor = self.NewPickedActor
+            
+            self.OnLeftButtonDown()
+            return
         else:
             #self.OnLeftButtonDown()
             #self.iren.SetInteractorStyle(self.imageStyle)
@@ -497,29 +532,3 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         #self.renderer = renderer
         
 
-        picker = vtk.vtkPropPicker()
-        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        
-        # get the new
-        self.NewPickedActor = picker.GetActor()
-        
-        # If something was selected
-        if self.NewPickedActor:
-            # If we picked something before, reset its property
-            if self.LastPickedActor:
-                self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
-    
-            
-            # Save the property of the picked actor so that we can
-            # restore it next time
-            self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
-            # Highlight the picked actor by changing its properties
-            self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-            self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-            self.NewPickedActor.GetProperty().SetSpecular(0.0)
-            
-            # save the last picked actor
-            self.LastPickedActor = self.NewPickedActor
-        
-        self.OnLeftButtonDown()
-        return

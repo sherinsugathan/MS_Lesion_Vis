@@ -234,16 +234,11 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
                 self.renMapOutcome.RemoveAllViewProps()
-                #print("Left")
                 if(self.labelsLh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
                     #print("Not a valid point")
                     pass
                 else:
                     clr = self.metaLh[self.labelsLh[cellPicker.GetPointId()]]["color"]
-                    #print("Point ID is", cellPicker.GetPointId())
-                    #print(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])
-                    #print("Color is", clr)
-                    #print("Area is", self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])
                     self.brodmannTextActor.SetInput(str(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])))
                     polyDataActor = self.polyDataLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])]
                     parcellationMapperLh = vtk.vtkOpenGLPolyDataMapper()
@@ -268,10 +263,6 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     pass
                 else:
                     clr = self.metaRh[self.labelsRh[cellPicker.GetPointId()]]["color"]
-                    #print("Point ID is", cellPicker.GetPointId())
-                    #print(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])
-                    #print("Color is", clr)
-                    #print("Area is", self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])
                     self.brodmannTextActor.SetInput(str(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])))
                     polyDataActor = self.polyDataRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])]
                     parcellationMapperRh = vtk.vtkOpenGLPolyDataMapper()
@@ -292,14 +283,10 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
                     self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
                 # Highlight the picked actor by changing its properties
+                self.NewPickedActor.GetMapper().ScalarVisibilityOff()
                 self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
                 self.NewPickedActor.GetProperty().SetDiffuse(1.0)
                 self.NewPickedActor.GetProperty().SetSpecular(0.0)
-                self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
-                #self.NewPickedActor.GetProperty().SetOpacity(0.5)
-                #print(self.NewPickedActor.GetMapper().GetScalarRange())
-                #print(self.NewPickedActor)
-                #itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
 
                 centerOfMassFilter = vtk.vtkCenterOfMass()
                 centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())

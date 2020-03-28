@@ -146,6 +146,11 @@ class LesionMapper():
       self.lesionvis.renDualLeft.Render()
       self.lesionvis.renDualRight.Render()
 
+'''
+##########################################################################
+    Class for implementing custom interactor for dual mode
+##########################################################################
+'''
 class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,parent = None, lesionvis = None, lesionMapper = None):
