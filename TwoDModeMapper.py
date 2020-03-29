@@ -178,8 +178,12 @@ class TwoDModeMapper():
     pialSurfaceFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.pial.obj"
     pialSurfaceFilePathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.pial.obj"
     unfoldedFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annot.pial_unfolded.obj"
-    scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyData.vtp"
-    scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyData.vtp"
+    # scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyData.vtp"
+    # scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyData.vtp"
+    scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
+    scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
+    
+    
     unfoldedFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot.pial_unfolded.obj"
     labelFilePathRh = self.lesionvis.subjectFolder +  "\\surfaces\\rh.aparc.annot"
     labelFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot"
@@ -253,12 +257,20 @@ class TwoDModeMapper():
                 for index, item in enumerate(zip(regionsLh, ctabLh)))
 
     pDataRh = xmlReaderScalarDataRh.GetOutput()
+    pDataRh.GetPointData().SetActiveScalars("FSLabels")
     pointCountRh = pDataRh.GetNumberOfPoints()
     labelScalarArrayRh = pDataRh.GetPointData().GetScalars()
 
     pDataLh = xmlReaderScalarDataLh.GetOutput()
+    pDataLh.GetPointData().SetActiveScalars("FSLabels")
     pointCountLh = pDataLh.GetNumberOfPoints()
     labelScalarArrayLh = pDataLh.GetPointData().GetScalars()
+
+    pDataRh.GetPointData().SetActiveScalars("VertexIndices")
+    pDataLh.GetPointData().SetActiveScalars("VertexIndices")
+    vertexIdScalarArrayRh = pDataRh.GetPointData().GetScalars()
+    vertexIdScalarArrayLh = pDataLh.GetPointData().GetScalars()
+    print(pDataRh.GetNumberOfPoints())
 
     for index in range(pointCountRh):
         clr = metaRh[labelScalarArrayRh.GetValue(index)]["color"]

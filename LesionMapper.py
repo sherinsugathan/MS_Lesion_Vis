@@ -246,24 +246,33 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 #clrRed = [colorTomato[0]*255, colorTomato[1]*255, colorTomato[2]*255]#colors.GetColor3d("tomato") #[222, 45, 38]
                 clrGreen = [161,217,155]#colors.GetColor3d("forestgreen") #[173, 221, 142]
                 clrRed = [227,74,51]#colors.GetColor3d("tomato") #[222, 45, 38]
-                for actorItem in self.lesionvis.actors:
-                    if(actorItem.GetProperty().GetInformation().Get(self.lesionvis.informationKey) != None):
-                        if actorItem.GetProperty().GetInformation().Get(self.lesionvis.informationKey) in ["lh.pial", "lh.white"]:
-                            numberOfPointsLh = actorItem.GetMapper().GetInput().GetNumberOfPoints()
-                            for index in range(numberOfPointsLh):
-                                if(index in self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1]):
-                                    vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                                else:
-                                    vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                            actorItem.GetMapper().GetInput().GetPointData().SetScalars(vtk_colorsLh)
-                        if actorItem.GetProperty().GetInformation().Get(self.lesionvis.informationKey) in ["rh.pial", "rh.white"]:
-                            numberOfPointsRh = actorItem.GetMapper().GetInput().GetNumberOfPoints()
-                            for index in range(numberOfPointsRh):
-                                if(index in self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1]):
-                                    vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                                else:
-                                    vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                            actorItem.GetMapper().GetInput().GetPointData().SetScalars(vtk_colorsRh)
+
+
+                numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
+                numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
+                vertexIndexArrayRh = np.arange(numberOfPointsRh)
+                vertexIndexArrayLh = np.arange(numberOfPointsLh)
+
+                affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+                affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+
+                lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+                lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+
+                for elem in lesionMappingRh:
+                    if(elem==True):
+                        vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                    else:
+                        vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                for elem in lesionMappingLh:
+                    if(elem==True):
+                        vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                    else:
+                        vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                
+                self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+                self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+
                 #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
                 LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
                 LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
