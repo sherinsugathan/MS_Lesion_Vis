@@ -85,8 +85,8 @@ class TwoDModeMapper():
   def AddData(self):
     #print("Hello add")
     #self.lesionvis.renDualRight.SetActiveCamera(self.lesionvis.renDualLeft.GetActiveCamera())
-    self.interactionStyle = CustomLesionInteractorStyle()
-    self.interactionStyle.lesionvis = self.lesionvis
+    #self.interactionStyle = CustomLesionInteractorStyle()
+    #self.interactionStyle.lesionvis = self.lesionvis
     #self.interactionStyleLeft.renderer = self.lesionvis.renDualLeft
     #self.interactionStyleLeft.informationKey = self.lesionvis.informationKey
     #self.interactionStyleLeft.informationKeyID = self.lesionvis.informationUniqueKey
@@ -175,16 +175,17 @@ class TwoDModeMapper():
     self.rendererUnfoldedRh.AddActor(self.textActorRh)
     self.rendererUnfoldedLh.AddActor(self.textActorLh)
 
-    pialSurfaceFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.pial.obj"
-    pialSurfaceFilePathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.pial.obj"
+    pialSurfaceFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.inflated.obj"
+    pialSurfaceFilePathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.inflated.obj"
     unfoldedFilePathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annot.pial_unfolded.obj"
+    unfoldedFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot.pial_unfolded.obj"
     # scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyData.vtp"
     # scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyData.vtp"
     scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
     scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
     
     
-    unfoldedFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot.pial_unfolded.obj"
+    
     labelFilePathRh = self.lesionvis.subjectFolder +  "\\surfaces\\rh.aparc.annot"
     labelFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot"
 
@@ -192,28 +193,49 @@ class TwoDModeMapper():
     pialReaderRh = vtk.vtkOBJReader()
     pialReaderRh.SetFileName(pialSurfaceFilePathRh)
     pialReaderRh.Update()
-    pialMapperRh = vtk.vtkOpenGLPolyDataMapper()
-    pialMapperRh.SetInputConnection(pialReaderRh.GetOutputPort())
-    pialActorRh = vtk.vtkActor()
-    pialActorRh.SetMapper(pialMapperRh)
+    self.pialMapperRh = vtk.vtkOpenGLPolyDataMapper()
+    self.pialMapperRh.SetInputConnection(pialReaderRh.GetOutputPort())
+    self.pialActorRh = vtk.vtkActor()
+    self.pialActorRh.SetMapper(self.pialMapperRh)
+    xminRh = self.pialActorRh.GetBounds()[0]
+    xmaxRh = self.pialActorRh.GetBounds()[1]
+    #print("RIGHT", self.pialActorRh.GetBounds())
 
     # load Lh pial
     pialReaderLh = vtk.vtkOBJReader()
     pialReaderLh.SetFileName(pialSurfaceFilePathLh)
     pialReaderLh.Update()
-    pialMapperLh = vtk.vtkOpenGLPolyDataMapper()
-    pialMapperLh.SetInputConnection(pialReaderLh.GetOutputPort())
-    pialActorLh = vtk.vtkActor()
-    pialActorLh.SetMapper(pialMapperLh)
+    self.pialMapperLh = vtk.vtkOpenGLPolyDataMapper()
+    self.pialMapperLh.SetInputConnection(pialReaderLh.GetOutputPort())
+    self.pialActorLh = vtk.vtkActor()
+    self.pialActorLh.SetMapper(self.pialMapperLh)
+    xminLh = self.pialActorLh.GetBounds()[0]
+    xmaxLh = self.pialActorLh.GetBounds()[1]
+
+    boundDiffRh = xmaxRh - xminRh
+    boundDiffLh = xmaxLh - xminLh
+    xTranslateSurface = 0
+    if(boundDiffLh>boundDiffRh):
+        xTranslateSurface = boundDiffLh / 2
+    else:
+        xTranslateSurface = boundDiffRh / 2
+
+    surfaceTransformRh = vtk.vtkTransform()
+    surfaceTransformRh.Translate(xTranslateSurface, 0.0, 0.0)
+    surfaceTransformLh = vtk.vtkTransform()
+    surfaceTransformLh.Translate(-xTranslateSurface, 0.0, 0.0)
+    self.pialActorRh.SetUserTransform(surfaceTransformRh)
+    self.pialActorLh.SetUserTransform(surfaceTransformLh)
+    #print("LEFT", self.pialActorLh.GetBounds())
 
     # load unfolded surface Rh
     unfoldReaderRh = vtk.vtkOBJReader()
     unfoldReaderRh.SetFileName(unfoldedFilePathRh)
     unfoldReaderRh.Update()
-    unfoldedMapperRh = vtk.vtkOpenGLPolyDataMapper()
-    unfoldedMapperRh.SetInputConnection(unfoldReaderRh.GetOutputPort())
-    unfoldedActorRh = vtk.vtkActor()
-    unfoldedActorRh.SetMapper(unfoldedMapperRh)
+    self.unfoldedMapperRh = vtk.vtkOpenGLPolyDataMapper()
+    self.unfoldedMapperRh.SetInputConnection(unfoldReaderRh.GetOutputPort())
+    self.unfoldedActorRh = vtk.vtkActor()
+    self.unfoldedActorRh.SetMapper(self.unfoldedMapperRh)
     #unfoldedActorRh.GetProperty().SetOpacity(0.5)
     #numberOfPointsRh = unfoldedMapperRh.GetInput().GetNumberOfPoints()
     #print(numberOfPointsRh)
@@ -222,10 +244,10 @@ class TwoDModeMapper():
     unfoldReaderLh = vtk.vtkOBJReader()
     unfoldReaderLh.SetFileName(unfoldedFilePathLh)
     unfoldReaderLh.Update()
-    unfoldedMapperLh = vtk.vtkOpenGLPolyDataMapper()
-    unfoldedMapperLh.SetInputConnection(unfoldReaderLh.GetOutputPort())
-    unfoldedActorLh = vtk.vtkActor()
-    unfoldedActorLh.SetMapper(unfoldedMapperLh)
+    self.unfoldedMapperLh = vtk.vtkOpenGLPolyDataMapper()
+    self.unfoldedMapperLh.SetInputConnection(unfoldReaderLh.GetOutputPort())
+    self.unfoldedActorLh = vtk.vtkActor()
+    self.unfoldedActorLh.SetMapper(self.unfoldedMapperLh)
     #numberOfPointsLh = unfoldedMapperLh.GetInput().GetNumberOfPoints()
 
     # Read scalar data from vtp file. (for coloring 2D unfolded surfaces)
@@ -246,50 +268,70 @@ class TwoDModeMapper():
 
     # load annotation data Rh
     labelsRh, ctabRh, regionsRh = freesurfer.read_annot(labelFilePathRh, orig_ids=False)
-    metaRh = dict(
+    self.metaRh = dict(
                 (index, {"region": item[0], "color": item[1][:4].tolist()})
                 for index, item in enumerate(zip(regionsRh, ctabRh)))
 
     # Read annotation data Lh
     labelsLh, ctabLh, regionsLh = freesurfer.read_annot(labelFilePathLh, orig_ids=False)
-    metaLh = dict(
+    self.metaLh = dict(
                 (index, {"region": item[0], "color": item[1][:4].tolist()})
                 for index, item in enumerate(zip(regionsLh, ctabLh)))
 
     pDataRh = xmlReaderScalarDataRh.GetOutput()
     pDataRh.GetPointData().SetActiveScalars("FSLabels")
-    pointCountRh = pDataRh.GetNumberOfPoints()
-    labelScalarArrayRh = pDataRh.GetPointData().GetScalars()
+    self.pointCountRh = pDataRh.GetNumberOfPoints()
+    self.labelScalarArrayRh = pDataRh.GetPointData().GetScalars()
 
     pDataLh = xmlReaderScalarDataLh.GetOutput()
     pDataLh.GetPointData().SetActiveScalars("FSLabels")
-    pointCountLh = pDataLh.GetNumberOfPoints()
-    labelScalarArrayLh = pDataLh.GetPointData().GetScalars()
+    self.pointCountLh = pDataLh.GetNumberOfPoints()
+    self.labelScalarArrayLh = pDataLh.GetPointData().GetScalars()
 
     pDataRh.GetPointData().SetActiveScalars("VertexIndices")
     pDataLh.GetPointData().SetActiveScalars("VertexIndices")
-    vertexIdScalarArrayRh = pDataRh.GetPointData().GetScalars()
-    vertexIdScalarArrayLh = pDataLh.GetPointData().GetScalars()
+    self.vertexIdScalarArrayRh = pDataRh.GetPointData().GetScalars()
+    self.vertexIdScalarArrayLh = pDataLh.GetPointData().GetScalars()
     print(pDataRh.GetNumberOfPoints())
 
-    for index in range(pointCountRh):
-        clr = metaRh[labelScalarArrayRh.GetValue(index)]["color"]
+    for index in range(self.pointCountRh):
+        clr = self.metaRh[self.labelScalarArrayRh.GetValue(index)]["color"]
         vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
-    for index in range(pointCountLh):
-        clr = metaLh[labelScalarArrayLh.GetValue(index)]["color"]
+    for index in range(self.pointCountLh):
+        clr = self.metaLh[self.labelScalarArrayLh.GetValue(index)]["color"]
         vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
 
-    unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
-    unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+    self.unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+    self.unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
 
-    self.rendererSurface.AddActor(pialActorRh)
-    self.rendererSurface.AddActor(pialActorLh)
-    self.rendererUnfoldedRh.AddActor(unfoldedActorRh)
-    self.rendererUnfoldedLh.AddActor(unfoldedActorLh)
+    self.rendererSurface.AddActor(self.pialActorRh)
+    self.rendererSurface.AddActor(self.pialActorLh)
+    self.rendererUnfoldedRh.AddActor(self.unfoldedActorRh)
+    self.rendererUnfoldedLh.AddActor(self.unfoldedActorLh)
 
     self.imageStyle = vtk.vtkInteractorStyleImage()
     # custom interactor style.
     self.customInteractorStyle = CustomLesionInteractorStyle()
+    self.customInteractorStyle.lesionvis = self.lesionvis
+    self.customInteractorStyle.unfoldedMapperRh = self.unfoldedMapperRh
+    self.customInteractorStyle.unfoldedMapperLh = self.unfoldedMapperLh
+
+    self.customInteractorStyle.pointCountRh = self.pointCountRh
+    self.customInteractorStyle.pointCountLh = self.pointCountLh
+
+    self.customInteractorStyle.vertexIdScalarArrayRh = self.vertexIdScalarArrayRh
+    self.customInteractorStyle.vertexIdScalarArrayLh = self.vertexIdScalarArrayLh
+
+
+    self.customInteractorStyle.labelScalarArrayRh = self.labelScalarArrayRh
+    self.customInteractorStyle.labelScalarArrayLh = self.labelScalarArrayLh
+
+    self.customInteractorStyle.metaRh = self.metaRh
+    self.customInteractorStyle.metaLh = self.metaLh
+
+    self.customInteractorStyle.pialMapperRh = self.pialMapperRh
+    self.customInteractorStyle.pialMapperLh = self.pialMapperLh
+
     self.customInteractorStyle.SetDefaultRenderer(self.rendererSurface)
     self.iren_2x2.SetInteractorStyle(self.customInteractorStyle)
     self.iren_2x2.SetRenderWindow(self.vtkWidget2x2.GetRenderWindow())
@@ -506,8 +548,14 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         cellPicker.SetTolerance(0.0005)
         cellPicker.Pick(clickPos[0], clickPos[1], 0, renderer)
 
+        # if current renderer is "Surface"
+        if(self.rendererTypes[id(renderer)] == "tbcameraSurface"):
+            print("Surface")
+            self.OnLeftButtonDown()
+            return
+
         # Check if current renderer is rendererLesion or rendererSurface
-        if(self.rendererTypes[id(renderer)] == "tbcameraLesion" or self.rendererTypes[id(renderer)] == "tbcameraSurface"):
+        if(self.rendererTypes[id(renderer)] == "tbcameraLesion"):
             print("camera")
         
             # get the new
@@ -523,11 +571,86 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 # Save the property of the picked actor so that we can
                 # restore it next time
                 self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+
+                itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
+                lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
                 # Highlight the picked actor by changing its properties
                 self.NewPickedActor.GetMapper().ScalarVisibilityOff()
                 self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
                 self.NewPickedActor.GetProperty().SetDiffuse(1.0)
                 self.NewPickedActor.GetProperty().SetSpecular(0.0)
+
+                vtk_colorsLh = vtk.vtkUnsignedCharArray()
+                vtk_colorsLh.SetNumberOfComponents(4)
+                vtk_colorsRh = vtk.vtkUnsignedCharArray()
+                vtk_colorsRh.SetNumberOfComponents(4)
+
+                clrGreen = [161,217,155]
+                clrRed = [227,74,51]
+                clrParcellationRh = [0,0,0]
+                clrParcellationRh = [0,0,0]
+
+                actualVertexIdsRh = []
+                for index in range(self.pointCountRh):
+                    actualVertexIdsRh.append(self.vertexIdScalarArrayRh.GetValue(index))
+
+                actualVertexIdsLh = []
+                for index in range(self.pointCountLh):
+                    actualVertexIdsLh.append(self.vertexIdScalarArrayLh.GetValue(index))
+
+                # LESION IMPACT COLOR MAPPING STARTS HERE (2D)
+                vertexIndexArrayRh = actualVertexIdsRh
+                vertexIndexArrayLh = actualVertexIdsLh
+                affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+                affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+                lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+                lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+
+                for vertexIndex in range(lesionMappingRh.size):
+                    if(lesionMappingRh[vertexIndex]==True):
+                        vtk_colorsRh.InsertNextTuple4(clrRed[0], clrRed[1], clrRed[2], 255.0)
+                    else:
+                        clrParcellationRh = self.metaRh[self.labelScalarArrayRh.GetValue(vertexIndex)]["color"]
+                        vtk_colorsRh.InsertNextTuple4(clrParcellationRh[0], clrParcellationRh[1], clrParcellationRh[2], 120)
+
+                for vertexIndex in range(lesionMappingLh.size):
+                    if(lesionMappingLh[vertexIndex] == True):
+                        vtk_colorsLh.InsertNextTuple4(clrRed[0], clrRed[1], clrRed[2], 255.0)
+                    else:
+                        clrParcellationLh = self.metaLh[self.labelScalarArrayLh.GetValue(vertexIndex)]["color"]
+                        vtk_colorsLh.InsertNextTuple4(clrParcellationLh[0], clrParcellationLh[1], clrParcellationLh[2], 120)
+                self.unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+                self.unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+                # LESION IMPACT COLOR MAPPING ENDS HERE
+
+
+                vtk_colors3DLh = vtk.vtkUnsignedCharArray()
+                vtk_colors3DLh.SetNumberOfComponents(3)
+                vtk_colors3DRh = vtk.vtkUnsignedCharArray()
+                vtk_colors3DRh.SetNumberOfComponents(3)
+
+                # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
+                numberOfPointsRh = self.pialMapperRh.GetInput().GetNumberOfPoints()
+                numberOfPointsLh = self.pialMapperLh.GetInput().GetNumberOfPoints()
+                vertexIndexArrayRh = np.arange(numberOfPointsRh)
+                vertexIndexArrayLh = np.arange(numberOfPointsLh)
+                affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+                affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+                lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+                lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+                for elem in lesionMappingRh:
+                    if(elem==True):
+                        vtk_colors3DRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                    else:
+                        vtk_colors3DRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                for elem in lesionMappingLh:
+                    if(elem==True):
+                        vtk_colors3DLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                    else:
+                        vtk_colors3DLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                self.pialMapperRh.GetInput().GetPointData().SetScalars(vtk_colors3DRh)
+                self.pialMapperLh.GetInput().GetPointData().SetScalars(vtk_colors3DLh)
+                # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
             
                 # save the last picked actor
                 self.LastPickedActor = self.NewPickedActor

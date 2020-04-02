@@ -1209,7 +1209,15 @@ class Ui(Qt.QMainWindow):
     # Handler for capturing the screenshot.
     @pyqtSlot()
     def on_click_CaptureScreeshot(self):
-        LesionUtils.captureScreenshot(self.ren.GetRenderWindow())
+        if(self.activeMode == -2):
+            LesionUtils.captureScreenshot(self.ren.GetRenderWindow())
+        if(self.activeMode == -3):
+            LesionUtils.captureScreenshot(self.renDualLeft.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.renDualRight.GetRenderWindow())
+        if(self.activeMode == -4):
+            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererLesion.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedRh.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedLh.GetRenderWindow())
 
     # Handler for depth peeling checkbox
     @pyqtSlot()

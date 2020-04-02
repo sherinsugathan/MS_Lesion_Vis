@@ -239,26 +239,19 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 vtk_colorsLh.SetNumberOfComponents(3)
                 vtk_colorsRh = vtk.vtkUnsignedCharArray()
                 vtk_colorsRh.SetNumberOfComponents(3)
-                #colors = vtk.vtkNamedColors()
-                #colorForestGreen = colors.GetColor3d("forestgreen")
-                #colorTomato = colors.GetColor3d("tomato")
-                #clrGreen = [colorForestGreen[0]*255, colorForestGreen[1]*255, colorForestGreen[2]*255]#colors.GetColor3d("forestgreen") #[173, 221, 142]
-                #clrRed = [colorTomato[0]*255, colorTomato[1]*255, colorTomato[2]*255]#colors.GetColor3d("tomato") #[222, 45, 38]
-                clrGreen = [161,217,155]#colors.GetColor3d("forestgreen") #[173, 221, 142]
-                clrRed = [227,74,51]#colors.GetColor3d("tomato") #[222, 45, 38]
 
+                clrGreen = [161,217,155]
+                clrRed = [227,74,51]
 
+                # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
                 numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
                 numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
                 vertexIndexArrayRh = np.arange(numberOfPointsRh)
                 vertexIndexArrayLh = np.arange(numberOfPointsLh)
-
                 affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
                 affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
-
                 lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
                 lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-
                 for elem in lesionMappingRh:
                     if(elem==True):
                         vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
@@ -269,9 +262,9 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
                     else:
                         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                
                 self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
                 self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+                # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
 
                 #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
                 LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
