@@ -349,6 +349,9 @@ class Ui(Qt.QMainWindow):
         self.iren_LesionMapDualLeft.Initialize()
         self.iren_LesionMapDualRight.Initialize()
 
+        # Initialize 2d mapping mode
+        self.twoDModeMapper = TwoDModeMapper(self)
+
         self.imageLabel.hide()
 
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
@@ -1124,8 +1127,9 @@ class Ui(Qt.QMainWindow):
 
     # Activate renderers in 2D mode
     def activate2DMode(self):
+        print(self.twoDModeLoadedOnce)
         if(self.twoDModeLoadedOnce == False):
-            self.twoDModeMapper = TwoDModeMapper(self)
+            #self.twoDModeMapper = TwoDModeMapper(self)
             self.twoDModeMapper.ClearData()
             self.twoDModeMapper.AddData()
             self.twoDModeLoadedOnce = True
