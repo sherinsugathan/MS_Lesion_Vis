@@ -38,6 +38,14 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from freesurfer_surface import Surface, Vertex, Triangle
 from enum import Enum
 
+# Pyinstaller exe requirements
+#import pkg_resources.py2_warn
+import vtkmodules
+import vtkmodules.all
+import vtkmodules.qt.QVTKRenderWindowInteractor
+import vtkmodules.util
+import vtkmodules.util.numpy_support
+
 class Ui(Qt.QMainWindow):
 
     # Main Initialization
@@ -1161,7 +1169,7 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot()
     def on_DialMoved(self):
         if(self.dataFolderInitialized == True):
-            self.opacityValueLabel.setText(str(self.dial.value()/float(500)))
+            self.opacityValueLabel.setText(str('{0:.2f}'.format(self.dial.value()/float(500))))
             for actorItem in self.actors:
                 if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                     if(self.listView.model().itemFromIndex(self.listView.currentIndex()) == None):

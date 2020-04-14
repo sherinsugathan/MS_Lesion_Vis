@@ -1,4 +1,5 @@
 # This program reads T1 data and corresponding consensus. The calculated intensity difference is burned back in T1 and saved as a new file.
+# Purpose: Have an overlay of lesions on top of MPRs.
 import SimpleITK as sitk
 import vtk
 import numpy as np
