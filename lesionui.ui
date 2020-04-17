@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Multiple Sclerosis Experimentor v1.0.0 - Not For Clinical Use</string>
+   <string>MuScLeVis v1.0.0 - Not For Clinical Use</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -227,7 +227,7 @@ border-radius: 10px;</string>
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Plain</enum>
           </property>
          </widget>
         </item>
@@ -258,109 +258,13 @@ border-radius: 10px;</string>
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="6">
-            <widget class="QPushButton" name="pushButton_Continuous">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_Continuous
-{
-color: gray;
-}
-QPushButton:hover#pushButton_Continuous
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_Continuous {background-color:rgb(143, 180,146);}
-QPushButton:checked#pushButton_Continuous {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
-QPushButton#pushButton_Continuous
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-             </property>
-             <property name="text">
-              <string>Continuous</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="8">
-            <widget class="QPushButton" name="pushButton_Distance">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_Distance
-{
-color: gray;
-}
-QPushButton:hover#pushButton_Distance
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_Distance {background-color:rgb(143, 180,146);}
-QPushButton:checked#pushButton_Distance {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
-QPushButton#pushButton_Distance
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-             </property>
-             <property name="text">
-              <string>Distance</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item row="2" column="4">
+            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0">
              <property name="spacing">
               <number>0</number>
+             </property>
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMinimumSize</enum>
              </property>
              <property name="topMargin">
               <number>0</number>
@@ -395,8 +299,8 @@ font: 9pt &quot;Google Sans&quot;;</string>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>60</width>
-                 <height>60</height>
+                 <width>70</width>
+                 <height>70</height>
                 </size>
                </property>
               </widget>
@@ -423,7 +327,7 @@ font: 12pt &quot;Google Sans&quot;;</string>
              </item>
             </layout>
            </item>
-           <item row="0" column="3">
+           <item row="2" column="3">
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -436,55 +340,7 @@ font: 12pt &quot;Google Sans&quot;;</string>
              </property>
             </spacer>
            </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_FLAIR">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_FLAIR
-{
-color: gray;
-}
-QPushButton:hover#pushButton_FLAIR
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_FLAIR {background-color:rgb(143, 180,146);}
-QPushButton:checked#pushButton_FLAIR {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
-QPushButton#pushButton_FLAIR
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-             </property>
-             <property name="text">
-              <string>FLAIR</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="5">
+           <item row="2" column="5">
             <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -497,22 +353,33 @@ border-style: solid;
              </property>
             </spacer>
            </item>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="pushButton_T2">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
+           <item row="2" column="6">
+            <layout class="QGridLayout" name="gridLayout_10">
+             <property name="rightMargin">
+              <number>0</number>
              </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
+             <property name="horizontalSpacing">
+              <number>6</number>
              </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_T2
+             <property name="verticalSpacing">
+              <number>0</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton_T2">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_T2
 {
 color: gray;
 }
@@ -536,31 +403,31 @@ color: rgb(142, 255, 159);
 font: 9pt &quot;Google Sans&quot;;
 border-style: solid;
 }</string>
-             </property>
-             <property name="text">
-              <string>T2</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_T1">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_T1
+               </property>
+               <property name="text">
+                <string>T2 DATA</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QPushButton" name="pushButton_T1">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_T1
 {
 color: gray;
 }
@@ -584,34 +451,133 @@ color: rgb(142, 255, 159);
 font: 9pt &quot;Google Sans&quot;;
 border-style: solid;
 }</string>
-             </property>
-             <property name="text">
-              <string>T1</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="7">
-            <widget class="QPushButton" name="pushButton_Discrete">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton:disabled#pushButton_Discrete
+               </property>
+               <property name="text">
+                <string>T1 DATA</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QPushButton" name="pushButton_FLAIR">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_FLAIR
+{
+color: gray;
+}
+QPushButton:hover#pushButton_FLAIR
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_FLAIR {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_FLAIR {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_FLAIR
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+               </property>
+               <property name="text">
+                <string>FLAIR DATA</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QPushButton" name="pushButton_Continuous">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_Continuous
+{
+color: gray;
+}
+QPushButton:hover#pushButton_Continuous
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_Continuous {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_Continuous {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_Continuous
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+               </property>
+               <property name="text">
+                <string>CONTINUOUS</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_Discrete">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_Discrete
 {
 color: gray;
 }
@@ -635,14 +601,187 @@ color: rgb(142, 255, 159);
 font: 9pt &quot;Google Sans&quot;;
 border-style: solid;
 }</string>
+               </property>
+               <property name="text">
+                <string>DISCRETE</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="pushButton_Distance">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:disabled#pushButton_Distance
+{
+color: gray;
+}
+QPushButton:hover#pushButton_Distance
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_Distance {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_Distance {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_Distance
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+               </property>
+               <property name="text">
+                <string>DISTANCE</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="1">
+            <layout class="QGridLayout" name="gridLayout_11">
+             <property name="rightMargin">
+              <number>0</number>
              </property>
-             <property name="text">
-              <string>Discrete</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
+             <item row="1" column="1">
+              <widget class="QListView" name="listView_Structural">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>80</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>140</width>
+                 <height>80</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Visible Surfaces</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLabel" name="label_5">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Visible Volumes</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QListView" name="listView">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>140</width>
+                 <height>80</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_UnselectAllSubjects
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+               </property>
+               <property name="text">
+                <string>Unselect All</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -741,41 +880,23 @@ border-style: solid;</string>
        <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="15" column="1">
-        <widget class="QListView" name="listView_Structural">
-         <property name="minimumSize">
+       <item row="2" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
-           <height>60</height>
+           <width>20</width>
+           <height>20</height>
           </size>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>100</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
-         </property>
-        </widget>
+        </spacer>
        </item>
-       <item row="11" column="1">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Surface Data</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="33" column="1">
+       <item row="42" column="1">
         <widget class="QLabel" name="imageLabel">
          <property name="minimumSize">
           <size>
@@ -797,63 +918,11 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="20" column="1">
         <layout class="QGridLayout" name="gridLayout_6">
          <property name="topMargin">
           <number>0</number>
          </property>
-         <item row="0" column="1">
-          <widget class="QPushButton" name="pushButton_DualMode">
-           <property name="minimumSize">
-            <size>
-             <width>70</width>
-             <height>70</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>Dual Mode</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton:hover#pushButton_DualMode
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_DualMode {background-color:rgb(143, 180,146);}
-QPushButton:checked#pushButton_DualMode {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
-QPushButton#pushButton_DualMode
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/dualMode.png</normaloff>
-             <normalon>icons/dualModeEnabled.png</normalon>icons/dualMode.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>50</width>
-             <height>50</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="pushButton_NormalMode">
            <property name="minimumSize">
@@ -909,6 +978,58 @@ border-style: solid;
            </property>
           </widget>
          </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="pushButton_DualMode">
+           <property name="minimumSize">
+            <size>
+             <width>70</width>
+             <height>70</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Dual Mode</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_DualMode
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_DualMode {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_DualMode {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_DualMode
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons/dualMode.png</normaloff>
+             <normalon>icons/dualModeEnabled.png</normalon>icons/dualMode.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="2">
           <widget class="QPushButton" name="pushButton_2DMode">
            <property name="minimumSize">
@@ -961,23 +1082,68 @@ border-style: solid;
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Normal</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Dual</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>2D Unfold</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
-       <item row="16" column="1">
-        <widget class="QPushButton" name="pushButton_UnselectAllSubjects">
-         <property name="minimumSize">
+       <item row="35" column="1">
+        <widget class="QLabel" name="label_11">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>GLOBAL SETTINGS</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="40" column="1">
+        <widget class="QPushButton" name="pushButton_Screenshot">
+         <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>0</height>
+           <width>16777215</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_UnselectAllSubjects
+          <string notr="true">QPushButton:hover#pushButton_Screenshot
 {
 background-color: rgb(54, 113, 38);
 }
-QPushButton:pressed#pushButton_UnselectAllSubjects {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_UnselectAllSubjects
+QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_Screenshot
 {
 background-color: rgb(10, 61, 29);
 color: rgb(161, 226, 158);
@@ -993,20 +1159,7 @@ border-style: solid;
 }</string>
          </property>
          <property name="text">
-          <string>Unselect All</string>
-         </property>
-        </widget>
-       </item>
-       <item row="31" column="1">
-        <widget class="Line" name="line">
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <string>Capture Rendered Image</string>
          </property>
         </widget>
        </item>
@@ -1038,25 +1191,36 @@ border-style: solid;
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
-        <widget class="QListView" name="listView">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>100</height>
-          </size>
+       <item row="33" column="1">
+        <widget class="Line" name="line">
+         <property name="autoFillBackground">
+          <bool>false</bool>
          </property>
-         <property name="styleSheet">
-          <string notr="true">border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-</string>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="34" column="1">
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="1">
         <widget class="QLineEdit" name="lineEdit_DatasetFolder">
          <property name="minimumSize">
           <size>
@@ -1074,7 +1238,7 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="8" column="1">
         <widget class="QComboBox" name="comboBox_AvailableSubjects">
          <property name="minimumSize">
           <size>
@@ -1116,7 +1280,7 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QPushButton" name="pushButton_LoadFolder">
          <property name="styleSheet">
           <string notr="true">QPushButton:hover#pushButton_LoadFolder
@@ -1144,7 +1308,7 @@ border-style: solid;
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="11" column="1">
         <layout class="QGridLayout" name="gridLayout_4">
          <property name="topMargin">
           <number>0</number>
@@ -1222,75 +1386,30 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="5" column="1">
+       <item row="7" column="1">
         <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Select Patient</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="21" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMin">
-           <property name="text">
-            <string>#</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterCurrent">
-           <property name="text">
-            <string>#</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMax">
-           <property name="text">
-            <string>#</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Set Patient Folder</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="30" column="1">
-        <widget class="QPushButton" name="pushButton_Screenshot">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_Screenshot
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>CHOOSE PATIENT DATA</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="39" column="1">
+        <widget class="QPushButton" name="pushButton_ResetView">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_ResetView
 {
 background-color: rgb(54, 113, 38);
 }
-QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_Screenshot
+QPushButton:pressed#pushButton_ResetView {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_ResetView
 {
 background-color: rgb(10, 61, 29);
 color: rgb(161, 226, 158);
@@ -1306,41 +1425,237 @@ border-style: solid;
 }</string>
          </property>
          <property name="text">
-          <string>Capture Rendered Image</string>
+          <string>Reset Views</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="1">
-        <widget class="QLabel" name="label_8">
+       <item row="36" column="1">
+        <layout class="QGridLayout" name="gridLayout_12">
+         <property name="bottomMargin">
+          <number>20</number>
+         </property>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="pushButton_Parcellation">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>31</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_Parcellation
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_Parcellation {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_Parcellation {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_Parcellation
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Parcellation</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="pushButton_DepthPeel">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>31</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_DepthPeel
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_DepthPeel {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_DepthPeel {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_DepthPeel
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}
+
+</string>
+           </property>
+           <property name="text">
+            <string>Depth Peel</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="pushButton_PersistSettings">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>31</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_PersistSettings
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_PersistSettings {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_PersistSettings {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_PersistSettings
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Persist Settings</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="pushButton_EnableFibers">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>31</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_EnableFibers
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_EnableFibers {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_EnableFibers {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_EnableFibers
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+           </property>
+           <property name="text">
+            <string>Enable Fiber</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLabel" name="label">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
          <property name="text">
-          <string>Choose Workflow Mode</string>
+          <string>CHOOSE PATIENT FOLDER</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="38" column="1">
+        <widget class="QLabel" name="label_16">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>GLOBAL COMMANDS</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
        <item row="19" column="1">
+        <widget class="QLabel" name="label_8">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>CHOOSE WORKFLOW</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="22" column="1">
         <widget class="QLabel" name="label_6">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
          <property name="text">
-          <string>Filter Lesions</string>
+          <string>CHOOSE FILTER PARAM</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Structural Data</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="1">
+       <item row="23" column="1">
         <widget class="QComboBox" name="comboBox_LesionFilter">
          <property name="minimumSize">
           <size>
@@ -1382,48 +1697,55 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="29" column="1">
-        <layout class="QGridLayout" name="gridLayout_checkboxes">
-         <property name="topMargin">
-          <number>0</number>
+       <item row="6" column="1">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="bottomMargin">
-          <number>0</number>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
          </property>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="checkBox_Parcellation">
-           <property name="text">
-            <string>Parcellations</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="checkBox_DepthPeeling">
-           <property name="text">
-            <string>Depth Peeling</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="checkBox_PerLesion">
-           <property name="text">
-            <string>Map Lesions</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="checkBox_persistSettings">
-           <property name="text">
-            <string>Persist Settings</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="22" column="1">
+       <item row="12" column="1">
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="21" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="25" column="1">
         <widget class="QSlider" name="horizontalSliderLesionFilter">
          <property name="maximumSize">
           <size>
@@ -1459,18 +1781,58 @@ border-radius: 4px;
          </property>
         </widget>
        </item>
-       <item row="32" column="1">
-        <spacer name="verticalSpacer">
+       <item row="37" column="1">
+        <spacer name="verticalSpacer_6">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>20</height>
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="26" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMin">
+           <property name="text">
+            <string>NA</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterCurrent">
+           <property name="text">
+            <string>NA</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMax">
+           <property name="text">
+            <string>NA</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

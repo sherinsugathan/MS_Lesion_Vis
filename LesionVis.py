@@ -90,9 +90,11 @@ class Ui(Qt.QMainWindow):
         self.dial.setValue(500)
         self.dial.valueChanged.connect(self.on_DialMoved)
         self.pushButton_UnselectAllSubjects.clicked.connect(self.on_click_UnselectAllSubjects) # Attaching button click Handlers
-        self.checkBox_DepthPeeling.stateChanged.connect(self.depthpeel_state_changed) # Attaching handler for depth peeling state change.
-        self.checkBox_PerLesion.stateChanged.connect(self.perLesion_state_changed) # Attaching handler for per lesion.
-        self.checkBox_Parcellation.stateChanged.connect(self.parcellation_state_changed) # Attaching handler for parcellation display.
+        self.pushButton_DepthPeel.toggled.connect(self.depthpeel_toggled) # Attaching button click Handlers
+        self.pushButton_Parcellation.toggled.connect(self.parcellation_toggled) # Attaching button click Handlers
+        self.pushButton_PersistSettings.toggled.connect(self.persistSettings_toggled) # Attaching button toggle handlers.
+        self.pushButton_EnableFibers.toggled.connect(self.fiberEnable_toggled) # Attaching button toggle handlers.
+        self.pushButton_ResetView.clicked.connect(self.on_click_ResetViews) # Attaching button click Handlers
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
 
@@ -184,7 +186,7 @@ class Ui(Qt.QMainWindow):
         self.renDualLeft.SetBackground(0.0039,0.0196,0.0078)
         self.renDualRight.SetBackground(0.0039,0.0196,0.0078)
 
-        if self.checkBox_DepthPeeling.isChecked():
+        if self.pushButton_DepthPeel.isChecked():
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
 
@@ -647,7 +649,7 @@ class Ui(Qt.QMainWindow):
 
         # Update overlay text and add it to the renderer
         self.overlayDataGlobal["Lesion Load"] = self.numberOfLesionElements
-        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
+        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if self.pushButton_DepthPeel.isChecked() else "Disabled"
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.ren.AddActor2D(self.textActorLesionStatistics)
                         
@@ -701,11 +703,11 @@ class Ui(Qt.QMainWindow):
 
     def updateLesionColorsContinuous(self):   
         modality = None
-        if(self.buttonGroupModality.checkedButton().text() == "T1"):
+        if(self.buttonGroupModality.checkedButton().text() == "T1 DATA"):
             modality = "T1"
-        if(self.buttonGroupModality.checkedButton().text() == "T2"):
+        if(self.buttonGroupModality.checkedButton().text() == "T2 DATA"):
             modality = "T2"
-        if(self.buttonGroupModality.checkedButton().text() == "FLAIR"):
+        if(self.buttonGroupModality.checkedButton().text() == "FLAIR DATA"):
             modality = "FLAIR"
 
         colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayCont" + modality + ".pkl"
@@ -723,11 +725,11 @@ class Ui(Qt.QMainWindow):
         numberOfLesions = len(self.lesionActors)
         for dataIndex in range(numberOfLesions):
             self.lesionActors[dataIndex].GetMapper().ScalarVisibilityOff()
-            if(self.buttonGroupModality.checkedButton().text() == "T1"):
+            if(self.buttonGroupModality.checkedButton().text() == "T1 DATA"):
                 intensityDifference = self.lesionAverageLesionIntensityT1[dataIndex] - self.lesionAverageSuroundingIntensityT1[dataIndex]
-            if(self.buttonGroupModality.checkedButton().text() == "T2"):
+            if(self.buttonGroupModality.checkedButton().text() == "T2 DATA"):
                 intensityDifference = self.lesionAverageLesionIntensityT2[dataIndex] - self.lesionAverageSuroundingIntensityT2[dataIndex]
-            if(self.buttonGroupModality.checkedButton().text() == "FLAIR"):
+            if(self.buttonGroupModality.checkedButton().text() == "FLAIR DATA"):
                 intensityDifference = self.lesionAverageLesionIntensityFLAIR[dataIndex] - self.lesionAverageSuroundingIntensityFLAIR[dataIndex]
 
             if(intensityDifference < thresholdMin):
@@ -791,7 +793,7 @@ class Ui(Qt.QMainWindow):
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
         # Fetch required display settings.
-        if(self.dataFolderInitialized==False or self.checkBox_persistSettings.isChecked() == False):
+        if(self.dataFolderInitialized==False or self.pushButton_PersistSettings.isChecked() == False):
             self.settings = Settings.getSettings(Settings.visMapping("Lesion Colored - Continuous"))
             self.lesionFilterParamSettings = Settings.LesionFilterParamSettings(1000,1000,1000,1000,1000,1000,1000)
 
@@ -803,7 +805,7 @@ class Ui(Qt.QMainWindow):
             self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhwhiteMapper, self.lhwhiteMapper)
             #self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhpialMapper, self.lhpialMapper)
             # If parcellation enabled
-            if self.checkBox_Parcellation.isChecked():
+            if self.pushButton_Parcellation.isChecked():
                 self.rhwhiteMapper.ScalarVisibilityOn()
                 self.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.colorsRh)
                 self.lhwhiteMapper.ScalarVisibilityOn()
@@ -1013,40 +1015,40 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot(QAbstractButton)
     def on_buttonGroupModalityChanged(self, btn):
         if(self.dataFolderInitialized == True):
-            if(btn.text()=="T1"):
+            if(btn.text()=="T1 DATA"):
                 self.LoadStructuralSlices(self.subjectFolder, "T1")
-                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                if(self.buttonGroupVis.checkedButton().text() == "CONTINUOUS"):
                     self.updateLesionColorsContinuous()
-                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                if(self.buttonGroupVis.checkedButton().text() == "DISCRETE"):
                     self.updateLesionColorsDiscrete()
-            if(btn.text()=="T2"):
+            if(btn.text()=="T2 DATA"):
                 self.LoadStructuralSlices(self.subjectFolder, "T2")
-                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                if(self.buttonGroupVis.checkedButton().text() == "CONTINUOUS"):
                     self.updateLesionColorsContinuous()
-                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                if(self.buttonGroupVis.checkedButton().text() == "DISCRETE"):
                     self.updateLesionColorsDiscrete()
-            if(btn.text()=="FLAIR"):
+            if(btn.text()=="FLAIR DATA"):
                 self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
-                if(self.buttonGroupVis.checkedButton().text() == "Continuous"):
+                if(self.buttonGroupVis.checkedButton().text() == "CONTINUOUS"):
                     self.updateLesionColorsContinuous()
-                if(self.buttonGroupVis.checkedButton().text() == "Discrete"):
+                if(self.buttonGroupVis.checkedButton().text() == "DISCRETE"):
                     self.updateLesionColorsDiscrete()
 
     # Handler for color visualization change inside button group
     @pyqtSlot(QAbstractButton)
     def on_buttonGroupVisChanged(self, btn):
         if(self.dataFolderInitialized == True):
-            if(btn.text()=="Continuous"):
+            if(btn.text()=="CONTINUOUS"):
                 self.pushButton_T1.setEnabled(True)
                 self.pushButton_T2.setEnabled(True)
                 self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsContinuous()
-            if(btn.text()=="Discrete"):
+            if(btn.text()=="DISCRETE"):
                 self.pushButton_T1.setEnabled(True)
                 self.pushButton_T2.setEnabled(True)
                 self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsDiscrete()
-            if(btn.text()=="Distance"):
+            if(btn.text()=="DISTANCE"):
                 self.pushButton_T1.setEnabled(False)
                 self.pushButton_T2.setEnabled(False)
                 self.pushButton_FLAIR.setEnabled(False)
@@ -1231,31 +1233,43 @@ class Ui(Qt.QMainWindow):
             LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedRh.GetRenderWindow())
             LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedLh.GetRenderWindow())
 
-    # Handler for depth peeling checkbox
-    @pyqtSlot()
-    def depthpeel_state_changed(self):
-        if self.checkBox_DepthPeeling.isChecked():
+    # Handler for depth peeling pushbutton 
+    @pyqtSlot(bool)
+    def depthpeel_toggled(self, checkStatus):
+        if (checkStatus == True):
             self.ren.SetUseDepthPeeling(True)
             self.ren.SetMaximumNumberOfPeels(4)
         else:
             self.ren.SetUseDepthPeeling(False)
-        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if self.checkBox_DepthPeeling.isChecked() else "Disabled"
+        self.overlayDataGlobal["Depth Peeling"] = "Enabled" if checkStatus else "Disabled"
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.iren.Render()
 
-    # Handler for per lesion analysis.
+    # Handler for persist settings
+    @pyqtSlot(bool)
+    def persistSettings_toggled(self, checkStatus):
+        if (checkStatus == True):
+            print("Handle persist settings")
+
+    # Handler for reset camera pushbutton 
     @pyqtSlot()
-    def perLesion_state_changed(self):
-        if self.checkBox_PerLesion.isChecked():
+    def on_click_ResetViews(self):
+        self.ren.ResetCamera()
+        self.iren.Render()
+
+    # Handler for per lesion analysis.
+    @pyqtSlot(bool)
+    def fiberEnable_toggled(self, checkStatus):
+        if (checkStatus == True):
             self.lesionSeededFiberTracts = True
         else:
             self.lesionSeededFiberTracts = False
 
     # Handler for parcellation display
-    @pyqtSlot()
-    def parcellation_state_changed(self):
+    @pyqtSlot(bool)
+    def parcellation_toggled(self, checkStatus):
         if(self.dataFolderInitialized == True):
-            if self.checkBox_Parcellation.isChecked():
+            if (checkStatus == True):
                 for actorItem in self.actors:
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white"]:
