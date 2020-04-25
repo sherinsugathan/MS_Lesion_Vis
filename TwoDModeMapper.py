@@ -48,10 +48,12 @@ class TwoDModeMapper():
 
     self.iren_2x2 = self.vtkWidget2x2.GetRenderWindow().GetInteractor()
 
-    self.rendererLesion.ResetCamera()
-    self.rendererSurface.ResetCamera()
-    self.rendererUnfoldedRh.ResetCamera()
-    self.rendererUnfoldedLh.ResetCamera()
+    # self.rendererLesion.ResetCamera()
+    # self.rendererSurface.ResetCamera()
+    # self.rendererUnfoldedRh.ResetCamera()
+    # self.rendererUnfoldedLh.ResetCamera()
+
+
 
     self.lesionvis.frame_2x2.setLayout(self.vl_lesion2x2)
 
@@ -288,7 +290,7 @@ class TwoDModeMapper():
     pDataLh.GetPointData().SetActiveScalars("VertexIndices")
     self.vertexIdScalarArrayRh = pDataRh.GetPointData().GetScalars()
     self.vertexIdScalarArrayLh = pDataLh.GetPointData().GetScalars()
-    print(pDataRh.GetNumberOfPoints())
+    #print(pDataRh.GetNumberOfPoints())
 
     self.actualVertexIdsRh = []
     for index in range(self.pointCountRh):
@@ -458,14 +460,21 @@ class TwoDModeMapper():
 
     # self.lesionvis.ren2x2.ResetCamera()
     # self.lesionvis.ren2x2.Render()
+    self.customInteractorStyle.reColor3DNoLesions(self.lesionvis.colorsRh, self.lesionvis.colorsLh)
+
     self.rendererLesion.ResetCamera()
     self.rendererSurface.ResetCamera()
     self.rendererUnfoldedRh.ResetCamera()
     self.rendererUnfoldedLh.ResetCamera()
+    self.rendererLesion.GetActiveCamera().Zoom(1.2)
+    self.rendererSurface.GetActiveCamera().Zoom(1.2)
+    self.rendererUnfoldedRh.GetActiveCamera().Zoom(1.2)    
+    self.rendererUnfoldedLh.GetActiveCamera().Zoom(1.2)
     self.rendererLesion.Render()
     self.rendererSurface.Render()
     self.rendererUnfoldedRh.Render()
     self.rendererUnfoldedLh.Render()
+
 
   def ClearData(self):
     self.rendererLesion.RemoveAllViewProps()
@@ -488,6 +497,7 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
         self.LastPickedActor = None
         self.LastPickedProperty = vtk.vtkProperty()
+        self.lesionID = None
 
     def mouseWheelForwardEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -531,6 +541,12 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         if(clr[2] + lightenAddVal <= 255):
             clr[2] = clr[2] + lightenAddVal
 
+    def tintColor(self, clr, p=0.5):
+        r = 255 - int(p * (255 - clr[0]))
+        g = 255 - int(p * (255 - clr[1]))
+        b = 255 - int(p * (255 - clr[2]))
+        return [r,g,b]
+
     # Assign colors to 2D unfolded surface.
     def reColor2D(self, selectedParcellationColorLh = None, selectedParcellationColorRh = None):
         vtk_colorsLh = vtk.vtkUnsignedCharArray()
@@ -538,11 +554,18 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         vtk_colorsRh = vtk.vtkUnsignedCharArray()
         vtk_colorsRh.SetNumberOfComponents(3)
         #clrGreen = [161,217,155]
-        clrRed = [227,74,51]
+        #clrRed = [227,74,51]
+        clrRed = [135,49,48]
         clrParcellationRh = [0,0,0]
         clrParcellationRh = [0,0,0]
         vertexIndexArrayRh = self.twoDModeMapper.actualVertexIdsRh
         vertexIndexArrayLh = self.twoDModeMapper.actualVertexIdsLh
+
+        if(self.lesionID == None):
+            return
+            # for vertexIndex in range(len(vertexIndexArrayLh)):
+            #     clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelScalarArrayLh.GetValue(vertexIndex)]["color"]
+            #     vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0], clrParcellationLh[1]/3, clrParcellationLh[2]/3)
         affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
         affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
@@ -553,11 +576,14 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
             else:
                 clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelScalarArrayLh.GetValue(vertexIndex)]["color"]
+                #print(clrParcellationLh[0], clrParcellationLh[1], clrParcellationLh[2])
                 if(selectedParcellationColorLh != None and selectedParcellationColorLh == clrParcellationLh):
-                    self.brightenColor(clrParcellationLh)
-                    vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0], clrParcellationLh[1], clrParcellationLh[2])
+                    #self.brightenColor(clrParcellationLh)
+                    vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0]/3, clrParcellationLh[1]/3, clrParcellationLh[2]/3)
                     continue
-                vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0]/4, clrParcellationLh[1]/4, clrParcellationLh[2]/4)
+                #vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0]/4, clrParcellationLh[1]/4, clrParcellationLh[2]/4)
+                lightClr = self.tintColor(clrParcellationLh, 0.4)
+                vtk_colorsLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
         self.twoDModeMapper.unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
         
         for vertexIndex in range(lesionMappingRh.size):
@@ -566,11 +592,21 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 clrParcellationRh = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelScalarArrayRh.GetValue(vertexIndex)]["color"]
                 if(selectedParcellationColorRh != None and selectedParcellationColorRh == clrParcellationRh):
-                    self.brightenColor(clrParcellationRh)
-                    vtk_colorsRh.InsertNextTuple3(clrParcellationRh[0], clrParcellationRh[1], clrParcellationRh[2])
+                    #self.brightenColor(clrParcellationRh)
+                    vtk_colorsRh.InsertNextTuple3(clrParcellationRh[0]/3, clrParcellationRh[1]/3, clrParcellationRh[2]/3)
                     continue
-                vtk_colorsRh.InsertNextTuple3(clrParcellationRh[0]/4, clrParcellationRh[1]/4, clrParcellationRh[2]/4)
+                #vtk_colorsRh.InsertNextTuple3(clrParcellationRh[0]/4, clrParcellationRh[1]/4, clrParcellationRh[2]/4)
+                lightClr = self.tintColor(clrParcellationRh, 0.4)
+                vtk_colorsRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
         self.twoDModeMapper.unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+
+
+    # Assign colors to 3D unfolded surface.
+    def reColor3DNoLesions(self, rhColorArray, lhColorArray):
+        self.twoDModeMapper.pialMapperRh.ScalarVisibilityOn()
+        self.twoDModeMapper.pialMapperLh.ScalarVisibilityOn()
+        self.twoDModeMapper.pialMapperRh.GetInput().GetPointData().SetScalars(rhColorArray)
+        self.twoDModeMapper.pialMapperLh.GetInput().GetPointData().SetScalars(lhColorArray)
 
     # Assign colors to 3D unfolded surface.
     def reColor3D(self, selectedParcellationColorLh = None, selectedParcellationColorRh = None):
@@ -579,7 +615,8 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         vtk_colors3DRh = vtk.vtkUnsignedCharArray()
         vtk_colors3DRh.SetNumberOfComponents(3)
         #clrGreen = [161,217,155]
-        clrRed = [227,74,51]
+        #clrRed = [227,74,51]
+        clrRed = [135,49,48]
         clrParcellationRh = [0,0,0]
         clrParcellationRh = [0,0,0]
 
@@ -588,6 +625,9 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         numberOfPointsLh = self.twoDModeMapper.pialMapperLh.GetInput().GetNumberOfPoints()
         vertexIndexArrayRh = np.arange(numberOfPointsRh)
         vertexIndexArrayLh = np.arange(numberOfPointsLh)
+        if(self.lesionID == None):
+            return
+
         affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
         affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
@@ -603,10 +643,12 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelsRh[vertexIndex]]["color"]
                 
                 if(selectedParcellationColorRh != None and selectedParcellationColorRh == clrParcellationRh):
-                    self.brightenColor(clrParcellationRh)
-                    vtk_colors3DRh.InsertNextTuple3(clrParcellationRh[0], clrParcellationRh[1], clrParcellationRh[2])
+                    #self.brightenColor(clrParcellationRh)
+                    vtk_colors3DRh.InsertNextTuple3(clrParcellationRh[0]/3, clrParcellationRh[1]/3, clrParcellationRh[2]/3)
                     continue
-                vtk_colors3DRh.InsertNextTuple3(clrParcellationRh[0]/4, clrParcellationRh[1]/4, clrParcellationRh[2]/4)
+                lightClr = self.tintColor(clrParcellationRh, 0.4)
+                #vtk_colors3DRh.InsertNextTuple3(clrParcellationRh[0]/4, clrParcellationRh[1]/4, clrParcellationRh[2]/4)
+                vtk_colors3DRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
         for vertexIndex in range(lesionMappingLh.size):
             if(lesionMappingLh[vertexIndex] == True):
                 vtk_colors3DLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
@@ -617,10 +659,12 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelsLh[vertexIndex]]["color"]
                 
                 if(selectedParcellationColorLh != None and selectedParcellationColorLh == clrParcellationLh):
-                    self.brightenColor(clrParcellationLh)
-                    vtk_colors3DLh.InsertNextTuple3(clrParcellationLh[0], clrParcellationLh[1], clrParcellationLh[2])
+                    #self.brightenColor(clrParcellationLh)
+                    vtk_colors3DLh.InsertNextTuple3(clrParcellationLh[0]/3, clrParcellationLh[1]/3, clrParcellationLh[2]/3)
                     continue
-                vtk_colors3DLh.InsertNextTuple3(clrParcellationLh[0]/4, clrParcellationLh[1]/4, clrParcellationLh[2]/4)
+                lightClr = self.tintColor(clrParcellationLh, 0.4)
+                #vtk_colors3DLh.InsertNextTuple3(clrParcellationLh[0]/4, clrParcellationLh[1]/4, clrParcellationLh[2]/4)
+                vtk_colors3DLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
         self.twoDModeMapper.pialMapperRh.GetInput().GetPointData().SetScalars(vtk_colors3DRh)
         self.twoDModeMapper.pialMapperLh.GetInput().GetPointData().SetScalars(vtk_colors3DLh)
 
@@ -658,13 +702,13 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
         # if current renderer is "Surface"
         if(self.rendererTypes[id(renderer)] == "tbcameraSurface"):
-            print("Surface")
+            #print("Surface")
             self.OnLeftButtonDown()
             return
 
         # Check if current renderer is rendererLesion or rendererSurface
         if(self.rendererTypes[id(renderer)] == "tbcameraLesion"):
-            print("camera")
+            #print("camera")
         
             # get the new
             self.NewPickedActor = picker.GetActor()

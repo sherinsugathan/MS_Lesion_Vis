@@ -21,16 +21,16 @@ def MakeCellData(min, max, colors, polyDataObject):
         val = int(polyDataObject.GetPointData().GetScalars().GetTuple1(i))
         #print(int(val))
         if(val == 0): # ventricle and background area label
-            colors.InsertNextTuple3(166,206,227)
+            colors.InsertNextTuple3(254,237,222)
         if(val == 1): # ventricle + 1
-            colors.InsertNextTuple3(27,158,119)
+            colors.InsertNextTuple3(253,190,133)
         if(val == 2): # outer -1
-            colors.InsertNextTuple3(217,95,2)
+            colors.InsertNextTuple3(253,141,60)
         if(val == 3): # Outer most lesions
-            colors.InsertNextTuple3(117,112,179)
+            colors.InsertNextTuple3(217,71,1)
 
 #fileNameQuantized = "D:\\DATASET\\MS_SegmentationChallengeDataset\\"+subjectString+"\\heatMaps\\aseg.auto_temperature_quantized.nii"
-rootPath = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
+rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
 listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 #listOfSubjects = ["01016SACH_DATA"]
 #contVolumeFileNames = ["T1IntensityDifference.nii", "T2IntensityDifference.nii", "3DFLAIRIntensityDifference.nii"]
@@ -131,7 +131,7 @@ for subject in listOfSubjects:
         #print("COLOR list length", colorData.GetNumberOfTuples())
         #print("PROCESSED LESION", i, "/", numberOfLesionElements)
 
-    writeContFileName = rootPath + subject + "\\surfaces\\colorArrayDistMRI.pkl"
+    writeContFileName = rootPath + subject + "\\surfaces\\colorArrayDistMRI2.pkl"
     with open(writeContFileName, "wb") as f:
         pickle.dump(colorList, f)
     

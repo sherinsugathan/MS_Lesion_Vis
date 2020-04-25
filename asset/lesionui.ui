@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>icons8-pastel-64.ico</normaloff>icons8-pastel-64.ico</iconset>
+    <normaloff>icons/msvisicon.ico</normaloff>icons/msvisicon.ico</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(6, 16, 9);
@@ -1261,7 +1261,7 @@ border-radius: 4px;
 
 .QComboBox::down-arrow {
 	border-width: 0px;
-    image: url(./downArrow.png);
+    image: url(icons/downArrow.png);
 }
 
 .QComboBox QAbstractItemView {

@@ -150,10 +150,12 @@ class MyMPRInteractorStyle(vtk.vtkInteractorStyleImage):
 '''
 class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
-    def __init__(self,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None, sliderA=None, sliderB=None, sliderC=None):
+    def __init__(self,lesionvis,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None, sliderA=None, sliderB=None, sliderC=None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
-
+        self.lesionvis = lesionvis
         self.LastPickedActor = None
+        self.NewPickedActor = None
+        self.clickedLesionActor = None
         self.LastPickedProperty = vtk.vtkProperty()
         self.iren = iren
         self.overlayDataMain = overlayDataMain
@@ -197,7 +199,59 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         #     #self.brodmannTextActor.SetInput("Sherin")
         #     #print(self.message)
         #     #self.iren.Render()
+    
+    def mapLesionToText(self, lesionID, NewPickedActor):
+        self.clickedLesionActor = self.NewPickedActor
+        #self.timer.stop()
+        if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
+            self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
+        # Highlight the picked actor by changing its properties
+        self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+        self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+        self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+        self.NewPickedActor.GetProperty().SetSpecular(0.0)
+
+        centerOfMassFilter = vtk.vtkCenterOfMass()
+        centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+        #print(self.NewPickedActor.GetMapper().GetInput())
+        centerOfMassFilter.SetUseScalarsAsWeights(False)
+        centerOfMassFilter.Update()
+
+        self.centerOfMass = centerOfMassFilter.GetCenter()
+
+        # Get slice numbers for setting the MPRs.
+        sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
+        self.sliderA.setValue(sliceNumbers[2])
+        self.sliderB.setValue(sliceNumbers[1])
+        self.sliderC.setValue(sliceNumbers[0])
+
+        print("picked lesion")
         
+        self.lesionvis.userPickedLesion = lesionID
+        self.overlayDataMain["Lesion ID"] = str(lesionID)
+        self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+        #self.overlayDataMain["Selection Type"] = str(itemType)
+        self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
+        self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
+        self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
+        self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
+        self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
+        self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
+        self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
+        if (self.lesionSeededFiberTracts == True):
+            actorCollection = self.GetDefaultRenderer().GetActors()
+            for actor in actorCollection:
+                actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
+                if(actorName=="structural tracts"):
+                    self.GetDefaultRenderer().RemoveActor(actor)
+
+            #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
+            lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
+            streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
+            information = vtk.vtkInformation()
+            information.Set(self.informationKey,"structural tracts")
+            streamActor.GetProperty().SetInformation(information)
+            self.GetDefaultRenderer().AddActor(streamActor)
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -208,6 +262,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         # pointPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
         # worldPosition = pointPicker.GetPickPosition()
         # print(pointPicker.GetPointId())
+        self.clickedLesionActor = None
         cellPicker = vtk.vtkCellPicker()
         cellPicker.SetTolerance(0.0005)
         cellPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
@@ -230,7 +285,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
 
-            if("lh" in str(itemType)):
+            if("lh" in str(itemType) and False):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
                 self.renMapOutcome.RemoveAllViewProps()
@@ -253,7 +308,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     self.renMapOutcome.AddActor(self.brodmannTextActor)
                     self.renMapOutcome.ResetCamera()
                     #self.timer.start(200)
-            if("rh" in str(itemType)):
+            if("rh" in str(itemType) and False):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
                 self.renMapOutcome.RemoveAllViewProps()
@@ -278,56 +333,62 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     self.renMapOutcome.ResetCamera()
                     #self.timer.start(200)
             
-            if itemType==None: # Itemtype is None for lesions. They only have Ids.
-                #self.timer.stop()
-                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
-                    self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
-                # Highlight the picked actor by changing its properties
-                self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-                self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-                self.NewPickedActor.GetProperty().SetSpecular(0.0)
+            #if itemType==None: # Itemtype is None for lesions. They only have Ids.
 
-                centerOfMassFilter = vtk.vtkCenterOfMass()
-                centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
-                #print(self.NewPickedActor.GetMapper().GetInput())
-                centerOfMassFilter.SetUseScalarsAsWeights(False)
-                centerOfMassFilter.Update()
 
-                self.centerOfMass = centerOfMassFilter.GetCenter()
+            if lesionID!=None and itemType==None:
+                self.mapLesionToText(lesionID, self.NewPickedActor)
+                # self.clickedLesionActor = self.NewPickedActor
+                # #self.timer.stop()
+                # if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
+                #     self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
+                # # Highlight the picked actor by changing its properties
+                # self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+                # self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                # self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
-                # Get slice numbers for setting the MPRs.
-                sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
-                
-                self.sliderA.setValue(sliceNumbers[2])
-                self.sliderB.setValue(sliceNumbers[1])
-                self.sliderC.setValue(sliceNumbers[0])
+                # centerOfMassFilter = vtk.vtkCenterOfMass()
+                # centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+                # #print(self.NewPickedActor.GetMapper().GetInput())
+                # centerOfMassFilter.SetUseScalarsAsWeights(False)
+                # centerOfMassFilter.Update()
 
-            if lesionID!=None:
-                self.overlayDataMain["Lesion ID"] = str(lesionID)
-                self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
-                #self.overlayDataMain["Selection Type"] = str(itemType)
-                self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
-                self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
-                self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
-                self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
-                self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
-                self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
-                self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
-                if (self.lesionSeededFiberTracts == True):
-                    actorCollection = self.GetDefaultRenderer().GetActors()
-                    for actor in actorCollection:
-                        actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
-                        if(actorName=="structural tracts"):
-                            self.GetDefaultRenderer().RemoveActor(actor)
+                # self.centerOfMass = centerOfMassFilter.GetCenter()
 
-                    #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
-                    lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
-                    streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
-                    information = vtk.vtkInformation()
-                    information.Set(self.informationKey,"structural tracts")
-                    streamActor.GetProperty().SetInformation(information)
-                    self.GetDefaultRenderer().AddActor(streamActor)
+                # # Get slice numbers for setting the MPRs.
+                # sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
+                # self.sliderA.setValue(sliceNumbers[2])
+                # self.sliderB.setValue(sliceNumbers[1])
+                # self.sliderC.setValue(sliceNumbers[0])
+
+                # print("picked lesion")
+
+                # self.lesionvis.userPickedLesion = lesionID
+                # self.overlayDataMain["Lesion ID"] = str(lesionID)
+                # self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+                # #self.overlayDataMain["Selection Type"] = str(itemType)
+                # self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
+                # self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
+                # self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
+                # self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
+                # self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
+                # self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
+                # self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
+                # if (self.lesionSeededFiberTracts == True):
+                #     actorCollection = self.GetDefaultRenderer().GetActors()
+                #     for actor in actorCollection:
+                #         actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
+                #         if(actorName=="structural tracts"):
+                #             self.GetDefaultRenderer().RemoveActor(actor)
+
+                #     #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
+                #     lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
+                #     streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
+                #     information = vtk.vtkInformation()
+                #     information.Set(self.informationKey,"structural tracts")
+                #     streamActor.GetProperty().SetInformation(information)
+                #     self.GetDefaultRenderer().AddActor(streamActor)
             else:
                 self.overlayDataMain["Lesion ID"] = "NA"
                 self.overlayDataMain["Centroid"] = "NA"
@@ -1133,13 +1194,69 @@ def setLegend(legendBox, legend, legendDistance, vis):
         legendDistance.SetEntrySymbol(1, legendBox.GetOutput())
         legendDistance.SetEntrySymbol(2, legendBox.GetOutput())
         legendDistance.SetEntrySymbol(3, legendBox.GetOutput())
-        legendDistance.SetEntryColor(0, [166/255,206/255,227/255])
-        legendDistance.SetEntryColor(1, [27/255,158/255,119/255])
-        legendDistance.SetEntryColor(2, [217/255,95/255,2/255])
-        legendDistance.SetEntryColor(3, [117/255,112/255,179/255])   
+        legendDistance.SetEntryColor(0, [254/255,237/255,222/255])
+        legendDistance.SetEntryColor(1, [253/255,190/255,133/255])
+        legendDistance.SetEntryColor(2, [253/255,141/255,60/255])
+        legendDistance.SetEntryColor(3, [217/255,71/255,1/255])   
         legendDistance.SetPosition(0.92, 0.01)     
         legendDistance.SetPosition2(0.08,0.1)
         legendDistance.BoxOff()
         legendDistance.BorderOff()
 
+'''
+##########################################################################
+    Compute lesion overlay data for the current modality (T1/T2/FLAIR)
+    Returns: Nothing
+##########################################################################
+'''
+def computeLesionOverlayData(fileName):
+    pass
         
+'''
+##########################################################################
+    extract a lesion overlay for the current slice.
+    Returns: Nothing
+##########################################################################
+'''
+def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, plane, planeOrigin, planeNormal):
+    reader2 = vtk.vtkNIFTIImageReader()
+    reader2.SetFileName(voxelCorrectedFileName)
+    reader2.Update()
+    #lesion = reader2.GetOutput()
+
+    mc.SetInputConnection(reader2.GetOutputPort())
+    mc.SetValue(0, 0.001)
+    mc.Update()
+    # lesionMapper = vtk.vtkPolyDataMapper()
+    # lesionMapper.SetInputConnection(mc.GetOutputPort())
+    # lesionMapper.ScalarVisibilityOff()
+    # lesionActor = vtk.vtkActor()
+    # lesionActor.SetMapper(lesionMapper)
+    # lesionActor.GetProperty().SetOpacity(.2)
+    # lesionActor.GetProperty().SetColor(.9, 0, 0)
+
+    #plane = vtk.vtkPlane()
+    # plane.SetOrigin(0,0,resliceImageViewer.GetSlice()+.75)
+    # plane.SetNormal(0, 0, 1)
+    plane.SetOrigin(planeOrigin)
+    plane.SetNormal(planeNormal)
+
+    cutter = vtk.vtkCutter()
+    cutter.SetCutFunction(plane)
+    cutter.SetInputConnection(mc.GetOutputPort())
+    cutter.Update()
+
+    tubes = vtk.vtkTubeFilter()
+    tubes.SetInputConnection(cutter.GetOutputPort())
+    tubes.SetRadius(2)
+    tubes.SetNumberOfSides(32)
+    tubes.CappingOn()
+
+    cutterMapper = vtk.vtkPolyDataMapper()
+    cutterMapper.SetInputConnection(tubes.GetOutputPort())
+
+    cutterActor = vtk.vtkActor()
+    cutterActor.GetProperty().SetColor(0,1,0)
+    cutterActor.SetMapper(cutterMapper)
+
+    return cutterActor

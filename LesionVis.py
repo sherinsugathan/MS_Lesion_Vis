@@ -51,6 +51,8 @@ class Ui(Qt.QMainWindow):
     # Main Initialization
     def __init__(self):
         super(Ui, self).__init__()
+        # Font initialization
+        print(QtGui.QFontDatabase.addApplicationFont("asset/GoogleSans-Regular.ttf"))
         # Needed for windows task bar icon
         myappid = u'mycompany.myproduct.subproduct.version' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -62,7 +64,7 @@ class Ui(Qt.QMainWindow):
         if appid is not None:
             print(appid)
         # End taskbar icon enable.
-        uic.loadUi("lesionui.ui", self)
+        uic.loadUi("asset\\lesionui.ui", self)
         logging.info('UI file loaded successfully.')
         self.dataFolderInitialized = False # Flag to indicate that the dataset folder is properly set.
         self.volumeDataLoaded = False # Flag to indicate that volume data is initialized and loaded.
@@ -112,9 +114,19 @@ class Ui(Qt.QMainWindow):
         self.mprC_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRC)
         self.horizontalSliderLesionFilter.valueChanged.connect(self.on_sliderChangedLesionFilter)
 
-        pm = Qt.QPixmap("fundAndSupportLogos.png")
-        self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
-        pmMain = Qt.QPixmap("AppLogo.png")
+        exeRootPath = os.path.dirname(os.path.abspath(__file__))
+        demoSubjectFolder = os.path.join(exeRootPath, "demoSubjectData")
+        if(os.path.isdir(demoSubjectFolder)):
+            self.lineEdit_DatasetFolder.setText(demoSubjectFolder)
+            self.comboBox_AvailableSubjects.clear()
+            dataFolders = [ name for name in os.listdir(demoSubjectFolder) if os.path.isdir(os.path.join(demoSubjectFolder, name)) ]
+            for dataFolderName in dataFolders:
+                self.comboBox_AvailableSubjects.addItem(dataFolderName)
+
+
+        #pm = Qt.QPixmap("icons\\fundAndSupportLogos.png")
+        #self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
+        pmMain = Qt.QPixmap("icons\\AppLogo.png")
         self.logoLabel.setPixmap(pmMain.scaled(self.logoLabel.size().width(), self.logoLabel.size().height(), 1,1))
 
     def onTimerEvent(self):
@@ -206,7 +218,8 @@ class Ui(Qt.QMainWindow):
         self.iren.SetRenderWindow(self.vtkWidget.GetRenderWindow())
 
         self.vtkWidgetMPRA.GetRenderWindow().AddRenderer(self.renMPRA)
-        self.iren_MPRA = self.vtkWidgetMPRA.GetRenderWindow().GetInteractor()
+        #self.iren_MPRA = self.vtkWidgetMPRA.GetRenderWindow().GetInteractor()
+        self.iren_MPRA = self.vtkWidgetMPRA
         self.vtkWidgetMPRB.GetRenderWindow().AddRenderer(self.renMPRB)
         self.iren_MPRB = self.vtkWidgetMPRB.GetRenderWindow().GetInteractor()
         self.vtkWidgetMPRC.GetRenderWindow().AddRenderer(self.renMPRC)
@@ -303,10 +316,11 @@ class Ui(Qt.QMainWindow):
         self.actorPropertiesMain = []
         self.actorPropertiesDual = []
 
-        self.style = LesionUtils.MouseInteractorHighLightActor(None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts, self.mprA_Slice_Slider, self.mprB_Slice_Slider, self.mprC_Slice_Slider)
+        self.style = LesionUtils.MouseInteractorHighLightActor(self, None, self.iren, self.overlayDataMain, self.textActorLesionStatistics, self.overlayDataGlobal, self.textActorGlobal, self.informationKey, self.informationUniqueKey, self.lesionSeededFiberTracts, self.mprA_Slice_Slider, self.mprB_Slice_Slider, self.mprC_Slice_Slider)
         self.style.SetDefaultRenderer(self.ren)
         self.style.brodmannTextActor = self.brodmannTextActor
         self.style.vtkWidget = self.vtkWidget
+        self.style.lesionvis = self
         self.style.renMapOutcome = self.renMapOutcome
         self.renMapOutcome.AddActor2D(self.brodmannTextActor)
         self.iren.SetInteractorStyle(self.style)
@@ -347,9 +361,31 @@ class Ui(Qt.QMainWindow):
         self.buttonGroupModes.setExclusive(True)
         self.buttonGroupModes.buttonClicked.connect(self.on_buttonGroupModesChanged)
 
+        self.overlayPlaneMPRA = vtk.vtkPlane()
+        #self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()+.75)
+        self.overlayPlaneMPRA.SetNormal(0, 0, 1)
+        self.mcfMPRA = vtk.vtkMarchingContourFilter()
+        
+        self.overlayPlaneMPRB = vtk.vtkPlane()
+        #self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
+        self.overlayPlaneMPRB.SetNormal(0, 0, 1)
+        self.mcfMPRB = vtk.vtkMarchingContourFilter()
+
+        self.overlayPlaneMPRC = vtk.vtkPlane()
+        #self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
+        self.overlayPlaneMPRC.SetNormal(0, 0, 1)
+        self.mcfMPRC = vtk.vtkMarchingContourFilter()
+
         self.lesionMapperDual = None
         self.twoDModeMapper = None
         self.activeMode = -2
+
+        self.iren_MPRA.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRA, 1)
+        self.iren_MPRA.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRA, 1)
+        self.iren_MPRB.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRB, 1)
+        self.iren_MPRB.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRB, 1)
+        self.iren_MPRC.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRC, 1)
+        self.iren_MPRC.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRC, 1)
 
         self.show()
         self.iren.Initialize()
@@ -367,8 +403,26 @@ class Ui(Qt.QMainWindow):
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
         self.overlayDataGlobal["OpenGL Renderer"] = openglRendererInUse
 
+    def select_sliceMPRA(self, caller, event):
+        """
+        This synchronizes our overlay plane
+        """
+        self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice())
+
+    def select_sliceMPRB(self, caller, event):
+        """
+        This synchronizes our overlay plane
+        """
+        self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()+.75,0)
+
+    def select_sliceMPRC(self, caller, event):
+        """
+        This synchronizes our overlay plane
+        """
+        self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()+.75,0,0)
+
     def ScrollSlice(self, obj, ev):
-        print("Before Event")
+        #print("Before Event")
         obj.OnMouseWheelForward()
 
     # Load and Render Structural data as image slices.
@@ -388,8 +442,10 @@ class Ui(Qt.QMainWindow):
             #     currentVolume = self.voxelSpaceCorrectedMask
             # else:
             #     currentVolume = self.currentSliceVolume
+
             blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
             range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
+            
             #print("RANGE", range[1], range[0])
 
             #self.window = (range[1] - range[0])/2.0
@@ -400,6 +456,7 @@ class Ui(Qt.QMainWindow):
             ################################
             # MPR A    #####################
             ################################
+
             self.resliceImageViewerMPRA.SetInputData(blendedVolume.GetOutput())
             self.resliceImageViewerMPRA.SetRenderWindow(self.vtkWidgetMPRA.GetRenderWindow())
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
@@ -409,7 +466,12 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRA.SetColorLevel(self.level)
             self.mprA_Slice_Slider.setMaximum(self.resliceImageViewerMPRA.GetSliceMax())
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
+            #self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()+.75)
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
+            #overlayActorMPRA = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRA, self.mcfMPRA, self.overlayPlaneMPRA, [0,0,self.resliceImageViewerMPRA.GetSlice()], [0,0,1])
+            #overlayActorMPRA.RotateZ(180)
+            #self.resliceImageViewerMPRA.GetRenderer().AddActor(overlayActorMPRA)
+
             # Define Interactor
             # #interactorMPRA = vtk.vtkInteractorStyleImage()
             # interactorMPRA = LesionUtils.MyMPRInteractorStyle()
@@ -418,12 +480,12 @@ class Ui(Qt.QMainWindow):
             # #interactorMPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
             # self.iren_MPRA.SetInteractorStyle(interactorMPRA)
             # #self.iren_MPRA.AddObserver("MouseWheelForwardEvent", self.ScrollSlice)
-            # #self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
+            #self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
             # #self.iren_MPRA.Initialize()
 
-            interactorMPRA = vtk.vtkInteractorStyleImage()
-            interactorMPRA.SetInteractionModeToImageSlicing()
-            self.iren_MPRA.SetInteractorStyle(interactorMPRA)
+            #interactorMPRA = vtk.vtkInteractorStyleImage()
+            #interactorMPRA.SetInteractionModeToImageSlicing()
+            #self.iren_MPRA.SetInteractorStyle(interactorMPRA)
             self.resliceImageViewerMPRA.SetupInteractor(self.iren_MPRA)
             
             ################################
@@ -433,16 +495,31 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRB.SetRenderWindow(self.vtkWidgetMPRB.GetRenderWindow())
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
+            self.resliceImageViewerMPRB.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRB.SetColorWindow(self.window)
             self.resliceImageViewerMPRB.SetColorLevel(self.level)
-            self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
+            #print(self.resliceImageViewerMPRB.GetResliceCursorWidget().GetResliceCursorRepresentation().GetPlaneSource().GetNormal())
+            
+
+
+            # rep = vtk.vtkResliceCursorRepresentation.SafeDownCast(self.resliceImageViewerMPRB.ResliceCursorWidget().GetRepresentation())
+            # planeOrientation = rep.GetCursorAlgorithm().GetReslicePlaneNormal()
+            # plane = this.GetResliceCursor().GetPlane(planeOrientation)
+            # print(plane)
+
+
+
+            #self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
             self.mprB_Slice_Slider.setMaximum(self.resliceImageViewerMPRB.GetSliceMax())
             self.resliceImageViewerMPRB.SetSlice(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
             self.mprB_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
+            #self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
+            #overlayActorMPRB = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRB, self.mcfMPRB, self.overlayPlaneMPRB, [0,self.resliceImageViewerMPRB.GetSlice()+.90,0], [0,1,0])
+            #self.resliceImageViewerMPRB.GetRenderer().AddActor(overlayActorMPRB)
             # Define Interactor
-            interactorMPRB = vtk.vtkInteractorStyleImage()
-            interactorMPRB.SetInteractionModeToImageSlicing()
-            self.iren_MPRB.SetInteractorStyle(interactorMPRB)
+            # interactorMPRB = vtk.vtkInteractorStyleImage()
+            # interactorMPRB.SetInteractionModeToImageSlicing()
+            # self.iren_MPRB.SetInteractorStyle(interactorMPRB)
             self.resliceImageViewerMPRB.SetupInteractor(self.iren_MPRB)
 
             ################################
@@ -459,10 +536,13 @@ class Ui(Qt.QMainWindow):
             self.resliceImageViewerMPRC.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRC.SetSlice(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
             self.mprC_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
+            #self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
+            #overlayActorMPRC = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRC, self.mcfMPRC, self.overlayPlaneMPRC,  [self.resliceImageViewerMPRC.GetSlice()+.75,0,0], [1,0,0])
+            #self.resliceImageViewerMPRC.GetRenderer().AddActor(overlayActorMPRC)
             # Define Interactor
-            interactorMPRC = vtk.vtkInteractorStyleImage()
-            interactorMPRC.SetInteractionModeToImageSlicing()
-            self.iren_MPRC.SetInteractorStyle(interactorMPRC)
+            # interactorMPRC = vtk.vtkInteractorStyleImage()
+            # interactorMPRC.SetInteractionModeToImageSlicing()
+            # self.iren_MPRC.SetInteractorStyle(interactorMPRC)
             self.resliceImageViewerMPRC.SetupInteractor(self.iren_MPRC)
 
             self.renMPRA.ResetCamera()
@@ -746,7 +826,7 @@ class Ui(Qt.QMainWindow):
         self.iren.Render()
 
     def updateLesionColorsDistance(self):
-        colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayDistMRI.pkl"
+        colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayDistMRI2.pkl"
         LesionUtils.loadColorFileAndAssignToLesions(colorFilePath, self.lesionActors)
         
         LesionUtils.setLegend(self.legendBox, self.legend, self.legendDistance, "distance")
@@ -780,6 +860,8 @@ class Ui(Qt.QMainWindow):
     ##########################################
     @pyqtSlot()
     def on_click_LoadData(self):
+        if(self.comboBox_AvailableSubjects.count() == 0):
+            return
         if(self.volumeDataLoaded==True):
             self.ren.RemoveVolume(self.volume) # Remove existing volume from scene.
             self.model_structural.removeRows(0,self.model_structural.rowCount())
@@ -946,6 +1028,8 @@ class Ui(Qt.QMainWindow):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRA.SetInput(str(self.mprA_Slice_Slider.value()))
         self.resliceImageViewerMPRA.SetSlice(self.mprA_Slice_Slider.value())
+        self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice())
+        #self.renMPRA.Render()
 
     # Handler for MPRB Slider change.
     @pyqtSlot()
@@ -953,6 +1037,7 @@ class Ui(Qt.QMainWindow):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRB.SetInput(str(self.mprB_Slice_Slider.value()))
         self.resliceImageViewerMPRB.SetSlice(self.mprB_Slice_Slider.value())
+        self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
 
     # Handler for MPRC Slider change.
     @pyqtSlot()
@@ -960,10 +1045,13 @@ class Ui(Qt.QMainWindow):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRC.SetInput(str(self.mprC_Slice_Slider.value()))
         self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
+        self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
 
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
     def on_sliderChangedLesionFilter(self):
+        if(self.comboBox_LesionFilter.currentIndex()==0):
+            return
         if(self.dataFolderInitialized == True):
             sliderValue = self.horizontalSliderLesionFilter.value()
             if (str(self.comboBox_LesionFilter.currentText())=="Voxel Count"):
@@ -1105,18 +1193,20 @@ class Ui(Qt.QMainWindow):
         if(self.activeMode == -4 and self.style != None):
             self.style.LastPickedActor = self.twoDModeMapper.customInteractorStyle.LastPickedActor
             self.style.LastPickedProperty = self.twoDModeMapper.customInteractorStyle.LastPickedProperty        
-        print("Loaded Main Mode")
+        #print("Loaded Main Mode")
 
     # Activate renderers in dual mode
     def activateDualMode(self):
         #self.actorPropertiesMain = LesionUtils.saveActorProperties(self.actors) # Save actor properties of main.
         #self.actorScalarPropertiesMain, self.actorScalarDataMain = LesionUtils.saveActorScalarDataProperties(self.actors)
+        #print("Activating dual mode")
         if(self.dualLoadedOnce==False):
             self.lesionMapperDual = LesionMapper(self)
             self.lesionMapperDual.ClearData()
             self.lesionMapperDual.AddData()
             self.dualLoadedOnce = True
             return
+
         for actor in self.actors:
             itemType = actor.GetProperty().GetInformation().Get(self.informationKey)
             if(itemType == None):
@@ -1137,7 +1227,7 @@ class Ui(Qt.QMainWindow):
 
     # Activate renderers in 2D mode
     def activate2DMode(self):
-        print(self.twoDModeLoadedOnce)
+        #print(self.twoDModeLoadedOnce)
         if(self.twoDModeLoadedOnce == False):
             #self.twoDModeMapper = TwoDModeMapper(self)
             self.twoDModeMapper.ClearData()
@@ -1249,7 +1339,7 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot(bool)
     def persistSettings_toggled(self, checkStatus):
         if (checkStatus == True):
-            print("Handle persist settings")
+            print("TODO: Handle persist settings")
 
     # Handler for reset camera pushbutton 
     @pyqtSlot()
@@ -1283,6 +1373,8 @@ class Ui(Qt.QMainWindow):
                     if(actorItem.GetProperty().GetInformation().Get(self.informationKey) != None):
                         if actorItem.GetProperty().GetInformation().Get(self.informationKey) in ["lh.pial", "lh.white", "rh.pial", "rh.white"]:
                             actorItem.GetMapper().ScalarVisibilityOff()
+                            actorItem.GetProperty().SetColor([161/255,217/255,155/255])
+
             if(self.dualLoadedOnce == True): # Update dual view also.
                 self.lesionMapperDual.Refresh()
             self.iren.Render()

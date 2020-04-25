@@ -31,6 +31,8 @@ class LesionMapper():
       self.textActorLesionImpact.SetTextProperty(self.textActorParcellation.GetTextProperty())
       self.textActorLesionImpact.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
       self.textActorLesionImpact.SetPosition(0.01, 1)
+      self.interactionStyleLeft = None
+      self.interactionStyleRight = None
 
   def leftCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualRight.Render()
@@ -142,6 +144,19 @@ class LesionMapper():
     self.lesionvis.renDualLeft.RemoveAllViewProps()
     self.lesionvis.renDualRight.RemoveAllViewProps()
 
+  def autoMapping(self, userPickedLesion, clickedLesionActor):
+      #self.interactionStyleLeft.
+      if(clickedLesionActor == None):
+          return
+      self.interactionStyleLeft.mapLesionToSurface(userPickedLesion, clickedLesionActor)
+      self.interactionStyleRight.mapLesionToSurface(userPickedLesion, clickedLesionActor)
+      self.interactionStyleLeft.LastPickedActor = clickedLesionActor
+      self.interactionStyleRight.LastPickedActor = clickedLesionActor
+
+#   def getActiveLesionActor(self):
+#       return self.int
+
+
   def Refresh(self):
       self.lesionvis.renDualLeft.Render()
       self.lesionvis.renDualRight.Render()
@@ -170,6 +185,70 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             if(lesionId in list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())):
                 impactString.append("LH-" + str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
         return impactString
+
+    def mapLesionToSurface(self, lesionID, NewPickedActor):
+        
+        self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
+        self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+        self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
+        self.lesionMapper.overlayDataMainLeftLesions["Elongation"] = "{0:.2f}".format(self.lesionvis.lesionElongation[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionPerimeter[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionvis.lesionSphericalRadius[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionSphericalPerimeter[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion Flatness"] = "{0:.2f}".format(self.lesionvis.lesionFlatness[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
+        self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
+        impactStringList = self.computeLesionImpact(lesionID)
+        functionListString = "\n"
+        for elemIndex in range(len(impactStringList)):
+            functionListString = functionListString + str(impactStringList[elemIndex]) + "\n"
+
+        self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
+        self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
+        
+        # Highlight the picked actor by changing its properties
+        NewPickedActor.GetMapper().ScalarVisibilityOff()
+        NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+        NewPickedActor.GetProperty().SetDiffuse(1.0)
+        NewPickedActor.GetProperty().SetSpecular(0.0)
+        vtk_colorsLh = vtk.vtkUnsignedCharArray()
+        vtk_colorsLh.SetNumberOfComponents(3)
+        vtk_colorsRh = vtk.vtkUnsignedCharArray()
+        vtk_colorsRh.SetNumberOfComponents(3)
+
+        clrGreen = [161,217,155]
+        clrRed = [227,74,51]
+
+        # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
+        numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
+        numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
+        vertexIndexArrayRh = np.arange(numberOfPointsRh)
+        vertexIndexArrayLh = np.arange(numberOfPointsLh)
+        affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+        affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+        lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+        lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+        for elem in lesionMappingRh:
+            if(elem==True):
+                vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+            else:
+                vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+        for elem in lesionMappingLh:
+            if(elem==True):
+                vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+            else:
+                vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+
+        self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
+        self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+        # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
+
+        #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
+        LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
+        LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -210,65 +289,71 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 self.lesionMapper.overlayDataMainRightParcellationImpact["Number of Lesions Influencing:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
                 self.lesionMapper.overlayDataMainRightParcellationImpact["Lesion IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
-                # Set overlay dictionary
-                self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
-                self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
-                self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
-                self.lesionMapper.overlayDataMainLeftLesions["Elongation"] = "{0:.2f}".format(self.lesionvis.lesionElongation[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionPerimeter[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionvis.lesionSphericalRadius[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionSphericalPerimeter[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion Flatness"] = "{0:.2f}".format(self.lesionvis.lesionFlatness[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
-                self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
-                impactStringList = self.computeLesionImpact(lesionID)
-                functionListString = "\n"
-                for elemIndex in range(len(impactStringList)):
-                    functionListString = functionListString + str(impactStringList[elemIndex]) + "\n"
+                self.mapLesionToSurface(lesionID, self.NewPickedActor)
+                self.lesionvis.userPickedLesion = lesionID
+                self.lesionvis.style.clickedLesionActor = self.NewPickedActor
+                # # Set overlay dictionary
+                # self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
+                # self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+                # self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
+                # self.lesionMapper.overlayDataMainLeftLesions["Elongation"] = "{0:.2f}".format(self.lesionvis.lesionElongation[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionPerimeter[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionvis.lesionSphericalRadius[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionSphericalPerimeter[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion Flatness"] = "{0:.2f}".format(self.lesionvis.lesionFlatness[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
+                # self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
+                # impactStringList = self.computeLesionImpact(lesionID)
+                # functionListString = "\n"
+                # for elemIndex in range(len(impactStringList)):
+                #     functionListString = functionListString + str(impactStringList[elemIndex]) + "\n"
 
-                self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
-                self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
+                # self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
+                # self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
                 
-                # Highlight the picked actor by changing its properties
-                self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-                self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-                self.NewPickedActor.GetProperty().SetSpecular(0.0)
-                vtk_colorsLh = vtk.vtkUnsignedCharArray()
-                vtk_colorsLh.SetNumberOfComponents(3)
-                vtk_colorsRh = vtk.vtkUnsignedCharArray()
-                vtk_colorsRh.SetNumberOfComponents(3)
+                # # Highlight the picked actor by changing its properties
+                # self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+                # self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                # self.NewPickedActor.GetProperty().SetSpecular(0.0)
+                # vtk_colorsLh = vtk.vtkUnsignedCharArray()
+                # vtk_colorsLh.SetNumberOfComponents(3)
+                # vtk_colorsRh = vtk.vtkUnsignedCharArray()
+                # vtk_colorsRh.SetNumberOfComponents(3)
 
-                clrGreen = [161,217,155]
-                clrRed = [227,74,51]
+                # clrGreen = [161,217,155]
+                # clrRed = [227,74,51]
 
-                # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
-                numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
-                numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
-                vertexIndexArrayRh = np.arange(numberOfPointsRh)
-                vertexIndexArrayLh = np.arange(numberOfPointsLh)
-                affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
-                affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
-                lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
-                lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-                for elem in lesionMappingRh:
-                    if(elem==True):
-                        vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                    else:
-                        vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                for elem in lesionMappingLh:
-                    if(elem==True):
-                        vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                    else:
-                        vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
-                self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
-                # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
+                # # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
+                # numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
+                # numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
+                # vertexIndexArrayRh = np.arange(numberOfPointsRh)
+                # vertexIndexArrayLh = np.arange(numberOfPointsLh)
+                # affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+                # affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+                # lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+                # lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+                # for elem in lesionMappingRh:
+                #     if(elem==True):
+                #         vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                #     else:
+                #         vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                # for elem in lesionMappingLh:
+                #     if(elem==True):
+                #         vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+                #     else:
+                #         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
 
-                #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
-                LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
-                LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
+                # self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
+                # self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+                # self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
+                # self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+                # # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
+
+                # #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
+                # LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
+                # LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
             
             LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainRightParcellationImpact, self.lesionMapper.textActorParcellation)
              
