@@ -857,6 +857,12 @@ border-radius: 10px;</string>
     </item>
     <item row="0" column="0">
      <widget class="QGroupBox" name="groupBox">
+      <property name="minimumSize">
+       <size>
+        <width>250</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>250</width>
