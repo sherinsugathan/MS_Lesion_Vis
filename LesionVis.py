@@ -52,7 +52,7 @@ class Ui(Qt.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         # Font initialization
-        print(QtGui.QFontDatabase.addApplicationFont("asset/GoogleSans-Regular.ttf"))
+        QtGui.QFontDatabase.addApplicationFont("asset/GoogleSans-Regular.ttf")
         # Needed for windows task bar icon
         myappid = u'mycompany.myproduct.subproduct.version' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -84,6 +84,7 @@ class Ui(Qt.QMainWindow):
 
     # Initialize the UI.    
     def initUI(self):
+        vtk.vtkObject.GlobalWarningDisplayOff() # Supress warnings.
         self.pushButton_LoadFolder.clicked.connect(self.on_click_browseFolder) # Attaching button click Handlers
         self.pushButton_LoadData.clicked.connect(self.on_click_LoadData) # Attaching button click Handlers for load surfaces.
         self.pushButton_LoadStructural.clicked.connect(self.on_click_LoadStructural) # Attaching button click Handlers for load structural brain volumes.
@@ -368,17 +369,18 @@ class Ui(Qt.QMainWindow):
         
         self.overlayPlaneMPRB = vtk.vtkPlane()
         #self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
-        self.overlayPlaneMPRB.SetNormal(0, 0, 1)
+        self.overlayPlaneMPRB.SetNormal(0, 1, 0)
         self.mcfMPRB = vtk.vtkMarchingContourFilter()
 
         self.overlayPlaneMPRC = vtk.vtkPlane()
         #self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
-        self.overlayPlaneMPRC.SetNormal(0, 0, 1)
+        self.overlayPlaneMPRC.SetNormal(1, 0, 0)
         self.mcfMPRC = vtk.vtkMarchingContourFilter()
 
         self.lesionMapperDual = None
         self.twoDModeMapper = None
         self.activeMode = -2
+        self.streamlineComputed = False
 
         self.iren_MPRA.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRA, 1)
         self.iren_MPRA.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRA, 1)
@@ -407,23 +409,27 @@ class Ui(Qt.QMainWindow):
         """
         This synchronizes our overlay plane
         """
-        self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice())
+        #self.overlayPlaneMPRA.SetOrigin(0, 0, self.resliceImageViewerMPRA.GetSlice()*self.spacing[2])
+        #self.sliceNumberTextMPRA.SetInput(str(self.resliceImageViewerMPRA.GetSlice()))
+        self.mprA_Slice_Slider.setValue(self.resliceImageViewerMPRA.GetSlice())
 
     def select_sliceMPRB(self, caller, event):
         """
         This synchronizes our overlay plane
         """
-        self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()+.75,0)
+        #self.overlayPlaneMPRB.SetOrigin(0, self.resliceImageViewerMPRB.GetSlice()*self.spacing[1], 0)
+        self.mprB_Slice_Slider.setValue(self.resliceImageViewerMPRB.GetSlice())
 
     def select_sliceMPRC(self, caller, event):
         """
         This synchronizes our overlay plane
         """
-        self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()+.75,0,0)
+        #self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0], 0, 0)
+        self.mprC_Slice_Slider.setValue(self.resliceImageViewerMPRC.GetSlice())
 
-    def ScrollSlice(self, obj, ev):
-        #print("Before Event")
-        obj.OnMouseWheelForward()
+    # def ScrollSlice(self, obj, ev):
+    #     #print("Before Event")
+    #     obj.OnMouseWheelForward()
 
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, subjectFolder, modality, IsOverlayEnabled = False):
@@ -432,10 +438,12 @@ class Ui(Qt.QMainWindow):
             fileNameOverlay = subjectFolder + "\\lesionMask\\ConnectedComponents"+modality+"VoxelSpaceCorrected.nii"
             self.niftyReaderT1.SetFileName(fileName)
             self.niftyReaderT1.Update()
-            self.currentSliceVolume.SetFileName(fileName)
-            self.currentSliceVolume.Update()
-            self.voxelSpaceCorrectedMask.SetFileName(fileNameOverlay)
-            self.voxelSpaceCorrectedMask.Update()
+            #self.currentSliceVolume.SetFileName(fileName)
+            #self.currentSliceVolume.Update()
+            #self.voxelSpaceCorrectedMask.SetFileName(fileNameOverlay)
+            #self.voxelSpaceCorrectedMask.Update()
+
+            self.spacing = self.niftyReaderT1.GetDataSpacing()
 
             # currentVolume = None
             # if(IsOverlayEnabled == True):
@@ -443,8 +451,8 @@ class Ui(Qt.QMainWindow):
             # else:
             #     currentVolume = self.currentSliceVolume
 
-            blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
-            range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
+            #blendedVolume = LesionUtils.computeVolumeMaskBlend(self.currentSliceVolume, self.voxelSpaceCorrectedMask, 0.5)
+            #range = self.currentSliceVolume.GetOutput().GetPointData().GetScalars().GetRange()
             
             #print("RANGE", range[1], range[0])
 
@@ -457,20 +465,21 @@ class Ui(Qt.QMainWindow):
             # MPR A    #####################
             ################################
 
-            self.resliceImageViewerMPRA.SetInputData(blendedVolume.GetOutput())
+            self.resliceImageViewerMPRA.SetInputData(self.niftyReaderT1.GetOutput())
             self.resliceImageViewerMPRA.SetRenderWindow(self.vtkWidgetMPRA.GetRenderWindow())
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
             self.resliceImageViewerMPRA.SetSliceOrientation(2)
-            self.resliceImageViewerMPRA.SliceScrollOnMouseWheelOn()
+            #self.resliceImageViewerMPRA.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRA.SetColorWindow(self.window)
             self.resliceImageViewerMPRA.SetColorLevel(self.level)
             self.mprA_Slice_Slider.setMaximum(self.resliceImageViewerMPRA.GetSliceMax())
             self.resliceImageViewerMPRA.SetSlice(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
-            #self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()+.75)
             self.mprA_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRA.GetSliceMin()+self.resliceImageViewerMPRA.GetSliceMax())/2))
-            #overlayActorMPRA = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRA, self.mcfMPRA, self.overlayPlaneMPRA, [0,0,self.resliceImageViewerMPRA.GetSlice()], [0,0,1])
-            #overlayActorMPRA.RotateZ(180)
-            #self.resliceImageViewerMPRA.GetRenderer().AddActor(overlayActorMPRA)
+
+            self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()*self.spacing[2])
+            overlayActorMPRA = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRA, self.mcfMPRA, self.overlayPlaneMPRA)
+            overlayActorMPRA.RotateZ(180)
+            self.resliceImageViewerMPRA.GetRenderer().AddActor(overlayActorMPRA)
 
             # Define Interactor
             # #interactorMPRA = vtk.vtkInteractorStyleImage()
@@ -491,31 +500,20 @@ class Ui(Qt.QMainWindow):
             ################################
             # MPR B    #####################
             ################################
-            self.resliceImageViewerMPRB.SetInputData(blendedVolume.GetOutput())
+            self.resliceImageViewerMPRB.SetInputData(self.niftyReaderT1.GetOutput())
             self.resliceImageViewerMPRB.SetRenderWindow(self.vtkWidgetMPRB.GetRenderWindow())
             self.resliceImageViewerMPRB.SetRenderer(self.renMPRB)
             self.resliceImageViewerMPRB.SetSliceOrientation(1)
-            self.resliceImageViewerMPRB.SliceScrollOnMouseWheelOn()
+            #self.resliceImageViewerMPRB.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRB.SetColorWindow(self.window)
             self.resliceImageViewerMPRB.SetColorLevel(self.level)
-            #print(self.resliceImageViewerMPRB.GetResliceCursorWidget().GetResliceCursorRepresentation().GetPlaneSource().GetNormal())
-            
-
-
-            # rep = vtk.vtkResliceCursorRepresentation.SafeDownCast(self.resliceImageViewerMPRB.ResliceCursorWidget().GetRepresentation())
-            # planeOrientation = rep.GetCursorAlgorithm().GetReslicePlaneNormal()
-            # plane = this.GetResliceCursor().GetPlane(planeOrientation)
-            # print(plane)
-
-
-
-            #self.resliceImageViewerMPRB.SetResliceModeToAxisAligned()
             self.mprB_Slice_Slider.setMaximum(self.resliceImageViewerMPRB.GetSliceMax())
             self.resliceImageViewerMPRB.SetSlice(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
             self.mprB_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRB.GetSliceMin() + self.resliceImageViewerMPRB.GetSliceMax())/2))
-            #self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
-            #overlayActorMPRB = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRB, self.mcfMPRB, self.overlayPlaneMPRB, [0,self.resliceImageViewerMPRB.GetSlice()+.90,0], [0,1,0])
-            #self.resliceImageViewerMPRB.GetRenderer().AddActor(overlayActorMPRB)
+
+            self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()*self.spacing[1],0)
+            overlayActorMPRB = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRB, self.mcfMPRB, self.overlayPlaneMPRB)
+            self.resliceImageViewerMPRB.GetRenderer().AddActor(overlayActorMPRB)
             # Define Interactor
             # interactorMPRB = vtk.vtkInteractorStyleImage()
             # interactorMPRB.SetInteractionModeToImageSlicing()
@@ -526,19 +524,21 @@ class Ui(Qt.QMainWindow):
             # MPR C    #####################
             ################################
             self.resliceImageViewerMPRC.SetResliceModeToAxisAligned()
-            self.resliceImageViewerMPRC.SetInputData(blendedVolume.GetOutput())
+            self.resliceImageViewerMPRC.SetInputData(self.niftyReaderT1.GetOutput())
             self.resliceImageViewerMPRC.SetRenderWindow(self.vtkWidgetMPRC.GetRenderWindow())
             self.resliceImageViewerMPRC.SetRenderer(self.renMPRC)
             self.resliceImageViewerMPRC.SetSliceOrientation(0)
             self.resliceImageViewerMPRC.SetColorWindow(self.window)
             self.resliceImageViewerMPRC.SetColorLevel(self.level)
             self.mprC_Slice_Slider.setMaximum(self.resliceImageViewerMPRC.GetSliceMax())
-            self.resliceImageViewerMPRC.SliceScrollOnMouseWheelOn()
+            #self.resliceImageViewerMPRC.SliceScrollOnMouseWheelOn()
             self.resliceImageViewerMPRC.SetSlice(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
             self.mprC_Slice_Slider.setValue(math.ceil((self.resliceImageViewerMPRC.GetSliceMin()+self.resliceImageViewerMPRC.GetSliceMax())/2))
             #self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
-            #overlayActorMPRC = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRC, self.mcfMPRC, self.overlayPlaneMPRC,  [self.resliceImageViewerMPRC.GetSlice()+.75,0,0], [1,0,0])
-            #self.resliceImageViewerMPRC.GetRenderer().AddActor(overlayActorMPRC)
+
+            self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0],0,0)
+            overlayActorMPRC = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRC, self.mcfMPRC, self.overlayPlaneMPRC)
+            self.resliceImageViewerMPRC.GetRenderer().AddActor(overlayActorMPRC)
             # Define Interactor
             # interactorMPRC = vtk.vtkInteractorStyleImage()
             # interactorMPRC.SetInteractionModeToImageSlicing()
@@ -928,6 +928,9 @@ class Ui(Qt.QMainWindow):
             #self.axes.InteractiveOn()
         self.iren.Render()
 
+        self.streamlineComputed = False
+        self.pushButton_EnableFibers.setChecked(False)
+
         self.dataFolderInitialized=True
    
     # Handler for load structural data
@@ -1028,16 +1031,17 @@ class Ui(Qt.QMainWindow):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRA.SetInput(str(self.mprA_Slice_Slider.value()))
         self.resliceImageViewerMPRA.SetSlice(self.mprA_Slice_Slider.value())
-        self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice())
+        self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()*self.spacing[2])
         #self.renMPRA.Render()
 
     # Handler for MPRB Slider change.
     @pyqtSlot()
     def on_sliderChangedMPRB(self):
         # Setup the slide number text and add it to the renderer
+        
         self.sliceNumberTextMPRB.SetInput(str(self.mprB_Slice_Slider.value()))
         self.resliceImageViewerMPRB.SetSlice(self.mprB_Slice_Slider.value())
-        self.overlayPlaneMPRB.SetOrigin(0,0,self.resliceImageViewerMPRB.GetSlice()+.75)
+        self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()*self.spacing[1],0)
 
     # Handler for MPRC Slider change.
     @pyqtSlot()
@@ -1045,7 +1049,7 @@ class Ui(Qt.QMainWindow):
         # Setup the slide number text and add it to the renderer
         self.sliceNumberTextMPRC.SetInput(str(self.mprC_Slice_Slider.value()))
         self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
-        self.overlayPlaneMPRC.SetOrigin(0,0,self.resliceImageViewerMPRC.GetSlice()+.75)
+        self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0],0,0)
 
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
@@ -1352,8 +1356,14 @@ class Ui(Qt.QMainWindow):
     def fiberEnable_toggled(self, checkStatus):
         if (checkStatus == True):
             self.lesionSeededFiberTracts = True
+            if(self.streamlineComputed == False):
+                self.streamActors = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey)
+                self.streamlineComputed = True
         else:
+            #self.streamlineComputed = False
             self.lesionSeededFiberTracts = False
+            self.lesionMapperDual.ClearStreamlines()
+
 
     # Handler for parcellation display
     @pyqtSlot(bool)

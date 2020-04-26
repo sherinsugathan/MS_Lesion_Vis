@@ -1678,7 +1678,7 @@ font-weight: bold</string>
 
 .QComboBox::down-arrow {
 	border-width: 0px;
-    image: url(./downArrow.png);
+    image: url(icons/downArrow.png);
 }
 
 .QComboBox QAbstractItemView {

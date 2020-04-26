@@ -799,6 +799,33 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
 
     return lesionActors
 
+'''
+##########################################################################
+    Read streamlines multiblockdataset
+    Returns: streamline actors. (one actor = one lesion)
+##########################################################################
+'''
+def extractStreamlines(subjectFolder, informationKey):
+    streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
+    reader = vtk.vtkXMLMultiBlockDataReader()
+    reader.SetFileName(streamlineDataFilePath)
+    reader.Update()
+
+    streamlineActors = []
+    mb = reader.GetOutput()
+    # print("DATACOUNT" , mb.GetNumberOfBlocks())
+    for i in range(mb.GetNumberOfBlocks()):
+        polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
+        if polyData and polyData.GetNumberOfPoints():
+            streamlineMapper = vtk.vtkOpenGLPolyDataMapper()
+            streamlineMapper.SetInputData(polyData)
+            streamlineActor = vtk.vtkActor()
+            streamlineActor.SetMapper(streamlineMapper)
+            information = vtk.vtkInformation()
+            information.Set(informationKey,"structural tracts")
+            streamlineActor.GetProperty().SetInformation(information)
+            streamlineActors.append(streamlineActor)
+    return streamlineActors
 
 '''
 ##########################################################################
@@ -1218,15 +1245,17 @@ def computeLesionOverlayData(fileName):
     Returns: Nothing
 ##########################################################################
 '''
-def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, plane, planeOrigin, planeNormal):
+def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, plane):
     reader2 = vtk.vtkNIFTIImageReader()
     reader2.SetFileName(voxelCorrectedFileName)
     reader2.Update()
     #lesion = reader2.GetOutput()
 
     mc.SetInputConnection(reader2.GetOutputPort())
-    mc.SetValue(0, 0.001)
+    mc.SetValue(0, 0.1)
     mc.Update()
+
+    spacing = reader2.GetDataSpacing()
     # lesionMapper = vtk.vtkPolyDataMapper()
     # lesionMapper.SetInputConnection(mc.GetOutputPort())
     # lesionMapper.ScalarVisibilityOff()
@@ -1238,8 +1267,9 @@ def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, p
     #plane = vtk.vtkPlane()
     # plane.SetOrigin(0,0,resliceImageViewer.GetSlice()+.75)
     # plane.SetNormal(0, 0, 1)
-    plane.SetOrigin(planeOrigin)
-    plane.SetNormal(planeNormal)
+
+    #plane.SetOrigin(planeOrigin)
+    #plane.SetNormal(planeNormal)
 
     cutter = vtk.vtkCutter()
     cutter.SetCutFunction(plane)

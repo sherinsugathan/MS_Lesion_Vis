@@ -144,6 +144,11 @@ class LesionMapper():
     self.lesionvis.renDualLeft.RemoveAllViewProps()
     self.lesionvis.renDualRight.RemoveAllViewProps()
 
+  def ClearStreamlines(self):
+      if(self.interactionStyleLeft.currentActiveStreamlineActor!=None):
+        self.lesionvis.renDualLeft.RemoveActor(self.interactionStyleLeft.currentActiveStreamlineActor)
+        self.lesionvis.renDualLeft.Render()
+
   def autoMapping(self, userPickedLesion, clickedLesionActor):
       #self.interactionStyleLeft.
       if(clickedLesionActor == None):
@@ -170,10 +175,12 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,parent = None, lesionvis = None, lesionMapper = None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
+        self.AddObserver("PickEvent",self.pickEvent)
         self.lesionvis = lesionvis
         self.lesionMapper = lesionMapper
         self.LastPickedActor = None
         self.LastPickedProperty = vtk.vtkProperty()
+        self.currentActiveStreamlineActor = None
 
     def computeLesionImpact(self, lesionId):
         indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
@@ -250,6 +257,9 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
         LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
 
+    def pickEvent(self,obj,event):
+        print("pick event")
+
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
         picker = vtk.vtkPropPicker()
@@ -292,6 +302,14 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 self.mapLesionToSurface(lesionID, self.NewPickedActor)
                 self.lesionvis.userPickedLesion = lesionID
                 self.lesionvis.style.clickedLesionActor = self.NewPickedActor
+                # Display streamlines associated with the lesion
+                if(self.lesionvis.pushButton_EnableFibers.isChecked()==True):
+                    if(self.currentActiveStreamlineActor!=None):
+                        self.lesionvis.renDualLeft.RemoveActor(self.currentActiveStreamlineActor)
+                    streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
+                    self.lesionvis.renDualLeft.AddActor(streamlineActor)
+                    self.currentActiveStreamlineActor = streamlineActor
+
                 # # Set overlay dictionary
                 # self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
                 # self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
