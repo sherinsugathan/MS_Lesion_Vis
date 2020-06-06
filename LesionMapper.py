@@ -35,6 +35,7 @@ class LesionMapper():
       self.interactionStyleRight = None
 
   def leftCameraModifiedCallback(self,obj,event):
+      print("hello")
       self.lesionvis.iren_LesionMapDualRight.Render()
   def rightCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualLeft.Render()
@@ -114,12 +115,12 @@ class LesionMapper():
     legend.SetEntryTextProperty(overlayTextProperty)
     legendBox = vtk.vtkCubeSource()
     legendBox.Update()
-    legend.SetEntryString(0, "NORMAL AREA")
-    legend.SetEntryString(1, "LESION INFLUENCE AREA")
+    #legend.SetEntryString(0, "NORMAL AREA")
+    legend.SetEntryString(0, "LESION INFLUENCE AREA")
+    #legend.SetEntrySymbol(0, legendBox.GetOutput())
     legend.SetEntrySymbol(0, legendBox.GetOutput())
-    legend.SetEntrySymbol(1, legendBox.GetOutput())
-    legend.SetEntryColor(0, [161/255,217/255,155/255])
-    legend.SetEntryColor(1, [227/255,74/255,51/255])
+    #legend.SetEntryColor(0, [161/255,217/255,155/255])
+    legend.SetEntryColor(0, [227/255,74/255,51/255])
     legend.BoxOff()
     legend.BorderOff()
     # place legend in lower right
@@ -193,6 +194,12 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 impactString.append("LH-" + str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
         return impactString
 
+    def tintColor(self, clr, p=0.5):
+        r = 255 - int(p * (255 - clr[0]))
+        g = 255 - int(p * (255 - clr[1]))
+        b = 255 - int(p * (255 - clr[2]))
+        return [r,g,b]
+
     def mapLesionToSurface(self, lesionID, NewPickedActor):
         
         self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
@@ -236,16 +243,38 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-        for elem in lesionMappingRh:
-            if(elem==True):
+        # for elem in lesionMappingRh:
+        #     if(elem==True):
+        #         vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+        #     else:
+        #         #clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[]]["color"]
+        #         vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+        # for elem in lesionMappingLh:
+        #     if(elem==True):
+        #         vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
+        #     else:
+        #         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+
+        for vertexIndex in range(lesionMappingRh.size):
+            if(lesionMappingRh[vertexIndex] == True):
                 vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
             else:
-                vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-        for elem in lesionMappingLh:
-            if(elem==True):
+                if(self.lesionvis.labelsRh[vertexIndex] == -1):
+                    clrParcellationRh = [25,5,25]
+                else:
+                    clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
+                    lightClr = self.tintColor(clrParcellationRh, 0.2)
+                vtk_colorsRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+        for vertexIndex in range(lesionMappingLh.size):
+            if(lesionMappingLh[vertexIndex] == True):
                 vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
             else:
-                vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
+                if(self.lesionvis.labelsLh[vertexIndex] == -1):
+                    clrParcellationRh = [25,5,25]
+                else:
+                    clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
+                    lightClr = self.tintColor(clrParcellationLh, 0.2)
+                vtk_colorsLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
 
         self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
         self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
@@ -259,6 +288,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     def pickEvent(self,obj,event):
         print("pick event")
+        
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()

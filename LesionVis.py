@@ -52,7 +52,7 @@ class Ui(Qt.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         # Font initialization
-        QtGui.QFontDatabase.addApplicationFont("asset/GoogleSans-Regular.ttf")
+        QtGui.QFontDatabase.addApplicationFont("asset/Google Sans Bold.ttf")
         # Needed for windows task bar icon
         myappid = u'mycompany.myproduct.subproduct.version' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
