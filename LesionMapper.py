@@ -33,15 +33,14 @@ class LesionMapper():
       self.textActorLesionImpact.SetPosition(0.01, 1)
       self.interactionStyleLeft = None
       self.interactionStyleRight = None
+      print("done1")
 
   def leftCameraModifiedCallback(self,obj,event):
-      print("hello")
       self.lesionvis.iren_LesionMapDualRight.Render()
   def rightCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualLeft.Render()
       
   def AddData(self):
-    #print("Hello add")
     self.lesionvis.renDualRight.SetActiveCamera(self.lesionvis.renDualLeft.GetActiveCamera())
     self.interactionStyleLeft = LesionMappingInteraction(None, self.lesionvis, self)
     self.interactionStyleLeft.renderer = self.lesionvis.renDualLeft
@@ -50,9 +49,9 @@ class LesionMapper():
     self.interactionStyleRight = LesionMappingInteraction(None, self.lesionvis, self)
     self.interactionStyleRight.renderer = self.lesionvis.renDualRight
     self.lesionvis.iren_LesionMapDualRight.SetInteractorStyle(self.interactionStyleRight)
-
-    self.lesionvis.renDualLeft.AddObserver("EndEvent", self.leftCameraModifiedCallback)
-    self.lesionvis.renDualRight.AddObserver("EndEvent", self.rightCameraModifiedCallback)
+    # Sync cameras
+    self.lesionvis.renDualLeft.AddObserver("StartEvent", self.leftCameraModifiedCallback)
+    self.lesionvis.renDualRight.AddObserver("StartEvent", self.rightCameraModifiedCallback)
 
     for actor in self.lesionvis.actors:
         itemType = actor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
@@ -75,6 +74,7 @@ class LesionMapper():
     LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
     LesionUtils.setOverlayText(self.overlayDataMainRightParcellationImpact, self.textActorParcellation)
 
+    
     # load precomputed lesion properties
     self.structureInfoLh = None
     with open(self.lesionvis.subjectFolder + "\\parcellationLh.json") as fp: 
@@ -85,9 +85,13 @@ class LesionMapper():
         self.structureInfoRh = json.load(fp)
     self.parcellationsRhCount = len(self.structureInfoRh)
 
+
+
     self.parcellationAffectedPercentageLh = []
     self.parcellationLesionInfluenceCountLh = []
     self.parcellationAssociatedLesionsLh = []
+
+    
 
     for jsonElementIndex in list(self.structureInfoLh.keys()):
         for p in self.structureInfoLh[str(jsonElementIndex)]:
@@ -105,6 +109,8 @@ class LesionMapper():
             self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
             self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
 
+    
+
     # Add legend data
     legend = vtk.vtkLegendBoxActor()
     legend.SetNumberOfEntries(2)
@@ -115,12 +121,12 @@ class LesionMapper():
     legend.SetEntryTextProperty(overlayTextProperty)
     legendBox = vtk.vtkCubeSource()
     legendBox.Update()
-    #legend.SetEntryString(0, "NORMAL AREA")
-    legend.SetEntryString(0, "LESION INFLUENCE AREA")
-    #legend.SetEntrySymbol(0, legendBox.GetOutput())
+    legend.SetEntryString(0, "NORMAL AREA")
+    legend.SetEntryString(1, "LESION INFLUENCE AREA")
     legend.SetEntrySymbol(0, legendBox.GetOutput())
-    #legend.SetEntryColor(0, [161/255,217/255,155/255])
-    legend.SetEntryColor(0, [227/255,74/255,51/255])
+    legend.SetEntrySymbol(1, legendBox.GetOutput())
+    legend.SetEntryColor(0, [161/255,217/255,155/255])
+    legend.SetEntryColor(1, [227/255,74/255,51/255])
     legend.BoxOff()
     legend.BorderOff()
     # place legend in lower right
@@ -131,15 +137,25 @@ class LesionMapper():
     #legend.UseBackgroundOn()
     #egend.SetBackgroundColor(colors.GetColor3d("warm_grey"))
 
+    
+
     self.lesionvis.renDualRight.AddActor(legend)
     self.lesionvis.legend.SetPosition(0.8, 0.01)
     self.lesionvis.legend.SetPosition2(0.2,0.1)
     self.lesionvis.renDualLeft.AddActor(self.lesionvis.legend)
 
+    
+
     self.lesionvis.renDualLeft.ResetCamera()
     self.lesionvis.renDualRight.ResetCamera()
-    self.lesionvis.renDualLeft.Render()
+    
     self.lesionvis.renDualRight.Render()
+    print("done 2")
+    self.lesionvis.renDualLeft.Render()
+    
+    
+    
+    
 
   def ClearData(self):
     self.lesionvis.renDualLeft.RemoveAllViewProps()
