@@ -4,11 +4,14 @@
 import vtk
 from vtk.util.colors import tomato
 
+pathName = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\DTIDATA\\lesionMask\\"
+inputFileName = "Consensus.nii"
+outputFileName = "lesions.obj"
 
 niftiReader = vtk.vtkNIFTIImageReader()
 #niftiReader.SetFileName("C:\\T1.nii")
 #niftiReader.SetFileName("C:\\test2train_bb2_hard_seg.nii")
-niftiReader.SetFileName("D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DATA\\lesionMask\\ConnectedComponents.nii") # Set your lesion binary mask here.
+niftiReader.SetFileName(pathName + inputFileName) # Set your lesion binary mask here.
 niftiReader.Update()
 
 #loadFilePath = "C:\\SegmentedLesions.obj"
@@ -41,15 +44,15 @@ surface.Update()
 # writer.SetFileName("D:\\mask.vtp")
 # writer.Write()
 
-plyWriter = vtk.vtkPLYWriter()
-plyWriter.SetFileName("D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DATA\\lesionMask\\lesions.ply")
-plyWriter.SetInputData(surface.GetOutput())
-plyWriter.Write()
+# plyWriter = vtk.vtkPLYWriter()
+# plyWriter.SetFileName("D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DATA\\lesionMask\\lesions.ply")
+# plyWriter.SetInputData(surface.GetOutput())
+# plyWriter.Write()
 
-#objWriter = vtk.vtkOBJWriter()
-#objWriter.SetInputData(surface.GetOutput())
-#objWriter.SetFileName("D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DONE\\lesionMask\\lesions.obj")
-#objWriter.Write()
+objWriter = vtk.vtkOBJWriter()
+objWriter.SetInputData(surface.GetOutput())
+objWriter.SetFileName(pathName + outputFileName)
+objWriter.Write()
 
 #surfaceFilter = vtk.vtkDataSetSurfaceFilter()
 #surfaceFilter.SetInputConnection(reader.GetOutputPort())

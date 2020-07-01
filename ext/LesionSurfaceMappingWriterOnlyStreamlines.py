@@ -5,8 +5,16 @@ import json
 
 '''
 ##########################################################################
-    Compute streamlines using temperature scalars.
-    Returns: Nothing
+    Read fiber tract data for DTI and convert to tubes. (FOR DTI)
+    Returns: tube polydata
+##########################################################################
+'''
+
+
+'''
+##########################################################################
+    Compute streamlines using temperature scalars. (FOR NON_DTI)
+    Returns: tube polydata
 ##########################################################################
 '''
 def computeStreamlines(subjectFolder, lesionPointDataSet = None):

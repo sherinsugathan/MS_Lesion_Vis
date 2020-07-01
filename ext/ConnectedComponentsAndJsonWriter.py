@@ -5,9 +5,9 @@ import json
 import sys
 import argparse
 
-subjectRootFolder = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
-#listOfSubjects = ["01040VANE_DATA"]
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+subjectRootFolder = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
+listOfSubjects = ["DTIDATA"]
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 
 for subjectName in listOfSubjects:
     subjectFolder = subjectRootFolder + "\\" + subjectName
@@ -17,7 +17,8 @@ for subjectName in listOfSubjects:
     imageT1 = sitk.ReadImage(T1_fileName)
     
     # Lesion Mask data
-    lesionMask_FileName = subjectFolder + "\\lesionMask\\ConsensusResampled cropped.nii"
+    # lesionMask_FileName = subjectFolder + "\\lesionMask\\ConsensusResampled cropped.nii" # Enable this for non-DTI datasets
+    lesionMask_FileName = subjectFolder + "\\lesionMask\\Consensus.nii"
     imageLesionMask = sitk.ReadImage(lesionMask_FileName)
 
     if("integer" in imageLesionMask.GetPixelIDTypeAsString()):
@@ -25,10 +26,6 @@ for subjectName in listOfSubjects:
         castImageFilter = sitk.CastImageFilter()
         castImageFilter.SetOutputPixelType(sitk.sitkFloat32)
         imageLesionMask = castImageFilter.Execute(imageLesionMask)
-
-    # Temperature gradient
-    temperature_FileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
-    imageTemperature = sitk.ReadImage(lesionMask_FileName)
 
     # Binary threshold filter.
     binaryThresholdFilter = sitk.BinaryThresholdImageFilter()
