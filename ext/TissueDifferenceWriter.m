@@ -3,9 +3,9 @@ clear all;
 
 %maskVolumeFile = 'C:\\DATASET\\MS_dataset_Frank_ProcessReady\\OFAMS00014_DONE\\lesionMask\\test2train_bb2_hard_seg.nii';
 %niftyDataFile = 'C:\\DATASET\\MS_dataset_Frank_ProcessReady\\OFAMS00014_DONE\\structural\\T1.nii';
-maskVolumeFile = 'D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DATA\\lesionMask\\Consensus.nii';
-niftyDataFile = 'D:\\DATASET\\MS_SegmentationChallengeDataset\\01016SACH_DATA\\structural\\T1.nii';
-outputDataFile = 'C:/T1_LesionDifferencePlotted.nii'
+maskVolumeFile = 'D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\DTIDATA\\lesionMask\\Consensus.nii';
+niftyDataFile = 'D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\DTIDATA\\structural\\T1.nii';
+outputDataFile = 'D:/T1_LesionDifferencePlotted.nii'
 
 origin = [0 0 0]; datatype = 4;
 maskVolume = load_untouch_nii(maskVolumeFile);
@@ -21,9 +21,9 @@ mask(mask==255)=1;
 pixelData = niftyData.img;  % Read and use nifty data.
 outputData = niftyData.img;
 
-l=192;
-w=256;
-h=256;
+l=260;
+w=311;
+h=260;
 windowSize=5;
 windowElementCount = windowSize*windowSize*windowSize;
 padding = floor(windowSize/2);

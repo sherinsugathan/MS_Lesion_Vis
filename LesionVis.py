@@ -381,6 +381,7 @@ class Ui(Qt.QMainWindow):
         self.twoDModeMapper = None
         self.activeMode = -2
         self.streamlineComputed = False
+        self.dtiDataActive = True
 
         self.iren_MPRA.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRA, 1)
         self.iren_MPRA.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRA, 1)
@@ -404,6 +405,13 @@ class Ui(Qt.QMainWindow):
 
         openglRendererInUse = self.ren.GetRenderWindow().ReportCapabilities().splitlines()[1].split(":")[1].strip()
         self.overlayDataGlobal["OpenGL Renderer"] = openglRendererInUse
+
+
+    # Actvate controls after dataset is loaded.
+    def activateControls(self):
+        self.mprA_Slice_Slider.setEnabled(True)
+        self.mprB_Slice_Slider.setEnabled(True)
+        self.mprC_Slice_Slider.setEnabled(True)
 
     def select_sliceMPRA(self, caller, event):
         """
@@ -620,10 +628,11 @@ class Ui(Qt.QMainWindow):
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
                 self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
                 self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
-                self.lesionAverageLesionIntensityT2.append(p["AverageLesionIntensityT2"])
-                self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
-                self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
-                self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
+                if(self.dtiDataActive == False):
+                    self.lesionAverageLesionIntensityT2.append(p["AverageLesionIntensityT2"])
+                    self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
+                    self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
+                    self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
 
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
@@ -881,6 +890,10 @@ class Ui(Qt.QMainWindow):
 
         subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if subjectFolder:
+            if(LesionUtils.checkForDTIData(subjectFolder)):
+                self.dtiDataActive = True
+            else:
+                self.dtiDataActive = False
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
             self.renderData(subjectFiles, self.settings)  # Render the actual data
             # Initialize annotation data
@@ -930,7 +943,7 @@ class Ui(Qt.QMainWindow):
 
         self.streamlineComputed = False
         self.pushButton_EnableFibers.setChecked(False)
-
+        self.activateControls() # Activate applicable UI controls.
         self.dataFolderInitialized=True
    
     # Handler for load structural data
@@ -1357,7 +1370,7 @@ class Ui(Qt.QMainWindow):
         if (checkStatus == True):
             self.lesionSeededFiberTracts = True
             if(self.streamlineComputed == False):
-                self.streamActors = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey)
+                self.streamActors = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, self.dtiDataActive)
                 self.streamlineComputed = True
         else:
             #self.streamlineComputed = False

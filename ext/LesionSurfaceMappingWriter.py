@@ -103,6 +103,33 @@ def computeStreamlines(subjectFolder, lesionPointDataSet = None):
     # plyWriter.Write()
     return tubes.GetOutput()
 
+
+'''
+##########################################################################
+    Retrieve precomputed streamline bundles (for DTI datasets only)
+    Returns: Nothing
+##########################################################################
+'''
+def computeStreamlinesDTI(subjectFolder, lesionID):
+    streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
+    reader = vtk.vtkXMLMultiBlockDataReader()
+    reader.SetFileName(streamlineDataFilePath)
+    reader.Update()
+
+    mb = reader.GetOutput()
+    #print("DATACOUNT" , mb.GetNumberOfBlocks())
+
+    polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(lesionID))
+    if polyData and polyData.GetNumberOfPoints():
+        tubeFilter = vtk.vtkTubeFilter()
+        tubeFilter.SetInputData(polyData)
+        tubeFilter.SetRadius(0.5)
+        tubeFilter.SetNumberOfSides(50)
+        tubeFilter.Update()
+        return tubeFilter.GetOutput()
+    else:
+        return None
+
 '''
 ##########################################################################
     Extract lesions by processing labelled lesion mask data.
@@ -168,9 +195,12 @@ def extractLesions(subjectFolder, labelCount):
     Returns: Success :)
 ##########################################################################
 '''
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-#listOfSubjects = ["01016SACH_DATA"]
-rootPath = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+#dataType = "STRUCTURAL"
+listOfSubjects = ["DTIDATA"]
+dataType = "DTI"
+
+rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
 for subjectName in listOfSubjects:
     subjectFolder = rootPath + subjectName
     # Files
@@ -196,8 +226,8 @@ for subjectName in listOfSubjects:
     numberOfLesionElements = len(structureInfo)
 
     lesionActors = extractLesions(subjectFolder, numberOfLesionElements)
-
     numberOfLesionActors = len(lesionActors)
+
     if(numberOfLesionElements!=numberOfLesionElements):
         print("LESION COUNT MISMATCH. PREMATURE TERMINATION!")
 
@@ -205,7 +235,11 @@ for subjectName in listOfSubjects:
     for jsonElementIndex in (range(1,numberOfLesionElements+1)):
         # Compute streamlines.
         print("Processing:", subjectName, ",", str(jsonElementIndex), "/", str(numberOfLesionActors))
-        streamLinePolyData = computeStreamlines(subjectFolder, lesionActors[jsonElementIndex-1].GetMapper().GetInput())
+        streamLinePolyData = None
+        if(dataType == "STRUCTURAL"):
+            streamLinePolyData = computeStreamlines(subjectFolder, lesionActors[jsonElementIndex-1].GetMapper().GetInput())
+        if(dataType == "DTI"):
+            streamLinePolyData = computeStreamlinesDTI(subjectFolder, jsonElementIndex-1)
 
         streamerMapper = vtk.vtkPolyDataMapper()
         streamerMapper.SetInputData(streamLinePolyData)
@@ -403,31 +437,32 @@ for subjectName in listOfSubjects:
 
 
 print("COMPLETED SUCCESSFULLY")
-# # Display essentials
-# ren = vtk.vtkRenderer()
-# renWin = vtk.vtkRenderWindow()
-# renWin.AddRenderer(ren)
-# iren = vtk.vtkRenderWindowInteractor()
-# iren.SetRenderWindow(renWin)
-# # Add the actors to the renderer, set the background and size
-# #ren.AddActor(actorLh)
-# #ren.AddActor(actorRh)
-# # for actor in lesionActors:
-# #ren.AddActor(lesionActors[23])
 
-# #ren.AddActor(lesionStreamActorRh)
-# #ren.AddActor(lesionStreamActorLh)
+# Display essentials
+ren = vtk.vtkRenderer()
+renWin = vtk.vtkRenderWindow()
+renWin.AddRenderer(ren)
+iren = vtk.vtkRenderWindowInteractor()
+iren.SetRenderWindow(renWin)
+# Add the actors to the renderer, set the background and size
+#ren.AddActor(actorLh)
+#ren.AddActor(actorRh)
+# for actor in lesionActors:
+#ren.AddActor(lesionActors[23])
 
-# #ren.AddActor(streamerActor)
-# #ren.AddVolume(volume)
-# #ren.AddActor(actorStreamlines)
-# ren.SetBackground(0, 0, 0)
-# renWin.SetSize(800, 800)
-# iren.Initialize()
-# # We'll zoom in a little by accessing the camera and invoking a "Zoom"
-# # method on it.
-# ren.ResetCamera()
-# ren.GetActiveCamera().Zoom(1)
-# renWin.Render()
-# # Start the event loop.
-# iren.Start()
+#ren.AddActor(lesionStreamActorRh)
+#ren.AddActor(lesionStreamActorLh)
+
+ren.AddActor(streamerActor)
+#ren.AddVolume(volume)
+#ren.AddActor(actorStreamlines)
+ren.SetBackground(255, 0, 0)
+renWin.SetSize(800, 800)
+iren.Initialize()
+# We'll zoom in a little by accessing the camera and invoking a "Zoom"
+# method on it.
+ren.ResetCamera()
+ren.GetActiveCamera().Zoom(1)
+renWin.Render()
+# Start the event loop.
+iren.Start()

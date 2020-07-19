@@ -805,7 +805,7 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
     Returns: streamline actors. (one actor = one lesion)
 ##########################################################################
 '''
-def extractStreamlines(subjectFolder, informationKey):
+def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
     streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
     reader = vtk.vtkXMLMultiBlockDataReader()
     reader.SetFileName(streamlineDataFilePath)
@@ -817,10 +817,22 @@ def extractStreamlines(subjectFolder, informationKey):
     for i in range(mb.GetNumberOfBlocks()):
         polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
         if polyData and polyData.GetNumberOfPoints():
+            if(isDTIBundle == True):
+                tubeFilter = vtk.vtkTubeFilter()
+                tubeFilter.SetInputData(polyData)
+                tubeFilter.SetRadius(0.4)
+                tubeFilter.SetNumberOfSides(50)
+                tubeFilter.Update()
             streamlineMapper = vtk.vtkOpenGLPolyDataMapper()
-            streamlineMapper.SetInputData(polyData)
+            
+            if(isDTIBundle == True):
+                streamlineMapper.SetInputData(tubeFilter.GetOutput())
+            else:
+                streamlineMapper.SetInputData(polyData)
             streamlineActor = vtk.vtkActor()
             streamlineActor.SetMapper(streamlineMapper)
+            streamlineActor.GetMapper().ScalarVisibilityOff()
+            streamlineActor.GetProperty().SetColor(1.0,0.0,0.1)
             information = vtk.vtkInformation()
             information.Set(informationKey,"structural tracts")
             streamlineActor.GetProperty().SetInformation(information)
@@ -1290,3 +1302,12 @@ def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, p
     cutterActor.SetMapper(cutterMapper)
 
     return cutterActor
+
+    '''
+##########################################################################
+    Check if data folder contains DTI data
+    Returns: True if DTI data present; false otherwise
+##########################################################################
+'''
+def checkForDTIData(subjectFolder):
+    return os.path.isdir(subjectFolder + "/fibertracts")
