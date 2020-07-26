@@ -17,6 +17,8 @@ import LesionMapper
 from LesionMapper import LesionMapper
 import TwoDModeMapper
 from TwoDModeMapper import TwoDModeMapper
+import ReportsMapper
+from ReportsMapper import ReportsMapper
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 import nibabel as nib
 import numpy as np
@@ -74,7 +76,9 @@ class Ui(Qt.QMainWindow):
         logging.info('UI initialized successfully.')
         self.initVTK()
         
+
         self.showMaximized()
+        
         #self.message = "tick"
         #self.timer = QTimer()
         #self.timer.timeout.connect(self.onTimerEvent)
@@ -123,7 +127,6 @@ class Ui(Qt.QMainWindow):
             dataFolders = [ name for name in os.listdir(demoSubjectFolder) if os.path.isdir(os.path.join(demoSubjectFolder, name)) ]
             for dataFolderName in dataFolders:
                 self.comboBox_AvailableSubjects.addItem(dataFolderName)
-
 
         #pm = Qt.QPixmap("icons\\fundAndSupportLogos.png")
         #self.imageLabel.setPixmap(pm.scaled(self.imageLabel.size().width(), self.imageLabel.size().height(), 1,1))
@@ -359,6 +362,7 @@ class Ui(Qt.QMainWindow):
         self.buttonGroupModes.addButton(self.pushButton_NormalMode)
         self.buttonGroupModes.addButton(self.pushButton_DualMode)
         self.buttonGroupModes.addButton(self.pushButton_2DMode)
+        self.buttonGroupModes.addButton(self.pushButton_ReportsMode)
         self.buttonGroupModes.setExclusive(True)
         self.buttonGroupModes.buttonClicked.connect(self.on_buttonGroupModesChanged)
 
@@ -400,6 +404,9 @@ class Ui(Qt.QMainWindow):
 
         # Initialize 2d mapping mode
         self.twoDModeMapper = TwoDModeMapper(self)
+
+        # Initialize reports mapping mode
+        self.reportsMapper = ReportsMapper(self)
 
         self.imageLabel.hide()
 
@@ -880,6 +887,7 @@ class Ui(Qt.QMainWindow):
         self.dualLoadedOnce = False # Initialize Boolean indicating whether dual mode initialized atleast once.
         self.mainLoadedOnce = False # Initialize Boolean indicating whether main mode initialized atleast once.
         self.twoDModeLoadedOnce = False # Initialize Boolean indicating whether 2D mode initialized atleast once.
+        self.reportsModeLoadedOnce = False # Initialize Boolean indicating whether reports mode initialized atleast once.
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
@@ -1180,6 +1188,11 @@ class Ui(Qt.QMainWindow):
                 self.activate2DMode()
                 self.activeMode = -4
 
+            if(self.buttonGroupModes.checkedId() == -5): # Reports Mode
+                self.activateReportsMode()
+                self.stackedWidget_MainRenderers.setCurrentIndex(3)
+                self.activeMode = -5
+
             self.iren.Render()
 
     # Activate renderers in main mode
@@ -1257,6 +1270,13 @@ class Ui(Qt.QMainWindow):
         if(self.activeMode == -3 and self.twoDModeMapper != None):
             self.twoDModeMapper.customInteractorStyle.LastPickedActor = self.lesionMapperDual.interactionStyleLeft.LastPickedActor
             self.twoDModeMapper.customInteractorStyle.LastPickedProperty = self.lesionMapperDual.interactionStyleLeft.LastPickedProperty
+
+    # Activate renderers in Reports mode
+    def activateReportsMode(self):
+        print("Activated reports mode")
+        if(self.reportsModeLoadedOnce == False):
+            self.reportsMapper.AddData()
+            self.reportsModeLoadedOnce = True
 
 
     # Initialize mode buttons.
