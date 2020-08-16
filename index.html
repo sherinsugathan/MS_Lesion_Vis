@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+        <script type="text/javascript">
+            var backend = null;
+            var x = 6;
+            window.onload = function()
+            {
+                new QWebChannel(qt.webChannelTransport, function(channel) {
+                    backend = channel.objects.backend;
+                    backend.getRef(x, function(pyval) {
+                                        backend.printRef(pyval);
+                                        });
+
+                //var m = backend.getRef(68);
+                alert(backend.sherin);
+                //document.getElementById("mylabel").innerHTML = m.toString();
+                });
+
+            }
+        </script>
+    </head>
+    <body>
+        <label for="male" id="mylabel">Male</label>
+    </body>
+</html>

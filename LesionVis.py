@@ -102,6 +102,7 @@ class Ui(Qt.QMainWindow):
         self.pushButton_PersistSettings.toggled.connect(self.persistSettings_toggled) # Attaching button toggle handlers.
         self.pushButton_EnableFibers.toggled.connect(self.fiberEnable_toggled) # Attaching button toggle handlers.
         self.pushButton_ResetView.clicked.connect(self.on_click_ResetViews) # Attaching button click Handlers
+        self.pushButton_UpdateIntensityThreshold.clicked.connect(self.on_click_UpdateIntensityThreshold) # Attaching button click Handlers
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
 
@@ -118,6 +119,7 @@ class Ui(Qt.QMainWindow):
         self.mprB_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRB)
         self.mprC_Slice_Slider.valueChanged.connect(self.on_sliderChangedMPRC)
         self.horizontalSliderLesionFilter.valueChanged.connect(self.on_sliderChangedLesionFilter)
+        self.horizontalSliderIntensityThreshold.valueChanged.connect(self.on_sliderChangedIntensityThreshold)
 
         exeRootPath = os.path.dirname(os.path.abspath(__file__))
         demoSubjectFolder = os.path.join(exeRootPath, "demoSubjectData")
@@ -1072,6 +1074,14 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRC.SetSlice(self.mprC_Slice_Slider.value())
         self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0],0,0)
 
+    # Handler for Intensity Threshold Slider change.
+    @pyqtSlot()
+    def on_sliderChangedIntensityThreshold(self):
+        if(self.dataFolderInitialized == True):
+            sliderValue = self.horizontalSliderIntensityThreshold.value()
+            #self.label_IntensityThreshold.setText(str("{0:.2f}".format(sliderValue)))
+            self.label_IntensityThreshold.setText(str(sliderValue))
+
     # Handler for Lesion Filter Slider change.
     @pyqtSlot()
     def on_sliderChangedLesionFilter(self):
@@ -1377,6 +1387,13 @@ class Ui(Qt.QMainWindow):
     def persistSettings_toggled(self, checkStatus):
         if (checkStatus == True):
             print("TODO: Handle persist settings")
+
+    # Handler for updating intensity threshold.
+    @pyqtSlot()
+    def on_click_UpdateIntensityThreshold(self):
+        sliderValue = self.horizontalSliderIntensityThreshold.value()
+        LesionUtils.updateContinuousColorData(self.subjectFolder, int(sliderValue))
+        self.updateLesionColorsContinuous()
 
     # Handler for reset camera pushbutton 
     @pyqtSlot()

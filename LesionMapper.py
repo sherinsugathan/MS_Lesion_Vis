@@ -68,7 +68,7 @@ class LesionMapper():
     self.lesionvis.renDualLeft.AddActor2D(self.textActorLesionImpact)
     self.overlayDataMainLeftLesions = {"Lesion ID":"NA", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA"}
     self.overlayDataMainLeftLesionImpact = {"Lesion ID":"NA", "# Functions":"NA", "Affected Functions" : "NA"}
-    self.overlayDataMainRightParcellationImpact = {"Selected Brain Region:":"NA", "Lesion Influence:":"NA", "Number of Lesions Influencing:":"NA", "Lesion IDs:" : "NA"}
+    self.overlayDataMainRightParcellationImpact = {"SELECTED BRAIN REGION:":"NA", "LESION INFLUENCE ON SELECTED REGION:":"NA", "NUMBER OF INFLUENCING LESIONS:":"NA", "INFLUENCING LESION IDs:" : "NA"}
     
     LesionUtils.setOverlayText(self.overlayDataMainLeftLesions, self.textActorLesionStatistics)
     LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
@@ -334,16 +334,16 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
             if("lh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Selected Brain Region:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Lesion Influence:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Number of Lesions Influencing:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Lesion IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
+                self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
+                self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
+                self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
+                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
             if("rh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Selected Brain Region:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Lesion Influence:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Number of Lesions Influencing:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
-                self.lesionMapper.overlayDataMainRightParcellationImpact["Lesion IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
+                self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
+                self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
+                self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
+                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
                 self.mapLesionToSurface(lesionID, self.NewPickedActor)
                 self.lesionvis.userPickedLesion = lesionID
