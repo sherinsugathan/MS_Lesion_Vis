@@ -220,7 +220,7 @@ for subject in listOfSubjects:
         bundleIndex = bundleIndex + 1
     
     writer = vtk.vtkXMLMultiBlockDataWriter()
-    writer.SetFileName(subjectFolder + '\\surfaces\\streamlinesMultiBlockDataset.xml')
+    writer.SetFileName(subjectFolder + '\\surfaces\\streamlinesMultiBlockDatasetDTI.xml')
     writer.SetInputData(mb)
     writer.Write()
     print("Processed:", "BLOCKDATASET WRITE SUCCESS")

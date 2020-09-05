@@ -178,12 +178,12 @@ class Ui(Qt.QMainWindow):
         self.vl_LesionMapDualLeft.addWidget(self.vtkWidgetLesionMapDualLeft)
         self.vl_LesionMapDualRight.addWidget(self.vtkWidgetLesionMapDualRight)
 
-        self.vtkWidget.Initialize()
-        self.vtkWidgetMPRA.Initialize()
-        self.vtkWidgetMPRB.Initialize()
-        self.vtkWidgetMPRC.Initialize()
-        self.vtkWidgetLesionMapDualLeft.Initialize()
-        self.vtkWidgetLesionMapDualRight.Initialize()
+        # self.vtkWidget.Initialize()
+        # self.vtkWidgetMPRA.Initialize()
+        # self.vtkWidgetMPRB.Initialize()
+        # self.vtkWidgetMPRC.Initialize()
+        # self.vtkWidgetLesionMapDualLeft.Initialize()
+        # self.vtkWidgetLesionMapDualRight.Initialize()
 
         self.ren = vtk.vtkRenderer() # Renderer for volume
         self.renMapOutcome = vtk.vtkRenderer() # Renderer for displaying mapping outcomes.
@@ -238,9 +238,9 @@ class Ui(Qt.QMainWindow):
         self.resliceImageViewerMPRA = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRB = vtk.vtkResliceImageViewer()
         self.resliceImageViewerMPRC = vtk.vtkResliceImageViewer()
-        self.resliceImageViewerMPRA.GetImageActor().RotateZ(180)
-        #self.resliceImageViewerMPRB.GetImageActor().RotateY(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
-        #self.resliceImageViewerMPRC.GetImageActor().RotateX(90)  # Apply 90 degree rotation once to fix the viewer's nature to display data with wrong rotation (against convention).
+        #self.resliceImageViewerMPRA.GetImageActor().RotateZ(180)
+        self.resliceImageViewerMPRB.GetImageActor().RotateY(180)  # TODO: Currently hardcoded. Apply 180 degree rotation once to fix the view.
+        self.resliceImageViewerMPRC.GetImageActor().RotateX(180)  # TODO: Currently hardcoded. Apply 180 degree rotation once to fix the view.
         #self.renMPRB.ResetCamera() # Needed for making the camera look at the slice properly.
         #self.renMPRC.ResetCamera() # Needed for making the camera look at the slice properly.
 
@@ -495,7 +495,7 @@ class Ui(Qt.QMainWindow):
 
             self.overlayPlaneMPRA.SetOrigin(0,0,self.resliceImageViewerMPRA.GetSlice()*self.spacing[2])
             overlayActorMPRA = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRA, self.mcfMPRA, self.overlayPlaneMPRA)
-            overlayActorMPRA.RotateZ(180)
+            #overlayActorMPRA.RotateZ(180)
             self.resliceImageViewerMPRA.GetRenderer().AddActor(overlayActorMPRA)
 
             # Define Interactor
@@ -530,6 +530,7 @@ class Ui(Qt.QMainWindow):
 
             self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()*self.spacing[1],0)
             overlayActorMPRB = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRB, self.mcfMPRB, self.overlayPlaneMPRB)
+            overlayActorMPRB.RotateZ(180)
             self.resliceImageViewerMPRB.GetRenderer().AddActor(overlayActorMPRB)
             # Define Interactor
             # interactorMPRB = vtk.vtkInteractorStyleImage()
@@ -555,6 +556,7 @@ class Ui(Qt.QMainWindow):
 
             self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0],0,0)
             overlayActorMPRC = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRC, self.mcfMPRC, self.overlayPlaneMPRC)
+            overlayActorMPRC.RotateZ(180)
             self.resliceImageViewerMPRC.GetRenderer().AddActor(overlayActorMPRC)
             # Define Interactor
             # interactorMPRC = vtk.vtkInteractorStyleImage()
@@ -584,6 +586,9 @@ class Ui(Qt.QMainWindow):
         # Load data for MPRs.
         self.LoadStructuralSlices(self.subjectFolder, "T1", True)
         #self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1   # TODO : Remove this old UI element
+
+        # Clear combobox (mapping techniques)
+        self.comboBox_MappingTechnique.clear()
 
         self.actors = []
         self.lesionCentroids = []
@@ -642,6 +647,12 @@ class Ui(Qt.QMainWindow):
                     self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
                     self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
                     self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
+        
+        if(self.dtiDataActive == True):
+            self.comboBox_MappingTechnique.addItem("Diffusion")
+        self.comboBox_MappingTechnique.addItem("Heat Equation")  
+        self.comboBox_MappingTechnique.addItem("Signed Distance Map")
+
 
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 

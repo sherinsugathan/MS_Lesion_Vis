@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1498</width>
-    <height>1038</height>
+    <height>1040</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,181 +23,6 @@ color:white;</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_8">
-    <item row="0" column="1">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="3" column="0">
-       <widget class="QSlider" name="mprB_Slice_Slider">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">.QSlider::handle:vertical {
-    background: #ffffff;
-    border: 9px solid #467955;
-    height: 5px;
-    /*margin: -30px -30px;*/
-	border-radius: 10px;
-}
-
-.QSlider::groove:vertical {
-    border: 1px solid #262626;
-    width: 8px;
-    background: rgb(20, 52, 30);
-    margin: 0 0px;
-}</string>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QFrame" name="frame_MPRA">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>300</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QFrame" name="frame_MPRC">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>300</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QSlider" name="mprA_Slice_Slider">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">.QSlider::handle:vertical {
-    background: #ffffff;
-    border: 9px solid #467955;
-    height: 5px;
-    /*margin: -30px -30px;*/
-	border-radius: 10px;
-}
-
-.QSlider::groove:vertical {
-    border: 1px solid #262626;
-    width: 8px;
-    background: rgb(20, 52, 30);
-    margin: 0 0px;
-}</string>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="invertedAppearance">
-         <bool>false</bool>
-        </property>
-        <property name="tickInterval">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QSlider" name="mprC_Slice_Slider">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">.QSlider::handle:vertical {
-    background: #ffffff;
-    border: 9px solid #467955;
-    height: 5px;
-    /*margin: -30px -30px;*/
-	border-radius: 10px;
-}
-
-.QSlider::groove:vertical {
-    border: 1px solid #262626;
-    width: 8px;
-    background: rgb(20, 52, 30);
-    margin: 0 0px;
-}</string>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QFrame" name="frame_MPRB">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>300</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(6, 16, 9);
-border-color: rgb(20, 52, 30);
-border-style: solid;
-border-width: 2px;
-border-radius: 10px;</string>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item row="0" column="2">
      <widget class="QStackedWidget" name="stackedWidget_MainRenderers">
       <property name="minimumSize">
@@ -913,6 +738,181 @@ border-style: solid;
       </widget>
      </widget>
     </item>
+    <item row="0" column="1">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="3" column="0">
+       <widget class="QSlider" name="mprB_Slice_Slider">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">.QSlider::handle:vertical {
+    background: #ffffff;
+    border: 9px solid #467955;
+    height: 5px;
+    /*margin: -30px -30px;*/
+	border-radius: 10px;
+}
+
+.QSlider::groove:vertical {
+    border: 1px solid #262626;
+    width: 8px;
+    background: rgb(20, 52, 30);
+    margin: 0 0px;
+}</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QFrame" name="frame_MPRA">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(6, 16, 9);
+border-color: rgb(20, 52, 30);
+border-style: solid;
+border-width: 2px;
+border-radius: 10px;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QFrame" name="frame_MPRC">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(6, 16, 9);
+border-color: rgb(20, 52, 30);
+border-style: solid;
+border-width: 2px;
+border-radius: 10px;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSlider" name="mprA_Slice_Slider">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">.QSlider::handle:vertical {
+    background: #ffffff;
+    border: 9px solid #467955;
+    height: 5px;
+    /*margin: -30px -30px;*/
+	border-radius: 10px;
+}
+
+.QSlider::groove:vertical {
+    border: 1px solid #262626;
+    width: 8px;
+    background: rgb(20, 52, 30);
+    margin: 0 0px;
+}</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="tickInterval">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QSlider" name="mprC_Slice_Slider">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">.QSlider::handle:vertical {
+    background: #ffffff;
+    border: 9px solid #467955;
+    height: 5px;
+    /*margin: -30px -30px;*/
+	border-radius: 10px;
+}
+
+.QSlider::groove:vertical {
+    border: 1px solid #262626;
+    width: 8px;
+    background: rgb(20, 52, 30);
+    margin: 0 0px;
+}</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QFrame" name="frame_MPRB">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(6, 16, 9);
+border-color: rgb(20, 52, 30);
+border-style: solid;
+border-width: 2px;
+border-radius: 10px;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
     <item row="0" column="0">
      <widget class="QGroupBox" name="groupBox">
       <property name="minimumSize">
@@ -944,347 +944,7 @@ border-style: solid;</string>
        <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="36" column="1">
-        <widget class="QLabel" name="label_11">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-font: 11pt &quot;Google Sans&quot;;
-font-weight: bold</string>
-         </property>
-         <property name="text">
-          <string>GLOBAL SETTINGS</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QComboBox" name="comboBox_AvailableSubjects">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">.QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-
-    border-left-width: 0px;
-    border-left-color: darkgray;
-    border-left-style: solid; /* just a single line */
-    border-top-right-radius: 3px; /* same radius as the QComboBox */
-    border-bottom-right-radius: 3px;
-}
-
-.QComboBox::down-arrow {
-	border-width: 0px;
-    image: url(icons/downArrow.png);
-}
-
-.QComboBox QAbstractItemView {
-    border: 2px solid rgb(20, 52, 30);
-    selection-background-color: rgb(20, 52, 30);
-}
-
-.QComboBox{
-border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-}
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="label_2">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-font: 11pt &quot;Google Sans&quot;;
-font-weight: bold</string>
-         </property>
-         <property name="text">
-          <string>CHOOSE PATIENT DATA</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="23" column="1">
-        <widget class="QLabel" name="label_6">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-font: 11pt &quot;Google Sans&quot;;
-font-weight: bold</string>
-         </property>
-         <property name="text">
-          <string>CHOOSE FILTER PARAM</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="label">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-font: 11pt &quot;Google Sans&quot;;
-font-weight: bold</string>
-         </property>
-         <property name="text">
-          <string>CHOOSE PATIENT FOLDER</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="45" column="1">
-        <widget class="QPushButton" name="pushButton_Screenshot">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_Screenshot
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_Screenshot
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Capture Rendered Image</string>
-         </property>
-        </widget>
-       </item>
-       <item row="24" column="1">
-        <widget class="QComboBox" name="comboBox_LesionFilter">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">.QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-
-    border-left-width: 0px;
-    border-left-color: darkgray;
-    border-left-style: solid; /* just a single line */
-    border-top-right-radius: 3px; /* same radius as the QComboBox */
-    border-bottom-right-radius: 3px;
-}
-
-.QComboBox::down-arrow {
-	border-width: 0px;
-    image: url(icons/downArrow.png);
-}
-
-.QComboBox QAbstractItemView {
-    border: 2px solid rgb(20, 52, 30);
-    selection-background-color: rgb(20, 52, 30);
-}
-
-.QComboBox{
-border-color: rgb(20, 52, 30);
-color: rgb(149, 189, 149);
-border-style: solid;
-border-width: 2px;
-border-radius: 4px;
-}
-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="26" column="1">
-        <widget class="QSlider" name="horizontalSliderLesionFilter">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>10</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">.QSlider::handle:horizontal {
-    background: #ffffff;
-    border: 10px solid #467955;
-    /*height: 5px;*/
-	width: 1px;
-    /*margin: -30px -30px;*/
-	/*border-radius: 30px;*/
-}
-
-.QSlider::groove:horizontal {
-    border: 1px solid #262626;
-    /*width: 10px;*/
-    background: rgb(20, 52, 30);
-    /*margin: 0 12px;*/
-}</string>
-         </property>
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="35" column="1">
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="47" column="1">
-        <widget class="QLabel" name="imageLabel">
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>50</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignHCenter|Qt::AlignTop</set>
-         </property>
-        </widget>
-       </item>
-       <item row="41" column="1">
-        <widget class="QPushButton" name="pushButton_UpdateIntensityThreshold">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_UpdateIntensityThreshold
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_UpdateIntensityThreshold {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_UpdateIntensityThreshold
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Update Intensity Threshold</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="5" column="1">
-        <widget class="QPushButton" name="pushButton_LoadFolder">
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover#pushButton_LoadFolder
-{
-background-color: rgb(54, 113, 38);
-}
-QPushButton:pressed#pushButton_LoadFolder {background-color:rgb(143, 180,146);}
-QPushButton#pushButton_LoadFolder
-{
-background-color: rgb(10, 61, 29);
-color: rgb(161, 226, 158);
-border-style: outset;
-border-width: 2px;
-border-radius: 4px;
-border-color: rgb(29, 77, 43);
-font: bold 11px;
-padding: 6px;
-color: rgb(142, 255, 159);
-font: 9pt &quot;Google Sans&quot;;
-border-style: solid;
-}</string>
-         </property>
-         <property name="text">
-          <string>Browse...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="42" column="1">
+       <item row="44" column="1">
         <spacer name="verticalSpacer_6">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -1295,15 +955,18 @@ border-style: solid;
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>20</height>
+           <height>5</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item row="37" column="1">
+       <item row="36" column="1">
         <layout class="QGridLayout" name="gridLayout_12">
          <property name="bottomMargin">
           <number>0</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>12</number>
          </property>
          <item row="0" column="0">
           <widget class="QPushButton" name="pushButton_PersistSettings">
@@ -1466,20 +1129,65 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="34" column="1">
-        <widget class="Line" name="line">
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
+       <item row="22" column="1">
+        <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="8" column="1">
+        <widget class="QComboBox" name="comboBox_AvailableSubjects">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(icons/downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+}
+</string>
          </property>
         </widget>
        </item>
-       <item row="44" column="1">
+       <item row="46" column="1">
         <widget class="QPushButton" name="pushButton_ResetView">
          <property name="styleSheet">
           <string notr="true">QPushButton:hover#pushButton_ResetView
@@ -1504,6 +1212,287 @@ border-style: solid;
          </property>
          <property name="text">
           <string>Reset Views</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QPushButton" name="pushButton_LoadFolder">
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_LoadFolder
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_LoadFolder {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_LoadFolder
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Browse...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="34" column="1">
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="logoLabel">
+         <property name="minimumSize">
+          <size>
+           <width>220</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Google Sans</family>
+           <pointsize>16</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
+         </property>
+         <property name="text">
+          <string>MS EXPERIMENTOR</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="23" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>CHOOSE FILTER PARAM</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="24" column="1">
+        <widget class="QComboBox" name="comboBox_LesionFilter">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(icons/downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+}
+</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="35" column="1">
+        <widget class="QLabel" name="label_11">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>GLOBAL SETTINGS</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="45" column="1">
+        <widget class="QLabel" name="label_16">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>GLOBAL COMMANDS</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="27" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMin">
+           <property name="text">
+            <string>NA</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterCurrent">
+           <property name="text">
+            <string>NA</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_lesionFilterMax">
+           <property name="text">
+            <string>NA</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
+         </property>
+         <property name="text">
+          <string>CHOOSE PATIENT DATA</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="49" column="1">
+        <widget class="QLabel" name="imageLabel">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignHCenter|Qt::AlignTop</set>
          </property>
         </widget>
        </item>
@@ -1585,37 +1574,6 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="43" column="1">
-        <widget class="QLabel" name="label_16">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(149, 189, 149);
-font: 11pt &quot;Google Sans&quot;;
-font-weight: bold</string>
-         </property>
-         <property name="text">
-          <string>GLOBAL COMMANDS</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="22" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="lineEdit_DatasetFolder">
          <property name="minimumSize">
@@ -1649,21 +1607,304 @@ font-weight: bold</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="38" column="1">
+        <layout class="QGridLayout" name="gridLayout_14">
+         <property name="bottomMargin">
+          <number>0</number>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
+         <property name="verticalSpacing">
+          <number>0</number>
          </property>
-         <property name="sizeHint" stdset="0">
+         <item row="6" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Iso-Intensity Threshold</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_IntensityThreshold">
+               <property name="text">
+                <string>50</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="horizontalSliderIntensityThreshold">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>10</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: rgb(20, 52, 30);
+    /*margin: 0 12px;*/
+}</string>
+             </property>
+             <property name="value">
+              <number>50</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="invertedAppearance">
+              <bool>false</bool>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::NoTicks</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="6" column="3">
+          <widget class="QPushButton" name="pushButton_UpdateIntensityThreshold">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_UpdateIntensityThreshold
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_UpdateIntensityThreshold {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_UpdateIntensityThreshold
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+           </property>
+           <property name="text">
+            <string>Update</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="43" column="1">
+        <layout class="QGridLayout" name="gridLayout_15">
+         <item row="0" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Mapping Technique</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_MappingTechnique">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">.QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+.QComboBox::down-arrow {
+	border-width: 0px;
+    image: url(icons/downArrow.png);
+}
+
+.QComboBox QAbstractItemView {
+    border: 2px solid rgb(20, 52, 30);
+    selection-background-color: rgb(20, 52, 30);
+}
+
+.QComboBox{
+border-color: rgb(20, 52, 30);
+color: rgb(149, 189, 149);
+border-style: solid;
+border-width: 2px;
+border-radius: 4px;
+}
+</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="pushButton_MappingTechnique">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:hover#pushButton_MappingTechnique
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_MappingTechnique {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_MappingTechnique
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+           </property>
+           <property name="text">
+            <string>Update</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="26" column="1">
+        <widget class="QSlider" name="horizontalSliderLesionFilter">
+         <property name="maximumSize">
           <size>
-           <width>20</width>
-           <height>20</height>
+           <width>16777215</width>
+           <height>10</height>
           </size>
          </property>
-        </spacer>
+         <property name="styleSheet">
+          <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: rgb(20, 52, 30);
+    /*margin: 0 12px;*/
+}</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="47" column="1">
+        <widget class="QPushButton" name="pushButton_Screenshot">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover#pushButton_Screenshot
+{
+background-color: rgb(54, 113, 38);
+}
+QPushButton:pressed#pushButton_Screenshot {background-color:rgb(143, 180,146);}
+QPushButton#pushButton_Screenshot
+{
+background-color: rgb(10, 61, 29);
+color: rgb(161, 226, 158);
+border-style: outset;
+border-width: 2px;
+border-radius: 4px;
+border-color: rgb(29, 77, 43);
+font: bold 11px;
+padding: 6px;
+color: rgb(142, 255, 159);
+font: 9pt &quot;Google Sans&quot;;
+border-style: solid;
+}</string>
+         </property>
+         <property name="text">
+          <string>Capture Rendered Image</string>
+         </property>
+        </widget>
        </item>
        <item row="20" column="1">
         <layout class="QGridLayout" name="gridLayout_6">
@@ -1920,133 +2161,20 @@ border-style: solid;
          </item>
         </layout>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="logoLabel">
-         <property name="minimumSize">
-          <size>
-           <width>220</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Google Sans</family>
-           <pointsize>16</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
+       <item row="3" column="1">
+        <widget class="QLabel" name="label">
          <property name="styleSheet">
-          <string notr="true">font: 16pt &quot;Google Sans&quot;;</string>
+          <string notr="true">color: rgb(149, 189, 149);
+font: 11pt &quot;Google Sans&quot;;
+font-weight: bold</string>
          </property>
          <property name="text">
-          <string>MS EXPERIMENTOR</string>
+          <string>CHOOSE PATIENT FOLDER</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
-       </item>
-       <item row="27" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="spacing">
-          <number>6</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMin">
-           <property name="text">
-            <string>NA</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterCurrent">
-           <property name="text">
-            <string>NA</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_lesionFilterMax">
-           <property name="text">
-            <string>NA</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="39" column="1">
-        <layout class="QGridLayout" name="gridLayout_14">
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_IntensityThreshold">
-           <property name="text">
-            <string>50</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QSlider" name="horizontalSliderIntensityThreshold">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>10</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">.QSlider::handle:horizontal {
-    background: #ffffff;
-    border: 10px solid #467955;
-    /*height: 5px;*/
-	width: 1px;
-    /*margin: -30px -30px;*/
-	/*border-radius: 30px;*/
-}
-
-.QSlider::groove:horizontal {
-    border: 1px solid #262626;
-    /*width: 10px;*/
-    background: rgb(20, 52, 30);
-    /*margin: 0 12px;*/
-}</string>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::NoTicks</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>Iso-Intensity Threshold</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>

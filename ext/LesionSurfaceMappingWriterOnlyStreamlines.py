@@ -3,13 +3,6 @@ import numpy as np
 import math
 import json
 
-'''
-##########################################################################
-    Read fiber tract data for DTI and convert to tubes. (FOR DTI)
-    Returns: tube polydata
-##########################################################################
-'''
-
 
 '''
 ##########################################################################
@@ -176,8 +169,8 @@ def extractLesions(subjectFolder, labelCount):
     Returns: Success :)
 ##########################################################################
 '''
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-#listOfSubjects = ["01040VANE_DATA"]
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+listOfSubjects = ["DTIDATA"]
 rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
 for subjectName in listOfSubjects:
     subjectFolder = rootPath + subjectName

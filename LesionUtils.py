@@ -1436,3 +1436,22 @@ def updateContinuousColorData(subjectFolder, sliderVal):
         writeContFileName = subjectFolder + "\\surfaces\\colorArrayCont" + writeItem + ".pkl"
         with open(writeContFileName, "wb") as f:
             pickle.dump(colorList, f)
+
+'''
+##########################################################################
+    UNUSED FUNCTION > REMOVE IF REALLY NOT NEEDED. Update Color Data Values with new intensity Threshold
+    Returns: Nothing
+##########################################################################
+'''
+def renderActiveRenderer(lesionvis):
+    if(lesionvis.buttonGroupModes.checkedId() == -2): # Normal Mode
+        lesionvis.iren.Render()
+
+    if(lesionvis.buttonGroupModes.checkedId() == -3): # Dual Mode
+        lesionvis.iren_LesionMapDualLeft.Render()
+
+    if(lesionvis.buttonGroupModes.checkedId() == -4): # 2D Mode
+        pass #TODO IMPLEMENT AS NEEDED
+
+    if(lesionvis.buttonGroupModes.checkedId() == -5): # Reports Mode
+        pass #TODO IMPLEMENT AS NEEDED
