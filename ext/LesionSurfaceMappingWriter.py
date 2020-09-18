@@ -111,7 +111,7 @@ def computeStreamlines(subjectFolder, lesionPointDataSet = None):
 ##########################################################################
 '''
 def computeStreamlinesDTI(subjectFolder, lesionID):
-    streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
+    streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDatasetDTI.xml"
     reader = vtk.vtkXMLMultiBlockDataReader()
     reader.SetFileName(streamlineDataFilePath)
     reader.Update()
@@ -191,37 +191,15 @@ def extractLesions(subjectFolder, labelCount):
 
 '''
 ##########################################################################
-    MAIN SCRIPT
-    Returns: Success :)
+    Compute surface mapping and write to json file
+    Returns: none.
 ##########################################################################
 '''
-#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-#dataType = "STRUCTURAL"
-listOfSubjects = ["DTIDATA"]
-dataType = "DTI"
-
-rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
-for subjectName in listOfSubjects:
-    subjectFolder = rootPath + subjectName
-    # Files
-    #streamlinesFile = "D:\\streamlines.vtp"
-    surfaceFileLh = rootPath + subjectName + "\\surfaces\\lh.white.obj"
-    surfaceFileRh = rootPath + subjectName + "\\surfaces\\rh.white.obj"
-    translationFilePath = rootPath + subjectName + "\\meta\\cras.txt"
-    f = open(translationFilePath, "r")
-    t_vector = []
-    for t in f:
-        t_vector.append(t)
-    t_vector = list(map(float, t_vector))
-    transform = vtk.vtkTransform()
-    transform.PostMultiply()
-    transform.Translate(t_vector[0], t_vector[1], t_vector[2])
-    f.close()
-
+def computeAndWriteMapping(jsonPath, dataType):
     # load precomputed lesion properties
     data = {}
     structureInfo = None
-    with open(subjectFolder + "\\structure-def2.json") as fp: 
+    with open(jsonPath) as fp: # read source json file.
         structureInfo = json.load(fp)
     numberOfLesionElements = len(structureInfo)
 
@@ -257,7 +235,7 @@ for subjectName in listOfSubjects:
         spacing[2] = 0.5
         bounds = [0]*6
         streamLinePolyData.GetBounds(bounds)
-        print(bounds)
+        #print(bounds)
 
 
         streamLineVolumeImage = vtk.vtkImageData()
@@ -426,17 +404,56 @@ for subjectName in listOfSubjects:
         # Preparing JSON data
         for p in structureInfo[str(jsonElementIndex)]:
             lesionDataDict = p
-            lesionDataDict['AffectedPointIdsLh'] = mappingIndicesLh
-            lesionDataDict['AffectedPointIdsRh'] = mappingIndicesRh
+            if(dataType == "STRUCTURAL"):
+                lesionDataDict['AffectedPointIdsLh'] = mappingIndicesLh
+                lesionDataDict['AffectedPointIdsRh'] = mappingIndicesRh
+            if(dataType == "DTI"):
+                lesionDataDict['AffectedPointIdsLhDTI'] = mappingIndicesLh
+                lesionDataDict['AffectedPointIdsRhDTI'] = mappingIndicesRh
             data[jsonElementIndex]=[]
             data[jsonElementIndex].append(lesionDataDict) 
 
     with open(subjectFolder + '\\structure-def3.json', 'w') as fp:
         json.dump(data, fp, indent=4)
-    print("Processed:", subjectName, "JSON File FLUSH")
+    print("Processed:", subjectName, "JSON File FLUSH: ", dataType)
+    print("COMPLETED SUCCESSFULLY")
+
+'''
+##########################################################################
+    MAIN SCRIPT
+    Returns: Success :)
+##########################################################################
+'''
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+
+listOfSubjects = ["DTIDATA"]
+#dataType = "DTI"
+#dataType = "STRUCTURAL"
+
+rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
+for subjectName in listOfSubjects:
+    subjectFolder = rootPath + subjectName
+    # Files
+    #streamlinesFile = "D:\\streamlines.vtp"
+    surfaceFileLh = rootPath + subjectName + "\\surfaces\\lh.white.obj"
+    surfaceFileRh = rootPath + subjectName + "\\surfaces\\rh.white.obj"
+    translationFilePath = rootPath + subjectName + "\\meta\\cras.txt"
+    f = open(translationFilePath, "r")
+    t_vector = []
+    for t in f:
+        t_vector.append(t)
+    t_vector = list(map(float, t_vector))
+    transform = vtk.vtkTransform()
+    transform.PostMultiply()
+    transform.Translate(t_vector[0], t_vector[1], t_vector[2])
+    f.close()
 
 
-print("COMPLETED SUCCESSFULLY")
+    computeAndWriteMapping(subjectFolder + "\\structure-def2.json", "STRUCTURAL")
+    computeAndWriteMapping(subjectFolder + "\\structure-def3.json", "DTI")
+
+
+
 
 # Display essentials
 ren = vtk.vtkRenderer()
@@ -453,7 +470,8 @@ iren.SetRenderWindow(renWin)
 #ren.AddActor(lesionStreamActorRh)
 #ren.AddActor(lesionStreamActorLh)
 
-ren.AddActor(streamerActor)
+#ren.AddActor(streamerActor)
+
 #ren.AddVolume(volume)
 #ren.AddActor(actorStreamlines)
 ren.SetBackground(255, 0, 0)

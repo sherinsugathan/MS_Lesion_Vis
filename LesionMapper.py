@@ -33,7 +33,7 @@ class LesionMapper():
       self.textActorLesionImpact.SetPosition(0.01, 1)
       self.interactionStyleLeft = None
       self.interactionStyleRight = None
-      print("done1")
+      #print("done1")
 
   def leftCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualRight.Render()
@@ -61,7 +61,6 @@ class LesionMapper():
             actor.GetProperty().SetOpacity(1)
             self.lesionvis.renDualRight.AddActor(actor)
 
-
     # Add text actors
     self.lesionvis.renDualLeft.AddActor2D(self.textActorLesionStatistics)
     self.lesionvis.renDualRight.AddActor2D(self.textActorParcellation)
@@ -74,7 +73,6 @@ class LesionMapper():
     LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
     LesionUtils.setOverlayText(self.overlayDataMainRightParcellationImpact, self.textActorParcellation)
 
-    
     # load precomputed lesion properties
     self.structureInfoLh = None
     with open(self.lesionvis.subjectFolder + "\\parcellationLh.json") as fp: 
@@ -85,13 +83,9 @@ class LesionMapper():
         self.structureInfoRh = json.load(fp)
     self.parcellationsRhCount = len(self.structureInfoRh)
 
-
-
     self.parcellationAffectedPercentageLh = []
     self.parcellationLesionInfluenceCountLh = []
     self.parcellationAssociatedLesionsLh = []
-
-    
 
     for jsonElementIndex in list(self.structureInfoLh.keys()):
         for p in self.structureInfoLh[str(jsonElementIndex)]:
@@ -108,8 +102,6 @@ class LesionMapper():
             self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
             self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
             self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
-
-    
 
     # Add legend data
     legend = vtk.vtkLegendBoxActor()
@@ -137,23 +129,16 @@ class LesionMapper():
     #legend.UseBackgroundOn()
     #egend.SetBackgroundColor(colors.GetColor3d("warm_grey"))
 
-    
-
     self.lesionvis.renDualRight.AddActor(legend)
     self.lesionvis.legend.SetPosition(0.8, 0.01)
     self.lesionvis.legend.SetPosition2(0.2,0.1)
     self.lesionvis.renDualLeft.AddActor(self.lesionvis.legend)
 
-    
-
     self.lesionvis.renDualLeft.ResetCamera()
     self.lesionvis.renDualRight.ResetCamera()
     
     self.lesionvis.renDualRight.Render()
-    print("done 2")
     self.lesionvis.renDualLeft.Render()
-    
-    
     
     
 
@@ -175,9 +160,15 @@ class LesionMapper():
       self.interactionStyleLeft.LastPickedActor = clickedLesionActor
       self.interactionStyleRight.LastPickedActor = clickedLesionActor
 
-#   def getActiveLesionActor(self):
-#       return self.int
-
+  def updateMappingDisplay(self):
+      if(self.interactionStyleLeft.currentActiveStreamlineActor!=None):
+          self.lesionvis.renDualLeft.RemoveActor(self.interactionStyleLeft.currentActiveStreamlineActor)
+          streamlineActor = self.lesionvis.streamActors[int(self.interactionStyleLeft.currentLesionID)-1]
+          self.lesionvis.renDualLeft.AddActor(streamlineActor)
+          self.interactionStyleLeft.currentActiveStreamlineActor = streamlineActor
+      if(self.interactionStyleLeft.LastPickedActor!=None):
+          self.interactionStyleLeft.mapLesionToSurface(int(self.interactionStyleLeft.currentLesionID), self.interactionStyleLeft.LastPickedActor)
+          self.lesionvis.renDualLeft.Render() 
 
   def Refresh(self):
       self.lesionvis.renDualLeft.Render()
@@ -198,6 +189,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.LastPickedActor = None
         self.LastPickedProperty = vtk.vtkProperty()
         self.currentActiveStreamlineActor = None
+        self.currentLesionID = None
 
     def computeLesionImpact(self, lesionId):
         indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
@@ -255,8 +247,12 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
         vertexIndexArrayRh = np.arange(numberOfPointsRh)
         vertexIndexArrayLh = np.arange(numberOfPointsLh)
-        affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
-        affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+        if(self.lesionvis.mappingType == "Heat Equation"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+        if(self.lesionvis.mappingType == "Diffusion"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
         # for elem in lesionMappingRh:
@@ -331,6 +327,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+            self.currentLesionID = lesionID
 
             if("lh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
@@ -352,6 +349,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 if(self.lesionvis.pushButton_EnableFibers.isChecked()==True):
                     if(self.currentActiveStreamlineActor!=None):
                         self.lesionvis.renDualLeft.RemoveActor(self.currentActiveStreamlineActor)
+
                     streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
                     self.lesionvis.renDualLeft.AddActor(streamlineActor)
                     self.currentActiveStreamlineActor = streamlineActor
@@ -423,6 +421,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
              
             # save the last picked actor
             self.LastPickedActor = self.NewPickedActor
+
         
         self.OnLeftButtonDown()
         return

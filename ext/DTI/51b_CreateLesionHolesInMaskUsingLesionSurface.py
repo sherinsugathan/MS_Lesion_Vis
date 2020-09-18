@@ -1,3 +1,4 @@
+# This program create holes in nodif_brain_mask using the synthetic lesion Consensus mask.
 import vtk
 import numpy as np
 import os

@@ -146,7 +146,7 @@ for subject in listOfSubjects:
     # Fetch extracted Lesion actors
     lesionActors = extractLesions2(subjectFolder)
     # Read fiber tract data
-    fiberTractFileName = subjectFolder + "\\fibertracts\\mynewfiberdata10000.vtk"
+    fiberTractFileName = subjectFolder + "\\fibertracts\\mynewfiberdataHoles10000.vtk"
     readerFiberTract = vtk.vtkPolyDataReader()
     readerFiberTract.SetFileName(fiberTractFileName)
     readerFiberTract.Update()
@@ -220,7 +220,7 @@ for subject in listOfSubjects:
         bundleIndex = bundleIndex + 1
     
     writer = vtk.vtkXMLMultiBlockDataWriter()
-    writer.SetFileName(subjectFolder + '\\surfaces\\streamlinesMultiBlockDatasetDTI.xml')
+    writer.SetFileName(subjectFolder + '\\surfaces\\streamlinesMultiBlockDatasetDTI2.xml')
     writer.SetInputData(mb)
     writer.Write()
     print("Processed:", "BLOCKDATASET WRITE SUCCESS")

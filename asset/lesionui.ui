@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MuScLeVis v1.1.0 - Not For Clinical Use</string>
+   <string>MuScLeVis v2.0 - Not For Clinical Use</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -1080,6 +1080,9 @@ border-style: solid;
             <string>Enable Fiber</string>
            </property>
            <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
             <bool>true</bool>
            </property>
           </widget>

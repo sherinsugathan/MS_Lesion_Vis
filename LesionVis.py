@@ -104,6 +104,7 @@ class Ui(Qt.QMainWindow):
         self.pushButton_ResetView.clicked.connect(self.on_click_ResetViews) # Attaching button click Handlers
         self.pushButton_UpdateIntensityThreshold.clicked.connect(self.on_click_UpdateIntensityThreshold) # Attaching button click Handlers
         self.pushButton_Screenshot.clicked.connect(self.on_click_CaptureScreeshot) # Attaching button click Handlers
+        self.pushButton_MappingTechnique.clicked.connect(self.on_click_MappingTechnique) # Attaching button click Handlers
         self.comboBox_LesionFilter.currentTextChanged.connect(self.on_combobox_changed_LesionFilter) # Attaching handler for lesion filter combobox selection change.
 
         self.comboBox_LesionFilter.addItem("None")
@@ -290,6 +291,7 @@ class Ui(Qt.QMainWindow):
         self.textActorLesionStatistics = vtk.vtkTextActor()
         self.textActorGlobal = vtk.vtkTextActor()
         self.depthPeelingStatus = "Depth Peeling : Enabled"
+        self.mappingType = "Heat Equation"
         self.numberOfLesions = 0
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
@@ -475,8 +477,8 @@ class Ui(Qt.QMainWindow):
 
             #self.window = (range[1] - range[0])/2.0
             #self.level = range[0] + (self.window/2.0)
-            self.window = 400
-            self.level = 50
+            self.window = 1900
+            self.level = 250
             #print(window, level)
             ################################
             # MPR A    #####################
@@ -604,6 +606,8 @@ class Ui(Qt.QMainWindow):
         #self.lesionRegionNumberQuantized = []
         self.lesionAffectedPointIdsLh = []
         self.lesionAffectedPointIdsRh = []
+        self.lesionAffectedPointIdsLhDTI = []
+        self.lesionAffectedPointIdsRhDTI = []
         self.lesionAverageLesionIntensityT1 = []
         self.lesionAverageSuroundingIntensityT1 = []
         self.lesionAverageLesionIntensityT2 = []
@@ -640,6 +644,9 @@ class Ui(Qt.QMainWindow):
                 #self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
+                self.lesionAffectedPointIdsLhDTI.append(p["AffectedPointIdsLhDTI"])
+                self.lesionAffectedPointIdsRhDTI.append(p["AffectedPointIdsRhDTI"])
+
                 self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
                 self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
                 if(self.dtiDataActive == False):
@@ -648,8 +655,13 @@ class Ui(Qt.QMainWindow):
                     self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
                     self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
         
+        self.streamActorsHE = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, False)
+        self.streamActors = self.streamActorsHE
         if(self.dtiDataActive == True):
             self.comboBox_MappingTechnique.addItem("Diffusion")
+            self.mappingType = "Diffusion"
+            self.streamActorsDTI = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, True)
+            self.streamActors = self.streamActorsDTI
         self.comboBox_MappingTechnique.addItem("Heat Equation")  
         self.comboBox_MappingTechnique.addItem("Signed Distance Map")
 
@@ -963,7 +975,7 @@ class Ui(Qt.QMainWindow):
         self.iren.Render()
 
         self.streamlineComputed = False
-        self.pushButton_EnableFibers.setChecked(False)
+        self.pushButton_EnableFibers.setChecked(True) # default when data loaded.
         self.activateControls() # Activate applicable UI controls.
         self.dataFolderInitialized=True
    
@@ -1090,7 +1102,6 @@ class Ui(Qt.QMainWindow):
     def on_sliderChangedIntensityThreshold(self):
         if(self.dataFolderInitialized == True):
             sliderValue = self.horizontalSliderIntensityThreshold.value()
-            #self.label_IntensityThreshold.setText(str("{0:.2f}".format(sliderValue)))
             self.label_IntensityThreshold.setText(str(sliderValue))
 
     # Handler for Lesion Filter Slider change.
@@ -1381,6 +1392,21 @@ class Ui(Qt.QMainWindow):
             LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedRh.GetRenderWindow())
             LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedLh.GetRenderWindow())
 
+    # Handler for changing the mapping technique.
+    @pyqtSlot()
+    def on_click_MappingTechnique(self):
+        self.mappingType = str(self.comboBox_MappingTechnique.currentText())
+        if(self.mappingType == "Diffusion"):
+            self.streamActors = self.streamActorsDTI
+            if(self.dualLoadedOnce == True):
+                self.lesionMapperDual.updateMappingDisplay()
+        if(self.mappingType == "Heat Equation"):
+            self.streamActors = self.streamActorsHE
+            if(self.dualLoadedOnce == True):
+                self.lesionMapperDual.updateMappingDisplay()
+        if(self.mappingType == "Signed Distance Map"):
+            self.mappingType = "Signed Distance Map"
+
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)
     def depthpeel_toggled(self, checkStatus):
@@ -1415,16 +1441,10 @@ class Ui(Qt.QMainWindow):
     # Handler for per lesion analysis.
     @pyqtSlot(bool)
     def fiberEnable_toggled(self, checkStatus):
-        if (checkStatus == True):
-            self.lesionSeededFiberTracts = True
-            if(self.streamlineComputed == False):
-                self.streamActors = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, self.dtiDataActive)
-                self.streamlineComputed = True
+        if(checkStatus == True):
+            self.streamActors = self.streamActorsDTI
         else:
-            #self.streamlineComputed = False
-            self.lesionSeededFiberTracts = False
-            self.lesionMapperDual.ClearStreamlines()
-
+            if self.dualLoadedOnce: self.lesionMapperDual.ClearStreamlines() 
 
     # Handler for parcellation display
     @pyqtSlot(bool)

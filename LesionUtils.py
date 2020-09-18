@@ -807,14 +807,17 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
 ##########################################################################
 '''
 def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
-    streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
+    if(isDTIBundle == True):
+        streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDatasetDTI.xml"
+    else:
+        streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
     reader = vtk.vtkXMLMultiBlockDataReader()
     reader.SetFileName(streamlineDataFilePath)
     reader.Update()
 
     streamlineActors = []
     mb = reader.GetOutput()
-    # print("DATACOUNT" , mb.GetNumberOfBlocks())
+    #print("DATACOUNT" , mb.GetNumberOfBlocks())
     for i in range(mb.GetNumberOfBlocks()):
         polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
         if polyData and polyData.GetNumberOfPoints():
