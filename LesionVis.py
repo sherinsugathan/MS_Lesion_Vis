@@ -655,6 +655,7 @@ class Ui(Qt.QMainWindow):
                     self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
                     self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
         
+        self.LhMappingPolyData, self.RhMappingPolyData = LesionUtils.readDistanceMapPolyData(self.subjectFolder + "\\surfaces\\ProjectionSDM\\")
         self.streamActorsHE = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, False)
         self.streamActors = self.streamActorsHE
         if(self.dtiDataActive == True):
@@ -1405,7 +1406,9 @@ class Ui(Qt.QMainWindow):
             if(self.dualLoadedOnce == True):
                 self.lesionMapperDual.updateMappingDisplay()
         if(self.mappingType == "Signed Distance Map"):
-            self.mappingType = "Signed Distance Map"
+            self.streamActors = None
+            if(self.dualLoadedOnce == True):
+                self.lesionMapperDual.updateMappingDisplay()
 
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)

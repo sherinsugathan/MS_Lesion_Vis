@@ -1458,3 +1458,20 @@ def renderActiveRenderer(lesionvis):
 
     if(lesionvis.buttonGroupModes.checkedId() == -5): # Reports Mode
         pass #TODO IMPLEMENT AS NEEDED
+
+'''
+##########################################################################
+    Function to read the vtk files that stores signed distance map scalars for every lesion.
+    Returns: Polydata objects for both hemispheres.
+##########################################################################
+'''
+def readDistanceMapPolyData(dataFolder):
+    fileNameLh = dataFolder + "mappingLh.vtk"
+    fileNameRh = dataFolder + "mappingRh.vtk"
+    readerLh = vtk.vtkPolyDataReader()
+    readerLh.SetFileName(fileNameLh)
+    readerLh.Update()
+    readerRh = vtk.vtkPolyDataReader()
+    readerRh.SetFileName(fileNameRh)
+    readerRh.Update()
+    return readerLh.GetOutput(), readerRh.GetOutput()

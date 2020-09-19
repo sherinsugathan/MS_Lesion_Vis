@@ -163,9 +163,10 @@ class LesionMapper():
   def updateMappingDisplay(self):
       if(self.interactionStyleLeft.currentActiveStreamlineActor!=None):
           self.lesionvis.renDualLeft.RemoveActor(self.interactionStyleLeft.currentActiveStreamlineActor)
-          streamlineActor = self.lesionvis.streamActors[int(self.interactionStyleLeft.currentLesionID)-1]
-          self.lesionvis.renDualLeft.AddActor(streamlineActor)
-          self.interactionStyleLeft.currentActiveStreamlineActor = streamlineActor
+          if(self.lesionvis.streamActors!=None): # If Signed Distance Map
+            streamlineActor = self.lesionvis.streamActors[int(self.interactionStyleLeft.currentLesionID)-1]
+            self.lesionvis.renDualLeft.AddActor(streamlineActor)
+            self.interactionStyleLeft.currentActiveStreamlineActor = streamlineActor
       if(self.interactionStyleLeft.LastPickedActor!=None):
           self.interactionStyleLeft.mapLesionToSurface(int(self.interactionStyleLeft.currentLesionID), self.interactionStyleLeft.LastPickedActor)
           self.lesionvis.renDualLeft.Render() 
@@ -209,7 +210,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         return [r,g,b]
 
     def mapLesionToSurface(self, lesionID, NewPickedActor):
-        
         self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
         self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
         self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
@@ -234,6 +234,28 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
         NewPickedActor.GetProperty().SetDiffuse(1.0)
         NewPickedActor.GetProperty().SetSpecular(0.0)
+
+        if(self.lesionvis.mappingType == "Signed Distance Map"): #  If SDM, then directly map loaded scalars and return.
+            #self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
+            #self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+            self.lesionvis.LhMappingPolyData.GetPointData().SetActiveScalars("Distance" + str(int(lesionID)-1))
+            self.lesionvis.RhMappingPolyData.GetPointData().SetActiveScalars("Distance" + str(int(lesionID)-1))
+            #self.lesionvis.lhwhiteMapper.SetScalarRange(self.lesionvis.LhMappingPolyData.GetPointData().GetScalars().GetRange())
+            #self.lesionvis.rhwhiteMapper.SetScalarRange(self.lesionvis.RhMappingPolyData.GetPointData().GetScalars().GetRange())
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.LhMappingPolyData.GetPointData().GetScalars())
+            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.RhMappingPolyData.GetPointData().GetScalars())
+            ctf = vtk.vtkColorTransferFunction()
+            ctf.AddRGBPoint(0.0, 1.0, 0.0, 0.0)
+            ctf.AddRGBPoint(10, 0.5, 0.0, 0.0)
+            ctf.AddRGBPoint(15, 1, 1, 1)
+            ctf.AddRGBPoint(100, 1, 1 , 1)
+            self.lesionvis.lhwhiteMapper.SetLookupTable(ctf)
+            self.lesionvis.rhwhiteMapper.SetLookupTable(ctf)
+            LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
+            LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
+            return
+
+
         vtk_colorsLh = vtk.vtkUnsignedCharArray()
         vtk_colorsLh.SetNumberOfComponents(3)
         vtk_colorsRh = vtk.vtkUnsignedCharArray()
@@ -350,9 +372,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     if(self.currentActiveStreamlineActor!=None):
                         self.lesionvis.renDualLeft.RemoveActor(self.currentActiveStreamlineActor)
 
-                    streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
-                    self.lesionvis.renDualLeft.AddActor(streamlineActor)
-                    self.currentActiveStreamlineActor = streamlineActor
+                    if(self.lesionvis.streamActors != None): # Either diffusion or HE
+                        streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
+                        self.lesionvis.renDualLeft.AddActor(streamlineActor)
+                        self.currentActiveStreamlineActor = streamlineActor
+                    else: # Signed Distance Map is active
+                        pass
+                    
 
                 # # Set overlay dictionary
                 # self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
