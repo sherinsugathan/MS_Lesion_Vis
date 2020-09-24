@@ -59,7 +59,8 @@ def computeStreamlines(subjectFolder, lesionPointDataSet = None):
     #     streamers.SetInputConnection(transformFilter.GetOutputPort())
     # else:
     #     streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
-    streamers.SetIntegrationDirectionToForward()
+    #streamers.SetIntegrationDirectionToForward()
+    streamers.SetIntegrationDirectionToBoth()
     streamers.SetComputeVorticity(False)
     #streamers.SetSourceConnection(psource.GetOutputPort())
     streamers.SetSourceData(lesionPointDataSet)
@@ -199,7 +200,7 @@ for subjectName in listOfSubjects:
     lesionActors = extractLesions(subjectFolder, numberOfLesionElements)
 
     numberOfLesionActors = len(lesionActors)
-    if(numberOfLesionElements!=numberOfLesionElements):
+    if(numberOfLesionElements!=numberOfLesionActors):
         print("LESION COUNT MISMATCH. PREMATURE TERMINATION!")
 
     mb = vtk.vtkMultiBlockDataSet()

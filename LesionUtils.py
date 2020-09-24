@@ -849,7 +849,7 @@ def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
     Returns: Lesion actors.
 ##########################################################################
 '''
-def extractLesions2(subjectFolder, informationKeyID):
+def extractLesions2(subjectFolder, informationKeyID, smoothingEnabled = True):
     lesionSurfaceDataFilePath = subjectFolder + "\\surfaces\\lesions.vtm"
     mbr = vtk.vtkXMLMultiBlockDataReader()
     mbr.SetFileName(lesionSurfaceDataFilePath)
@@ -901,8 +901,10 @@ def extractLesions2(subjectFolder, informationKeyID):
             normalGenerator.Update()
 
             lesionMapper = vtk.vtkOpenGLPolyDataMapper()
-            lesionMapper.SetInputData(normalGenerator.GetOutput())
-            #lesionMapper.SetInputData(polyData)
+            if(smoothingEnabled == True):
+                lesionMapper.SetInputData(normalGenerator.GetOutput())
+            else:
+                lesionMapper.SetInputData(polyData)
             lesionActor = vtk.vtkActor()
             lesionActor.SetMapper(lesionMapper)
             informationID = vtk.vtkInformation()

@@ -1,6 +1,7 @@
 import vtk
 import numpy as np
 import os
+import sys
 import LesionUtils
 import json
 import pickle
@@ -9,6 +10,35 @@ rootPath = "D:\\OneDrive - University of Bergen\Datasets\\MS_SegmentationChallen
 listOfSubjects = ["DTIDATA"]
 #listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 #listOfSubjects = ["01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+
+def ComputeDistanceMapArray2(surf1, surf2, hemString):
+    distanceFilter = vtk.vtkDistancePolyDataFilter()
+    distanceFilter.SetInputData(0, surf2)
+    distanceFilter.SetInputData(1, surf1.GetMapper().GetInput())
+    distanceFilter.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(distanceFilter.GetOutputPort())
+    
+    mapper.SetScalarRange(distanceFilter.GetOutput().GetPointData().GetScalars().GetRange()[0], distanceFilter.GetOutput().GetPointData().GetScalars().GetRange()[1])
+    #print("Range 0", distanceFilter.GetOutput().GetPointData().GetScalars().GetRange())
+    
+    #print("Range 0", distanceFilter.GetOutput().GetPointData().GetScalars().GetRange()[0])
+    #print("Range 1", distanceFilter.GetOutput().GetPointData().GetScalars().GetRange()[1])
+    #doubleArray = vtk.vtkDoubleArray()
+    #doubleArray.DeepCopy(distanceFilter.GetOutput().GetPointData().GetScalars())
+    test = distanceFilter.GetOutput().GetPointData().GetScalars()
+    
+
+    #writer = vtk.vtkPolyDataWriter()
+    #writer.SetInputData(distanceFilter.GetOutput())
+    #writer.SetFileName("D:\\sherin.vtk")
+    #writer.Write()
+
+    #print(test)
+    #print(distanceFilter.GetOutput())
+    #return doubleArray
+    return test
 
 def ComputeDistanceMapArray(surf1, surf2, hemString):
     distanceFilter = vtk.vtkDistancePolyDataFilter()
@@ -70,6 +100,11 @@ for subject in listOfSubjects:
     Lh_actor.SetMapper(Lh_mapper)
     Lh_actor.SetUserTransform(transform)
 
+    transformedLh = vtk.vtkTransformFilter()
+    transformedLh.SetInputData(LhReader.GetOutput())
+    transformedLh.SetTransform(transform)
+    transformedLh.Update()
+
     # Rh Surface Reader
     RhReader = vtk.vtkOBJReader()
     RhReader.SetFileName(fileNameRh)
@@ -80,18 +115,27 @@ for subject in listOfSubjects:
     Rh_actor.SetMapper(Rh_mapper)
     Rh_actor.SetUserTransform(transform)
 
-    lh_polyData = LhReader.GetOutput()
-    rh_polyData = RhReader.GetOutput()
+    transformedRh = vtk.vtkTransformFilter()
+    transformedRh.SetInputData(RhReader.GetOutput())
+    transformedRh.SetTransform(transform)
+    transformedRh.Update()
+
+    # lh_polyData = LhReader.GetOutput()
+    # rh_polyData = RhReader.GetOutput()
+    lh_polyData = transformedLh.GetOutput()
+    rh_polyData = transformedRh.GetOutput()
     
     arrayIndex = 0
 
     for lesionActor in lesionActors:
         # Compute distance map and write arrays to files.
-        distanceArrayLh = ComputeDistanceMapArray(lesionActor, Lh_actor, "Lh")
+        #distanceArrayLh = ComputeDistanceMapArray(lesionActor, Lh_actor, "Lh")
+        distanceArrayLh = ComputeDistanceMapArray2(lesionActor, lh_polyData, "Lh")
         distanceArrayLh.SetName("Distance" + str(arrayIndex))
         lh_polyData.GetPointData().AddArray(distanceArrayLh)
 
-        distanceArrayRh = ComputeDistanceMapArray(lesionActor, Rh_actor, "Rh")
+        #distanceArrayRh = ComputeDistanceMapArray(lesionActor, Rh_actor, "Rh")
+        distanceArrayRh = ComputeDistanceMapArray2(lesionActor, rh_polyData, "Rh")
         distanceArrayRh.SetName("Distance" + str(arrayIndex))
         rh_polyData.GetPointData().AddArray(distanceArrayRh)
 

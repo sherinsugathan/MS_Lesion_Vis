@@ -291,7 +291,7 @@ class Ui(Qt.QMainWindow):
         self.textActorLesionStatistics = vtk.vtkTextActor()
         self.textActorGlobal = vtk.vtkTextActor()
         self.depthPeelingStatus = "Depth Peeling : Enabled"
-        self.mappingType = "Heat Equation"
+        
         self.numberOfLesions = 0
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
@@ -644,8 +644,6 @@ class Ui(Qt.QMainWindow):
                 #self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
-                self.lesionAffectedPointIdsLhDTI.append(p["AffectedPointIdsLhDTI"])
-                self.lesionAffectedPointIdsRhDTI.append(p["AffectedPointIdsRhDTI"])
 
                 self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
                 self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
@@ -654,6 +652,9 @@ class Ui(Qt.QMainWindow):
                     self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
                     self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
                     self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
+                else:
+                    self.lesionAffectedPointIdsLhDTI.append(p["AffectedPointIdsLhDTI"])
+                    self.lesionAffectedPointIdsRhDTI.append(p["AffectedPointIdsRhDTI"])
         
         self.LhMappingPolyData, self.RhMappingPolyData = LesionUtils.readDistanceMapPolyData(self.subjectFolder + "\\surfaces\\ProjectionSDM\\")
         self.streamActorsHE = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, False)
@@ -663,6 +664,8 @@ class Ui(Qt.QMainWindow):
             self.mappingType = "Diffusion"
             self.streamActorsDTI = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, True)
             self.streamActors = self.streamActorsDTI
+        #else:
+            #self.mappingType = "Heat Equation"
         self.comboBox_MappingTechnique.addItem("Heat Equation")  
         self.comboBox_MappingTechnique.addItem("Signed Distance Map")
 
@@ -1409,6 +1412,7 @@ class Ui(Qt.QMainWindow):
             self.streamActors = None
             if(self.dualLoadedOnce == True):
                 self.lesionMapperDual.updateMappingDisplay()
+        print(self.mappingType)
 
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)
