@@ -23,6 +23,9 @@ def ComputeAndWriteParcellationData(dataType):
         if(dataType == "DTI"):
             parcellationJSONFileNameLh = subjectFolder + "\\" + "parcellationLhDTI.json"
             parcellationJSONFileNameRh = subjectFolder + "\\" + "parcellationRhDTI.json"
+        if(dataType == "DANIELSSON"):
+            parcellationJSONFileNameLh = subjectFolder + "\\" + "parcellationLhDanielsson.json"
+            parcellationJSONFileNameRh = subjectFolder + "\\" + "parcellationRhDanielsson.json"
                         
         labelFileLh = subjectFolder + "\\surfaces\\lh.aparc.annot"
         labelFileRh = subjectFolder + "\\surfaces\\rh.aparc.annot"
@@ -81,6 +84,8 @@ def ComputeAndWriteParcellationData(dataType):
                         impactRh = np.array(p["AffectedPointIdsRh"])
                     if(dataType == "DTI"):
                         impactRh = np.array(p["AffectedPointIdsRhDTI"])
+                    if(dataType == "DANIELSSON"):
+                        impactRh = np.array(p["AffectedPointIdsRhDanielsson"])
                     #print("Type of impactRh", type(impactRh))
                     #print("Type of parcellation verts", type(listOfSegmentedParcellationVerticesRh[pElementIndex]))
                     #print("Length of impactRh", len(impactRh))
@@ -128,6 +133,8 @@ def ComputeAndWriteParcellationData(dataType):
                         impactLh = np.array(p["AffectedPointIdsLh"])
                     if(dataType == "DTI"):
                         impactLh = np.array(p["AffectedPointIdsLhDTI"])
+                    if(dataType == "DANIELSSON"):
+                        impactLh = np.array(p["AffectedPointIdsLhDanielsson"])
                     #print("Type of impactRh", type(impactRh))
                     #print("Type of parcellation verts", type(listOfSegmentedParcellationVerticesRh[pElementIndex]))
                     #print("Length of impactRh", len(impactRh))
@@ -168,5 +175,9 @@ rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChalle
 listOfSubjects = ["DTIDATA"]
 #listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 
-ComputeAndWriteParcellationData("STRUCTURAL")
-ComputeAndWriteParcellationData("DTI")
+
+
+# MAIN FUNCTION CALLS.
+#ComputeAndWriteParcellationData("STRUCTURAL")
+#ComputeAndWriteParcellationData("DTI")
+ComputeAndWriteParcellationData("DANIELSSON")

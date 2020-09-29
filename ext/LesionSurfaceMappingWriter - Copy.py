@@ -9,14 +9,8 @@ import json
     Returns: Nothing
 ##########################################################################
 '''
-def computeStreamlines(subjectFolder, lesionPointDataSet = None, gradientFile = None):
-    #temperatureDataFileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
-    if(gradientFile == None):
-        print("ERROR: GRADIENT FILE NOT FOUND.")
-        quit()
-    else:
-        temperatureDataFileName = gradientFile
-
+def computeStreamlines(subjectFolder, lesionPointDataSet = None):
+    temperatureDataFileName = subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii"
     niftiReaderTemperature = vtk.vtkNIFTIImageReader()
     niftiReaderTemperature.SetFileName(temperatureDataFileName)
     niftiReaderTemperature.Update()
@@ -64,8 +58,7 @@ def computeStreamlines(subjectFolder, lesionPointDataSet = None, gradientFile = 
     #     streamers.SetInputConnection(transformFilter.GetOutputPort())
     # else:
     #     streamers.SetInputConnection(cellDataToPointData.GetOutputPort())
-    #streamers.SetIntegrationDirectionToForward()
-    streamers.SetIntegrationDirectionToBoth()
+    streamers.SetIntegrationDirectionToForward()
     streamers.SetComputeVorticity(False)
     #streamers.SetSourceConnection(psource.GetOutputPort())
     streamers.SetSourceData(lesionPointDataSet)
@@ -202,7 +195,7 @@ def extractLesions(subjectFolder, labelCount):
     Returns: none.
 ##########################################################################
 '''
-def computeAndWriteMapping(jsonPath, dataType, gradientFile = None):
+def computeAndWriteMapping(jsonPath, dataType):
     # load precomputed lesion properties
     data = {}
     structureInfo = None
@@ -222,12 +215,9 @@ def computeAndWriteMapping(jsonPath, dataType, gradientFile = None):
         print("Processing:", subjectName, ",", str(jsonElementIndex), "/", str(numberOfLesionActors))
         streamLinePolyData = None
         if(dataType == "STRUCTURAL"):
-            streamLinePolyData = computeStreamlines(subjectFolder, lesionActors[jsonElementIndex-1].GetMapper().GetInput(), gradientFile)
+            streamLinePolyData = computeStreamlines(subjectFolder, lesionActors[jsonElementIndex-1].GetMapper().GetInput())
         if(dataType == "DTI"):
             streamLinePolyData = computeStreamlinesDTI(subjectFolder, jsonElementIndex-1)
-        if(dataType == "DANIELSSONDISTANCE"):
-            streamLinePolyData = computeStreamlines(subjectFolder, lesionActors[jsonElementIndex-1].GetMapper().GetInput(), gradientFile)
-        
 
         streamerMapper = vtk.vtkPolyDataMapper()
         streamerMapper.SetInputData(streamLinePolyData)
@@ -420,9 +410,6 @@ def computeAndWriteMapping(jsonPath, dataType, gradientFile = None):
             if(dataType == "DTI"):
                 lesionDataDict['AffectedPointIdsLhDTI'] = mappingIndicesLh
                 lesionDataDict['AffectedPointIdsRhDTI'] = mappingIndicesRh
-            if(dataType == "DANIELSSONDISTANCE"):
-                lesionDataDict['AffectedPointIdsLhDanielsson'] = mappingIndicesLh
-                lesionDataDict['AffectedPointIdsRhDanielsson'] = mappingIndicesRh
             data[jsonElementIndex]=[]
             data[jsonElementIndex].append(lesionDataDict) 
 
@@ -462,9 +449,10 @@ for subjectName in listOfSubjects:
     f.close()
 
 
-    #computeAndWriteMapping(subjectFolder + "\\structure-def2.json", "STRUCTURAL", subjectFolder + "\\heatMaps\\aseg.auto_temperature.nii")
-    computeAndWriteMapping(subjectFolder + "\\structure-def3.json", "DANIELSSONDISTANCE", subjectFolder + "\\sdm\\sdm_gradient.nii")
-    #computeAndWriteMapping(subjectFolder + "\\structure-def3.json", "DTI")
+    computeAndWriteMapping(subjectFolder + "\\structure-def2.json", "STRUCTURAL")
+    computeAndWriteMapping(subjectFolder + "\\structure-def3.json", "DTI")
+
+
 
 
 # Display essentials

@@ -9,12 +9,13 @@ class VisType(enum.Enum):
     LESION_SURFACE_MAPPING = 4 # Provides a visualization of lesion mapping to the surface.
 
 class Settings:
-  def __init__(self, lh_pial_enabled, rh_pial_enabled, lh_white_enabled, rh_white_enabled, lesions_enabled, lh_pial_transparency, rh_pial_transparency, lh_white_transparency, rh_white_transparency, depthPeelingEnabled, visType):
+  def __init__(self, lh_pial_enabled, rh_pial_enabled, lh_white_enabled, rh_white_enabled, lesions_enabled, ventricles_enabled, lh_pial_transparency, rh_pial_transparency, lh_white_transparency, rh_white_transparency, depthPeelingEnabled, visType):
     self.lh_pial_enabled = "lh.pial.obj", lh_pial_enabled
     self.rh_pial_enabled = "rh.pial.obj", rh_pial_enabled
     self.lh_white_enabled = "lh.white.obj", lh_white_enabled
     self.rh_white_enabled = "rh.white.obj", rh_white_enabled
     self.lesions_enabled = "lesions.obj", lesions_enabled
+    self.ventricles_enabled = "ventricleMesh.obj", ventricles_enabled
     self.lh_pial_transparency = lh_pial_transparency
     self.rh_pial_transparency = rh_pial_transparency
     self.lh_white_transparency = lh_white_transparency
@@ -39,21 +40,23 @@ class Settings:
       whiteList.append(self.rh_white_enabled[0])
     if(self.lesions_enabled[1] == True):
       whiteList.append(self.lesions_enabled[0])
+    if(self.ventricles_enabled[1] == True):
+      whiteList.append(self.ventricles_enabled[0])
     return whiteList
 
 # Get view settings for a specific visualization.
 def getSettings(visType):
   setting = None
   if(visType == VisType.DEFAULT_FULL_DATA): # Default View
-    setting = Settings(True, True, True, True, True, 1.0, 1.0, 1.0, 1.0, True, VisType.DEFAULT_FULL_DATA)
+    setting = Settings(True, True, True, True, True, True, 1.0, 1.0, 1.0, 1.0, True, VisType.DEFAULT_FULL_DATA)
   elif(visType == VisType.LESION_COLORED_CONTINUOUS): # Transparent view with few surfaces.
-    setting = Settings(False, False, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_CONTINUOUS)
+    setting = Settings(False, False, True, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_CONTINUOUS)
   elif(visType == VisType.LESION_COLORED_DISCRETE): # Raw intensity color map on lesions.
-    setting = Settings(True, True, False, False, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISCRETE)
+    setting = Settings(True, True, False, False, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISCRETE)
   elif(visType == VisType.LESION_COLORED_DISTANCE): # Continuous color map of lesion contrast.
-    setting = Settings(False, False, True, True, True,  0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISTANCE)
+    setting = Settings(False, False, True, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_COLORED_DISTANCE)
   elif(visType == VisType.LESION_SURFACE_MAPPING): # Lesions projected to surface view.
-    setting = Settings(False, False, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_SURFACE_MAPPING)
+    setting = Settings(False, False, True, True, True, True, 0.5, 0.5, 0.5, 0.5, True, VisType.LESION_SURFACE_MAPPING)
   return setting
 
 # Mapping vis type selection to enums.

@@ -608,6 +608,8 @@ class Ui(Qt.QMainWindow):
         self.lesionAffectedPointIdsRh = []
         self.lesionAffectedPointIdsLhDTI = []
         self.lesionAffectedPointIdsRhDTI = []
+        self.lesionAffectedPointIdsLhDanielsson = []
+        self.lesionAffectedPointIdsRhDanielsson = []
         self.lesionAverageLesionIntensityT1 = []
         self.lesionAverageSuroundingIntensityT1 = []
         self.lesionAverageLesionIntensityT2 = []
@@ -644,6 +646,8 @@ class Ui(Qt.QMainWindow):
                 #self.lesionRegionNumberQuantized.append(p["RegionNumberQuantized"])
                 self.lesionAffectedPointIdsLh.append(p["AffectedPointIdsLh"])
                 self.lesionAffectedPointIdsRh.append(p["AffectedPointIdsRh"])
+                self.lesionAffectedPointIdsLhDanielsson.append(p["AffectedPointIdsLhDanielsson"])
+                self.lesionAffectedPointIdsRhDanielsson.append(p["AffectedPointIdsRhDanielsson"])
 
                 self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
                 self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
@@ -657,18 +661,21 @@ class Ui(Qt.QMainWindow):
                     self.lesionAffectedPointIdsRhDTI.append(p["AffectedPointIdsRhDTI"])
         
         self.LhMappingPolyData, self.RhMappingPolyData = LesionUtils.readDistanceMapPolyData(self.subjectFolder + "\\surfaces\\ProjectionSDM\\")
-        self.streamActorsHE = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, False)
+        self.streamActorsHE = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, 1)
+        self.streamActorsDanielsson = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, 2)
+        # print(len(self.streamActorsHE))
+        # print(len(self.streamActorsDanielsson))
         self.streamActors = self.streamActorsHE
         if(self.dtiDataActive == True):
             self.comboBox_MappingTechnique.addItem("Diffusion")
             self.mappingType = "Diffusion"
-            self.streamActorsDTI = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, True)
+            self.streamActorsDTI = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, 0)
             self.streamActors = self.streamActorsDTI
         #else:
             #self.mappingType = "Heat Equation"
         self.comboBox_MappingTechnique.addItem("Heat Equation")  
         self.comboBox_MappingTechnique.addItem("Signed Distance Map")
-
+        self.comboBox_MappingTechnique.addItem("Danielsson Distance")
 
         self.style.addLesionData(self.subjectFolder, self.lesionCentroids, self.lesionNumberOfPixels, self.lesionElongation, self.lesionPerimeter, self.lesionSphericalRadius, self.lesionSphericalPerimeter, self.lesionFlatness, self.lesionRoundness, self.lesionSeededFiberTracts)
 
@@ -708,6 +715,7 @@ class Ui(Qt.QMainWindow):
 
             # Check if files are wavefront OBJ and in the whitelist according to settings.
             if fileNames[i].endswith(".obj") and os.path.basename(fileNames[i]) in settings.getSurfaceWhiteList():
+                #print(fileNames[i])
                 loadFilePath = os.path.join(self.subjectFolder, fileNames[i])      
                 reader = vtk.vtkOBJReader()
                 reader.SetFileName(loadFilePath)
@@ -758,10 +766,14 @@ class Ui(Qt.QMainWindow):
                         #self.lhwhite = actor
                         self.style.lhactor = actor  # TODO: Temporary code. To be removed soon.
 
+                if(fileNames[i].endswith("ventricleMesh.obj") == True):
+                    LesionUtils.smoothSurface(actor)
+                    actor.GetMapper().ScalarVisibilityOff()
+                    actor.GetProperty().SetColor(0.5608, 0.7059, 0.5725)
 
                 if(fileNames[i].endswith("lesions.obj")==False):
                     actor.GetProperty().SetInformation(information)
-                    actor.GetProperty().SetColor(1, 0.964, 0.878)
+                    #actor.GetProperty().SetColor(1, 0.964, 0.878)
                     self.actors.append(actor)
    
                 # Also add to the listBox showing loaded surfaces.
@@ -1412,7 +1424,10 @@ class Ui(Qt.QMainWindow):
             self.streamActors = None
             if(self.dualLoadedOnce == True):
                 self.lesionMapperDual.updateMappingDisplay()
-        print(self.mappingType)
+        if(self.mappingType == "Danielsson Distance"):
+            self.streamActors = self.streamActorsDanielsson
+            if(self.dualLoadedOnce == True):
+                self.lesionMapperDual.updateMappingDisplay()
 
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)

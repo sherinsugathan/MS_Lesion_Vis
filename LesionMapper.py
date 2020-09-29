@@ -275,6 +275,9 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         if(self.lesionvis.mappingType == "Diffusion"):
             affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(lesionID)-1])
             affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(lesionID)-1])
+        if(self.lesionvis.mappingType == "Danielsson Distance"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDanielsson[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
         # for elem in lesionMappingRh:

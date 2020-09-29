@@ -50,7 +50,7 @@ def computeStreamlines(subjectFolder, lesionPointDataSet = None, gradientFilePat
     streamers = vtk.vtkStreamTracer()
     streamers.SetInputConnection(transformFilter.GetOutputPort())
 
-    streamers.SetIntegrationDirectionToForward()
+    streamers.SetIntegrationDirectionToBoth()
     streamers.SetComputeVorticity(False)
     streamers.SetSourceData(lesionPointDataSet)
 
@@ -78,6 +78,10 @@ for subject in listOfSubjects:
     asegSegmentationFile = rootPath + subject + "\\heatMaps\\aseg.auto.nii"
     brainMaskFile = rootPath + subject + "\\heatMaps\\brainmask.nii"
     outputFolder = rootPath + subject + "\\sdm\\sdm_gradient.nii"
+    outputFolderVentricleMask = rootPath + subject + "\\ventricleData\\ventriclemask.nii"
+    outputFolderVentricleSurface = rootPath + subject + "\\surfaces\\ventricleMesh.obj"
+    LesionUtils.checkAndCreateFolder(rootPath + subject + "\\sdm")
+    LesionUtils.checkAndCreateFolder(rootPath + subject + "\\ventricleData")
     # Read segmentation files and the brain mask file.
     imageAseg = sitk.ReadImage(asegSegmentationFile)
     imageBrainMask = sitk.ReadImage(brainMaskFile)
@@ -101,6 +105,37 @@ for subject in listOfSubjects:
     # Combine left and right ventricle mask images into one.
     ORImageFilter = sitk.OrImageFilter()
     ORedImage = ORImageFilter.Execute(thresholdedImage1, thresholdedImage2)
+    sitk.WriteImage(ORedImage, outputFolderVentricleMask) # Write ventricle mask image to file.
+
+    # Load ventricle mask for surface extraction.
+    niftiReaderLesionMask = vtk.vtkNIFTIImageReader()
+    niftiReaderLesionMask.SetFileName(outputFolderVentricleMask)
+    niftiReaderLesionMask.Update()
+
+    # Fetch transform data.
+    QFormMatrix = niftiReaderLesionMask.GetQFormMatrix()
+    qFormList = [0] * 16 #the matrix is 4x4
+    QFormMatrix.DeepCopy(qFormList, QFormMatrix)
+    transform = vtk.vtkTransform()
+    transform.PostMultiply()
+    transform.SetMatrix(qFormList)
+    transform.Update()
+
+    dmc = vtk.vtkDiscreteMarchingCubes()
+    dmc.SetInputData(niftiReaderLesionMask.GetOutput())
+    dmc.Update()
+
+    transformFilter = vtk.vtkTransformFilter()
+    transformFilter.SetInputConnection(dmc.GetOutputPort())
+    transformFilter.SetTransform(transform)
+    transformFilter.Update()
+
+    objWriter = vtk.vtkOBJWriter()
+    #objWriter.SetInputData(dmc.GetOutput())
+    objWriter.SetInputData(transformFilter.GetOutput())
+    objWriter.SetFileName(outputFolderVentricleSurface)
+    objWriter.Write()
+
     # Compute distance map using ventricle mask image.
     distanceMapImageFilter = sitk.DanielssonDistanceMapImageFilter()
     distanceMapImageFilter.InputIsBinaryOn()
@@ -109,7 +144,6 @@ for subject in listOfSubjects:
     maskImageFilter = sitk.MaskImageFilter()
     maskedGradientImage = maskImageFilter.Execute(gradientImage, binaryBrainMask)
     sitk.WriteImage(maskedGradientImage, outputFolder)
-
 
     surfaceFileLh = rootPath + subject + "\\surfaces\\lh.white.obj"
     surfaceFileRh = rootPath + subject + "\\surfaces\\rh.white.obj"
@@ -148,7 +182,7 @@ for subject in listOfSubjects:
         
         
     writer = vtk.vtkXMLMultiBlockDataWriter()
-    writer.SetFileName(rootPath + subject + '\\surfaces\\streamlinesMultiBlockDatasetSDM.xml')
+    writer.SetFileName(rootPath + subject + '\\surfaces\\streamlinesMultiBlockDatasetDanielssonDM.xml')
     writer.SetInputData(mb)
     writer.Write()
     print("Processed:", subject, "BLOCKDATASET WRITE SUCCESS")

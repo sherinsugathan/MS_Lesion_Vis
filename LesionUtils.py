@@ -803,14 +803,19 @@ def extractLesions(subjectFolder, labelCount, informationKey, informationKeyID, 
 '''
 ##########################################################################
     Read streamlines multiblockdataset
+    dataType = 0 #DTI.
+    dataType = 1 #Heat Equation.
+    dataType = 2 #Danielsson Distance.
     Returns: streamline actors. (one actor = one lesion)
 ##########################################################################
 '''
-def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
-    if(isDTIBundle == True):
+def extractStreamlines(subjectFolder, informationKey, dataType):
+    if(dataType == 0):
         streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDatasetDTI.xml"
-    else:
+    if(dataType == 1):
         streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDataset.xml"
+    if(dataType == 2):
+        streamlineDataFilePath = subjectFolder + "\\surfaces\\streamlinesMultiBlockDatasetDanielssonDM.xml"
     reader = vtk.vtkXMLMultiBlockDataReader()
     reader.SetFileName(streamlineDataFilePath)
     reader.Update()
@@ -821,7 +826,7 @@ def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
     for i in range(mb.GetNumberOfBlocks()):
         polyData = vtk.vtkPolyData.SafeDownCast(mb.GetBlock(i))
         if polyData and polyData.GetNumberOfPoints():
-            if(isDTIBundle == True):
+            if(dataType == 0):
                 tubeFilter = vtk.vtkTubeFilter()
                 tubeFilter.SetInputData(polyData)
                 tubeFilter.SetRadius(0.4)
@@ -829,9 +834,9 @@ def extractStreamlines(subjectFolder, informationKey, isDTIBundle):
                 tubeFilter.Update()
             streamlineMapper = vtk.vtkOpenGLPolyDataMapper()
             
-            if(isDTIBundle == True):
+            if(dataType == 0):
                 streamlineMapper.SetInputData(tubeFilter.GetOutput())
-            else:
+            if(dataType == 1 or dataType == 2):
                 streamlineMapper.SetInputData(polyData)
             streamlineActor = vtk.vtkActor()
             streamlineActor.SetMapper(streamlineMapper)
@@ -882,7 +887,7 @@ def extractLesions2(subjectFolder, informationKeyID, smoothingEnabled = True):
             smoother = vtk.vtkWindowedSincPolyDataFilter()
             #smoother.SetInputConnection(sphereSource->GetOutputPort())
             smoother.SetInputData(polyData)
-            smoother.SetNumberOfIterations(7)
+            smoother.SetNumberOfIterations(8)
             smoother.BoundarySmoothingOff()
             smoother.FeatureEdgeSmoothingOff()
             smoother.SetFeatureAngle(120.0)
@@ -916,6 +921,38 @@ def extractLesions2(subjectFolder, informationKeyID, smoothingEnabled = True):
 
     return lesionActors
 
+'''
+##########################################################################
+    Read a surface and smoothens it.
+    Returns: Smoeethened surface.
+##########################################################################
+'''
+def smoothSurface(surfaceActor):
+    smoother = vtk.vtkWindowedSincPolyDataFilter()
+    #smoother.SetInputConnection(sphereSource->GetOutputPort())
+    smoother.SetInputData(surfaceActor.GetMapper().GetInput())
+    smoother.SetNumberOfIterations(10)
+    smoother.BoundarySmoothingOff()
+    smoother.FeatureEdgeSmoothingOff()
+    smoother.SetFeatureAngle(120.0)
+    smoother.SetPassBand(.001)
+    smoother.NonManifoldSmoothingOn()
+    smoother.NormalizeCoordinatesOn()
+    smoother.Update()
+
+    normalGenerator = vtk.vtkPolyDataNormals()
+    normalGenerator.SetInputData(smoother.GetOutput())
+    normalGenerator.ComputePointNormalsOn()
+    normalGenerator.ComputeCellNormalsOff()
+    normalGenerator.AutoOrientNormalsOn()
+    normalGenerator.ConsistencyOn()
+    normalGenerator.SplittingOff()
+    normalGenerator.Update()
+
+    mapper = vtk.vtkOpenGLPolyDataMapper()
+    mapper.SetInputData(normalGenerator.GetOutput())
+    #lesionActor = vtk.vtkActor()
+    surfaceActor.SetMapper(mapper)
 
 '''
 #########################[OBSOLETE] NOT IN USE NOW #################################################
@@ -1477,3 +1514,13 @@ def readDistanceMapPolyData(dataFolder):
     readerRh.SetFileName(fileNameRh)
     readerRh.Update()
     return readerLh.GetOutput(), readerRh.GetOutput()
+
+'''
+##########################################################################
+    Function to check if a folder exists or not. If absent, a folder will be created.
+    Returns: None
+##########################################################################
+'''
+def checkAndCreateFolder(folderName):
+    if not os.path.exists(folderName):
+        os.makedirs(folderName)
