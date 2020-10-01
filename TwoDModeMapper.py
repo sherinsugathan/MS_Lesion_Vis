@@ -475,6 +475,8 @@ class TwoDModeMapper():
     self.rendererUnfoldedRh.Render()
     self.rendererUnfoldedLh.Render()
 
+  def updateMappingDisplay(self):
+    self.customInteractorStyle.updateMapping()
 
   def ClearData(self):
     self.rendererLesion.RemoveAllViewProps()
@@ -482,10 +484,9 @@ class TwoDModeMapper():
     self.rendererUnfoldedRh.RemoveAllViewProps()
     self.rendererUnfoldedLh.RemoveAllViewProps()
 
-  def Refresh(self):
-    self.lesionvis.ren2x2.Render()
-
-
+##################################################
+################ INTERACTOR ######################
+##################################################
 class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,parent=None):
@@ -566,8 +567,19 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             # for vertexIndex in range(len(vertexIndexArrayLh)):
             #     clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelScalarArrayLh.GetValue(vertexIndex)]["color"]
             #     vtk_colorsLh.InsertNextTuple3(clrParcellationLh[0], clrParcellationLh[1]/3, clrParcellationLh[2]/3)
-        affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
-        affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
+
+        if(self.lesionvis.mappingType == "Heat Equation"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
+        if(self.lesionvis.mappingType == "Diffusion"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(self.lesionID)-1])
+        if(self.lesionvis.mappingType == "Danielsson Distance"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDanielsson[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(self.lesionID)-1])
+
+        #affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
+        #affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
 
@@ -628,8 +640,18 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         if(self.lesionID == None):
             return
 
-        affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
-        affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
+        if(self.lesionvis.mappingType == "Heat Equation"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
+        if(self.lesionvis.mappingType == "Diffusion"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(self.lesionID)-1])
+        if(self.lesionvis.mappingType == "Danielsson Distance"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDanielsson[int(self.lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(self.lesionID)-1])
+
+        #affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
+        #affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
         lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
 
@@ -667,6 +689,11 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 vtk_colors3DLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
         self.twoDModeMapper.pialMapperRh.GetInput().GetPointData().SetScalars(vtk_colors3DRh)
         self.twoDModeMapper.pialMapperLh.GetInput().GetPointData().SetScalars(vtk_colors3DLh)
+
+    def updateMapping(self):
+        self.reColor2D()
+        self.reColor3D()
+        self.twoDModeMapper.iren_2x2.Render()
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()

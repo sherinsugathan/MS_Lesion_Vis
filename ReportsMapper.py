@@ -31,7 +31,7 @@ class ReportsMapper():
     self.layout = Qt.QVBoxLayout()
     self.layout.addWidget(self.view)
     self.lesionvis.frame_Reports.setLayout(self.layout)
-    file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "interaction.html"))
+    file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "interactionSorry.html"))
     htmlUrl = QUrl.fromLocalFile(file_path)
     self.view.load(QUrl(htmlUrl))
     self.view.show()

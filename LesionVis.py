@@ -1414,20 +1414,16 @@ class Ui(Qt.QMainWindow):
         self.mappingType = str(self.comboBox_MappingTechnique.currentText())
         if(self.mappingType == "Diffusion"):
             self.streamActors = self.streamActorsDTI
-            if(self.dualLoadedOnce == True):
-                self.lesionMapperDual.updateMappingDisplay()
         if(self.mappingType == "Heat Equation"):
             self.streamActors = self.streamActorsHE
-            if(self.dualLoadedOnce == True):
-                self.lesionMapperDual.updateMappingDisplay()
         if(self.mappingType == "Signed Distance Map"):
             self.streamActors = None
-            if(self.dualLoadedOnce == True):
-                self.lesionMapperDual.updateMappingDisplay()
         if(self.mappingType == "Danielsson Distance"):
             self.streamActors = self.streamActorsDanielsson
-            if(self.dualLoadedOnce == True):
-                self.lesionMapperDual.updateMappingDisplay()
+
+        if(self.dualLoadedOnce == True):
+            self.lesionMapperDual.updateMappingDisplay()
+        self.twoDModeMapper.updateMappingDisplay()
 
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)
