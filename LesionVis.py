@@ -1423,7 +1423,8 @@ class Ui(Qt.QMainWindow):
 
         if(self.dualLoadedOnce == True):
             self.lesionMapperDual.updateMappingDisplay()
-        self.twoDModeMapper.updateMappingDisplay()
+        if(self.twoDModeLoadedOnce == True):
+            self.twoDModeMapper.updateMappingDisplay()
 
     # Handler for depth peeling pushbutton 
     @pyqtSlot(bool)

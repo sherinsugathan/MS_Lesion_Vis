@@ -39,6 +39,48 @@ class LesionMapper():
       self.lesionvis.iren_LesionMapDualRight.Render()
   def rightCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualLeft.Render()
+
+  def loadParcellationData(self):
+    # load precomputed lesion properties
+    if(self.lesionvis.mappingType == "Heat Equation"):
+        print("Perfect")
+        paracellationDataFileNameLh = self.lesionvis.subjectFolder + "\\parcellationLh.json"
+        paracellationDataFileNameRh = self.lesionvis.subjectFolder + "\\parcellationRh.json"
+    if(self.lesionvis.mappingType == "Diffusion"):
+        paracellationDataFileNameLh = self.lesionvis.subjectFolder + "\\parcellationLhDTI.json"
+        paracellationDataFileNameRh = self.lesionvis.subjectFolder + "\\parcellationRhDTI.json"
+    if(self.lesionvis.mappingType == "Danielsson Distance"):
+        paracellationDataFileNameLh = self.lesionvis.subjectFolder + "\\parcellationLhDanielsson.json"
+        paracellationDataFileNameRh = self.lesionvis.subjectFolder + "\\parcellationRhDanielsson.json"
+
+    self.structureInfoLh = None
+    with open(paracellationDataFileNameLh) as fp: 
+        self.structureInfoLh = json.load(fp)
+    self.parcellationsLhCount = len(self.structureInfoLh)
+    self.structureInfoRh = None
+    with open(paracellationDataFileNameRh) as fp: 
+        self.structureInfoRh = json.load(fp)
+    self.parcellationsRhCount = len(self.structureInfoRh)
+
+    self.parcellationAffectedPercentageLh = []
+    self.parcellationLesionInfluenceCountLh = []
+    self.parcellationAssociatedLesionsLh = []
+
+    for jsonElementIndex in list(self.structureInfoLh.keys()):
+        for p in self.structureInfoLh[str(jsonElementIndex)]:
+            self.parcellationAffectedPercentageLh.append(p["PercentageAffected"])
+            self.parcellationLesionInfluenceCountLh.append(p["LesionInfluenceCount"])
+            self.parcellationAssociatedLesionsLh.append(p["AssociatedLesions"])
+
+    self.parcellationAffectedPercentageRh = []
+    self.parcellationLesionInfluenceCountRh = []
+    self.parcellationAssociatedLesionsRh = []
+
+    for jsonElementIndex in list(self.structureInfoLh.keys()):
+        for p in self.structureInfoRh[str(jsonElementIndex)]:
+            self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
+            self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
+            self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
       
   def AddData(self):
     self.lesionvis.renDualRight.SetActiveCamera(self.lesionvis.renDualLeft.GetActiveCamera())
@@ -73,35 +115,8 @@ class LesionMapper():
     LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
     LesionUtils.setOverlayText(self.overlayDataMainRightParcellationImpact, self.textActorParcellation)
 
-    # load precomputed lesion properties
-    self.structureInfoLh = None
-    with open(self.lesionvis.subjectFolder + "\\parcellationLh.json") as fp: 
-        self.structureInfoLh = json.load(fp)
-    self.parcellationsLhCount = len(self.structureInfoLh)
-    self.structureInfoRh = None
-    with open(self.lesionvis.subjectFolder + "\\parcellationRh.json") as fp: 
-        self.structureInfoRh = json.load(fp)
-    self.parcellationsRhCount = len(self.structureInfoRh)
-
-    self.parcellationAffectedPercentageLh = []
-    self.parcellationLesionInfluenceCountLh = []
-    self.parcellationAssociatedLesionsLh = []
-
-    for jsonElementIndex in list(self.structureInfoLh.keys()):
-        for p in self.structureInfoLh[str(jsonElementIndex)]:
-            self.parcellationAffectedPercentageLh.append(p["PercentageAffected"])
-            self.parcellationLesionInfluenceCountLh.append(p["LesionInfluenceCount"])
-            self.parcellationAssociatedLesionsLh.append(p["AssociatedLesions"])
-
-    self.parcellationAffectedPercentageRh = []
-    self.parcellationLesionInfluenceCountRh = []
-    self.parcellationAssociatedLesionsRh = []
-
-    for jsonElementIndex in list(self.structureInfoLh.keys()):
-        for p in self.structureInfoRh[str(jsonElementIndex)]:
-            self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
-            self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
-            self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
+    # Load parcellation data from precomputed files.
+    self.loadParcellationData()
 
     # Add legend data
     legend = vtk.vtkLegendBoxActor()
@@ -139,8 +154,6 @@ class LesionMapper():
     
     self.lesionvis.renDualRight.Render()
     self.lesionvis.renDualLeft.Render()
-    
-    
 
   def ClearData(self):
     self.lesionvis.renDualLeft.RemoveAllViewProps()
@@ -152,7 +165,6 @@ class LesionMapper():
         self.lesionvis.renDualLeft.Render()
 
   def autoMapping(self, userPickedLesion, clickedLesionActor):
-      #self.interactionStyleLeft.
       if(clickedLesionActor == None):
           return
       self.interactionStyleLeft.mapLesionToSurface(userPickedLesion, clickedLesionActor)
@@ -168,8 +180,9 @@ class LesionMapper():
             self.lesionvis.renDualLeft.AddActor(streamlineActor)
             self.interactionStyleLeft.currentActiveStreamlineActor = streamlineActor
       if(self.interactionStyleLeft.LastPickedActor!=None):
-          self.interactionStyleLeft.mapLesionToSurface(int(self.interactionStyleLeft.currentLesionID), self.interactionStyleLeft.LastPickedActor)
-          self.lesionvis.renDualLeft.Render() 
+          self.loadParcellationData() # Update parcellation data by reading precomputed files.
+          self.interactionStyleLeft.mapLesionToSurface(self.interactionStyleLeft.currentLesionID, self.interactionStyleLeft.LastPickedActor)
+          self.lesionvis.renDualLeft.Render()
 
   def Refresh(self):
       self.lesionvis.renDualLeft.Render()
@@ -211,6 +224,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     def mapLesionToSurface(self, lesionID, NewPickedActor):
         self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
+        print("Lesion ID", str(lesionID))
         self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
         self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
         self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
@@ -222,12 +236,15 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
         self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
         impactStringList = self.computeLesionImpact(lesionID)
+        
         functionListString = "\n"
         for elemIndex in range(len(impactStringList)):
             functionListString = functionListString + str(impactStringList[elemIndex]) + "\n"
 
         self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
         self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
+
+        print("IMPACT STRING", functionListString)
         
         # Highlight the picked actor by changing its properties
         NewPickedActor.GetMapper().ScalarVisibilityOff()
