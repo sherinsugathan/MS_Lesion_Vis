@@ -43,7 +43,6 @@ class LesionMapper():
   def loadParcellationData(self):
     # load precomputed lesion properties
     if(self.lesionvis.mappingType == "Heat Equation"):
-        print("Perfect")
         paracellationDataFileNameLh = self.lesionvis.subjectFolder + "\\parcellationLh.json"
         paracellationDataFileNameRh = self.lesionvis.subjectFolder + "\\parcellationRh.json"
     if(self.lesionvis.mappingType == "Diffusion"):
@@ -224,7 +223,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     def mapLesionToSurface(self, lesionID, NewPickedActor):
         self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
-        print("Lesion ID", str(lesionID))
         self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
         self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
         self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
@@ -243,8 +241,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
         self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
         self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
-
-        print("IMPACT STRING", functionListString)
         
         # Highlight the picked actor by changing its properties
         NewPickedActor.GetMapper().ScalarVisibilityOff()
@@ -278,7 +274,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         vtk_colorsRh = vtk.vtkUnsignedCharArray()
         vtk_colorsRh.SetNumberOfComponents(3)
 
-        clrGreen = [161,217,155]
+        #clrGreen = [161,217,155]
         clrRed = [227,74,51]
 
         # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
@@ -342,7 +338,28 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     def pickEvent(self,obj,event):
         print("pick event")
-        
+
+    # Update surface colors based on user interaction.
+    def updateSurfaceColors(self, hemisphere):
+        if(hemisphere == "lh"):
+            vtk_colorsLh = vtk.vtkUnsignedCharArray()
+            vtk_colorsLh.SetNumberOfComponents(3)
+            lhColorScalars = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
+            #print(self.lesionvis.lhwhiteMapper.GetInput())
+            clrParcellationLh = [0,0,0]
+            self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+            for i in range(lhColorScalars.GetNumberOfTuples()):
+                lhColorScalars.SetTuple(i,clrParcellationLh)
+                vtk_colorsLh.InsertTuple(i,clrParcellationLh)
+            # for i in range(lhColorScalars.GetNumberOfTuples()):
+            #     print(lhColorScalars.GetTuple3(i))
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(lhColorScalars)
+            self.lesionvis.lhwhiteMapper.Update()
+            #print(self.lesionvis.lhwhiteMapper.GetInput())
+            self.lesionvis.renDualRight.Render()
+        if(hemisphere == "rh"):
+            pass
+            #rhColorScalars = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
@@ -370,6 +387,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
             self.currentLesionID = lesionID
+            print(cellPicker.GetPointId())
 
             if("lh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
@@ -377,6 +395,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
                 self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
                 self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
+                self.updateSurfaceColors("lh")
             if("rh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
                 self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
