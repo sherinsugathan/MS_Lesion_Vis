@@ -1524,3 +1524,15 @@ def readDistanceMapPolyData(dataFolder):
 def checkAndCreateFolder(folderName):
     if not os.path.exists(folderName):
         os.makedirs(folderName)
+
+'''
+##########################################################################
+    Apply tint to an existing color.
+    Returns: tinted RGB color triplet.
+##########################################################################
+'''
+def tintColor(clr, p=0.5):
+    r = 255 - int(p * (255 - clr[0]))
+    g = 255 - int(p * (255 - clr[1]))
+    b = 255 - int(p * (255 - clr[2]))
+    return [r,g,b]

@@ -624,7 +624,7 @@ border-style: solid;
       </widget>
       <widget class="QWidget" name="dualMode">
        <layout class="QGridLayout" name="gridLayout_7">
-        <item row="0" column="0">
+        <item row="1" column="0">
          <widget class="QFrame" name="frame_DualLeft">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(6, 16, 9);
@@ -641,7 +641,7 @@ border-radius: 10px;</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="1" column="1">
          <widget class="QFrame" name="frame_DualRight">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(6, 16, 9);
@@ -656,6 +656,63 @@ border-radius: 10px;</string>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QFrame" name="frame_3">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <layout class="QGridLayout" name="gridLayout_16">
+             <item row="0" column="1">
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="2">
+              <widget class="QCheckBox" name="checkBox_AutoHighlightRegions">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Auto Highlight Regions</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="checkBox_AutoHighlightLesions">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Auto highlight Lesions</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -2190,7 +2247,7 @@ font-weight: bold</string>
      <x>0</x>
      <y>0</y>
      <width>1498</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
