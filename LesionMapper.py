@@ -297,7 +297,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(lesionID)-1])
         self.lesionMapper.lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
         self.lesionMapper.lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-        print("HI0", self.lesionMapper.lesionMappingLh.size)
+
         # for elem in lesionMappingRh:
         #     if(elem==True):
         #         vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
@@ -344,6 +344,18 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     def pickEvent(self,obj,event):
         print("pick event")
+
+    # Highlight lesions based on selected parcellation.
+    def highlightLesionsBasedOnSelectedParcellation(self, parcellationAssociatedLesionList):
+        for actor in self.lesionvis.lesionActors:
+            lesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+            actor.GetMapper().ScalarVisibilityOn()
+            if lesionID in parcellationAssociatedLesionList:
+                actor.GetMapper().ScalarVisibilityOff()
+                actor.GetProperty().SetColor(1.0, 1.0, 0.0)
+                actor.GetProperty().SetDiffuse(1.0)
+                actor.GetProperty().SetSpecular(0.0)
+
 
     # Update surface colors based on user interaction.
     def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
@@ -413,18 +425,23 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
                 self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
                 self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
-                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
+                parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
+                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
                 pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
                 self.updateSurfaceColorsForParcellationPick("lh", pickedParcellationColor)
+                self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
 
             if("rh" in str(itemType)):
                 parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
                 self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
                 self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
                 self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
-                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
+                parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
+                self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
                 pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
                 self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
+                self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
+
             if itemType==None: # Itemtype is None for lesions. They only have Ids.
                 self.mapLesionToSurface(lesionID, self.NewPickedActor)
                 self.lesionvis.userPickedLesion = lesionID

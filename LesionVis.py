@@ -844,7 +844,7 @@ class Ui(Qt.QMainWindow):
             modality = "T1"
         if(self.buttonGroupModality.checkedButton().text() == "T2 DATA"):
             modality = "T2"
-        if(self.buttonGroupModality.checkedButton().text() == "FLAIR DATA"):
+        if(self.buttonGroupModality.checkedButton().text() == "T2 FLAIR DATA"):
             modality = "FLAIR"
 
         colorFilePath = self.subjectFolder + "\\surfaces\\colorArrayCont" + modality + ".pkl"
@@ -866,7 +866,7 @@ class Ui(Qt.QMainWindow):
                 intensityDifference = self.lesionAverageLesionIntensityT1[dataIndex] - self.lesionAverageSuroundingIntensityT1[dataIndex]
             if(self.buttonGroupModality.checkedButton().text() == "T2 DATA"):
                 intensityDifference = self.lesionAverageLesionIntensityT2[dataIndex] - self.lesionAverageSuroundingIntensityT2[dataIndex]
-            if(self.buttonGroupModality.checkedButton().text() == "FLAIR DATA"):
+            if(self.buttonGroupModality.checkedButton().text() == "T2 FLAIR DATA"):
                 intensityDifference = self.lesionAverageLesionIntensityFLAIR[dataIndex] - self.lesionAverageSuroundingIntensityFLAIR[dataIndex]
 
             if(intensityDifference < thresholdMin):

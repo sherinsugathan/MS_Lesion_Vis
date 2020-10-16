@@ -338,7 +338,7 @@ border-style: solid;
 }</string>
                </property>
                <property name="text">
-                <string>FLAIR DATA</string>
+                <string>T2 FLAIR DATA</string>
                </property>
                <property name="checkable">
                 <bool>true</bool>
