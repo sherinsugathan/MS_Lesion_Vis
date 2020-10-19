@@ -1304,7 +1304,6 @@ def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, p
     reader2 = vtk.vtkNIFTIImageReader()
     reader2.SetFileName(voxelCorrectedFileName)
     reader2.Update()
-    #lesion = reader2.GetOutput()
 
     mc.SetInputConnection(reader2.GetOutputPort())
     mc.SetValue(0, 0.1)
@@ -1333,17 +1332,17 @@ def getSliceLesionOverlayActor(voxelCorrectedFileName, resliceImageViewer, mc, p
 
     tubes = vtk.vtkTubeFilter()
     tubes.SetInputConnection(cutter.GetOutputPort())
-    tubes.SetRadius(2)
+    tubes.SetRadius(1)
     tubes.SetNumberOfSides(32)
     tubes.CappingOn()
 
     cutterMapper = vtk.vtkPolyDataMapper()
     cutterMapper.SetInputConnection(tubes.GetOutputPort())
+    cutterMapper.Update()
 
     cutterActor = vtk.vtkActor()
     cutterActor.GetProperty().SetColor(0,1,0)
     cutterActor.SetMapper(cutterMapper)
-
     return cutterActor
 
 '''

@@ -483,7 +483,6 @@ class Ui(Qt.QMainWindow):
             ################################
             # MPR A    #####################
             ################################
-
             self.resliceImageViewerMPRA.SetInputData(self.niftyReaderT1.GetOutput())
             self.resliceImageViewerMPRA.SetRenderWindow(self.vtkWidgetMPRA.GetRenderWindow())
             self.resliceImageViewerMPRA.SetRenderer(self.renMPRA)
@@ -532,7 +531,7 @@ class Ui(Qt.QMainWindow):
 
             self.overlayPlaneMPRB.SetOrigin(0,self.resliceImageViewerMPRB.GetSlice()*self.spacing[1],0)
             overlayActorMPRB = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRB, self.mcfMPRB, self.overlayPlaneMPRB)
-            overlayActorMPRB.RotateZ(180)
+            overlayActorMPRB.RotateY(180)
             self.resliceImageViewerMPRB.GetRenderer().AddActor(overlayActorMPRB)
             # Define Interactor
             # interactorMPRB = vtk.vtkInteractorStyleImage()
@@ -558,7 +557,7 @@ class Ui(Qt.QMainWindow):
 
             self.overlayPlaneMPRC.SetOrigin(self.resliceImageViewerMPRC.GetSlice()*self.spacing[0],0,0)
             overlayActorMPRC = LesionUtils.getSliceLesionOverlayActor(fileNameOverlay, self.resliceImageViewerMPRC, self.mcfMPRC, self.overlayPlaneMPRC)
-            overlayActorMPRC.RotateZ(180)
+            overlayActorMPRC.RotateX(180)
             self.resliceImageViewerMPRC.GetRenderer().AddActor(overlayActorMPRC)
             # Define Interactor
             # interactorMPRC = vtk.vtkInteractorStyleImage()
@@ -584,7 +583,6 @@ class Ui(Qt.QMainWindow):
         # Performance log
         start_time = time.time()
         
-        self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         # Load data for MPRs.
         self.LoadStructuralSlices(self.subjectFolder, "T1", True)
         #self.comboBox_MPRModality.setCurrentIndex(0) # Default is T1   # TODO : Remove this old UI element
@@ -917,6 +915,7 @@ class Ui(Qt.QMainWindow):
     ##########################################
     @pyqtSlot()
     def on_click_LoadData(self):
+        self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if(self.comboBox_AvailableSubjects.count() == 0):
             return
         if(self.volumeDataLoaded==True):
@@ -1332,9 +1331,23 @@ class Ui(Qt.QMainWindow):
         modalityButtons = self.buttonGroupModality.buttons()
         visButtons = self.buttonGroupVis.buttons()
         modeButtons = self.buttonGroupModes.buttons()
+        if(os.path.isfile(self.subjectFolder + "\\structural\\T1.nii")):
+            modalityButtons[0].setEnabled(True)
+        else:
+            modalityButtons[0].setEnabled(False)
+        if(os.path.isfile(self.subjectFolder + "\\structural\\T2.nii")):
+            modalityButtons[1].setEnabled(True)
+        else:
+            modalityButtons[1].setEnabled(False)
+        if(os.path.isfile(self.subjectFolder + "\\structural\\FLAIR.nii")):
+            modalityButtons[2].setEnabled(True)
+        else:
+            modalityButtons[2].setEnabled(False)
+
         for btn in modalityButtons:
-            btn.setChecked(True)
-            break
+            if(btn.isEnabled):
+                btn.setChecked(True)
+                break
         for btn in visButtons:
             btn.setChecked(True)
             break

@@ -9,15 +9,17 @@ import json
 from nibabel import freesurfer
 
 #listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA", "07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-listOfSubjects = ["07040DORE_DATA", "07043SEME_DATA"]
-modalities = ["T1", "T2", "3DFLAIR"]
+#listOfSubjects = ["07040DORE_DATA", "07043SEME_DATA"]
+#modalities = ["T1", "T2", "3DFLAIR"]
+listOfSubjects = ["DTIDATA"]
+modalities = ["T1", "T2"]
 
 for subject in listOfSubjects:
     for modality in modalities:
         #subject = "08037ROGU_DATA"
-        connectedComponentMaskFile = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subject + "\\lesionMask\\ConnectedComponents.nii"
-        T1VolumeFile = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subject + "\\structural\\" + modality + ".nii"
-        voxelSpaceCorrectedFile = "D:\\DATASET\\MS_SegmentationChallengeDataset\\" + subject + "\\lesionMask\\ConnectedComponents"+modality+"VoxelSpaceCorrected.nii"
+        connectedComponentMaskFile = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\" + subject + "\\lesionMask\\ConnectedComponents.nii"
+        T1VolumeFile = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\" + subject + "\\structural\\" + modality + ".nii"
+        voxelSpaceCorrectedFile = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\" + subject + "\\lesionMask\\ConnectedComponents"+modality+"VoxelSpaceCorrected.nii"
 
         imageT1 = sitk.ReadImage(T1VolumeFile)
         imageMask = sitk.ReadImage(connectedComponentMaskFile)
