@@ -179,13 +179,6 @@ class Ui(Qt.QMainWindow):
         self.vl_LesionMapDualLeft.addWidget(self.vtkWidgetLesionMapDualLeft)
         self.vl_LesionMapDualRight.addWidget(self.vtkWidgetLesionMapDualRight)
 
-        # self.vtkWidget.Initialize()
-        # self.vtkWidgetMPRA.Initialize()
-        # self.vtkWidgetMPRB.Initialize()
-        # self.vtkWidgetMPRC.Initialize()
-        # self.vtkWidgetLesionMapDualLeft.Initialize()
-        # self.vtkWidgetLesionMapDualRight.Initialize()
-
         self.ren = vtk.vtkRenderer() # Renderer for volume
         self.renMapOutcome = vtk.vtkRenderer() # Renderer for displaying mapping outcomes.
         self.renMPRA = vtk.vtkRenderer() # Renderer for MPR A
