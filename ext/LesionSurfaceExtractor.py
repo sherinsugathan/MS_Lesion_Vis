@@ -63,6 +63,7 @@ for subject in listOfSubjects:
 
         threshold = vtk.vtkThreshold()
         threshold.SetInputData(transformFilter.GetOutput())
+        #threshold.SetInputData(surface.GetOutput())
         threshold.ThresholdBetween(i+1,i+1)
         threshold.Update()
 
@@ -75,9 +76,7 @@ for subject in listOfSubjects:
         lesionMapper = vtk.vtkOpenGLPolyDataMapper()
         lesionMapper.SetInputConnection(geometryFilter.GetOutputPort())
         #lesionMapper.GetInput().GetPointData().SetScalars(colorData)
-        lesionMapper.Update()
-
-        
+        lesionMapper.Update()       
 
         multiBlockDataset.SetBlock(i,lesionMapper.GetInput())
         print(subject, "PROCESSING LESION", i,"/",numberOfLesionElements)

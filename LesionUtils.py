@@ -212,21 +212,22 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.NewPickedActor.GetProperty().SetDiffuse(1.0)
         self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
-        centerOfMassFilter = vtk.vtkCenterOfMass()
-        centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
-        #print(self.NewPickedActor.GetMapper().GetInput())
-        centerOfMassFilter.SetUseScalarsAsWeights(False)
-        centerOfMassFilter.Update()
+        # centerOfMassFilter = vtk.vtkCenterOfMass()
+        # centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+        # #print(self.NewPickedActor.GetMapper().GetInput())
+        # centerOfMassFilter.SetUseScalarsAsWeights(False)
+        # centerOfMassFilter.Update()
 
-        self.centerOfMass = centerOfMassFilter.GetCenter()
+        #self.centerOfMass = centerOfMassFilter.GetCenter()
+        self.centerOfMass = self.lesionCentroids[int(lesionID)-1][0:3]
 
         # Get slice numbers for setting the MPRs.
-        sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
-        self.sliderA.setValue(sliceNumbers[2])
+        sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.lesionCentroids[int(lesionID)-1][0:3])
+    
+        # Update sliders based on picked lesion.
+        self.sliderA.setValue(sliceNumbers[0])
         self.sliderB.setValue(sliceNumbers[1])
-        self.sliderC.setValue(sliceNumbers[0])
-
-        print("picked lesion")
+        self.sliderC.setValue(sliceNumbers[2])
         
         self.lesionvis.userPickedLesion = lesionID
         self.overlayDataMain["Lesion ID"] = str(lesionID)
@@ -248,7 +249,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
 
             #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
             lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
-            streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
+            streamActor = computeStreamlines(self.subjectFolder, None, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
             information = vtk.vtkInformation()
             information.Set(self.informationKey,"structural tracts")
             streamActor.GetProperty().SetInformation(information)
@@ -1033,7 +1034,7 @@ def computeSlicePositionFrom3DCoordinates(subjectFolder, pt):
     readerT1.ReadImageInformation()
     readerT1.LoadPrivateTagsOn()
     imageT1 = sitk.ReadImage(fileNameT1)
-    return imageT1.TransformPhysicalPointToIndex(pt)
+    return imageT1.TransformPhysicalPointToIndex(pt) # Return IJK coordinates
 
 '''
 ##########################################################################
