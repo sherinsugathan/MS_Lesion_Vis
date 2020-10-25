@@ -1071,7 +1071,6 @@ class Ui(Qt.QMainWindow):
         self.sliceMask_MPRB = np.rot90(self.alpha_mask[:, self.midSliceY, :])
         self.MPRB.set_data(self.slice_MPRB)
         self.MPRBMask.set_data(self.sliceMask_MPRB)
-        
         self.canvasMPRB.draw()
 
     # Handler for MPRC Slider change.
