@@ -287,6 +287,13 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
             lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
 
+            # Reset view style for all other lesions.
+            for actor in self.lesionvis.lesionActors:
+                scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+                if(scenelesionID!=lesionID):
+                    actor.GetMapper().ScalarVisibilityOn()
+
+
             if("lh" in str(itemType) and False):
                 if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)

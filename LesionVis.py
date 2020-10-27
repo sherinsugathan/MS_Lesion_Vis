@@ -735,8 +735,11 @@ class Ui(Qt.QMainWindow):
 
                 if(fileNames[i].endswith("ventricleMesh.obj") == True):
                     LesionUtils.smoothSurface(actor)
+                    information.Set(self.informationKey,"ventricles")
+                    actor.GetProperty().SetInformation(information)
                     actor.GetMapper().ScalarVisibilityOff()
                     actor.GetProperty().SetColor(0.5608, 0.7059, 0.5725)
+                    #self.actors.append(actor)
 
                 if(fileNames[i].endswith("lesions.obj")==False):
                     actor.GetProperty().SetInformation(information)
