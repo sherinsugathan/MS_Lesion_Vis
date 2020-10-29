@@ -1080,8 +1080,10 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
 
     colorDataRh = vtk.vtkUnsignedCharArray()
     colorDataRh.SetNumberOfComponents(3)
+    colorDataRh.SetName("ColorsFreeSurferRh")
     colorDataLh = vtk.vtkUnsignedCharArray()
     colorDataLh.SetNumberOfComponents(3)
+    colorDataLh.SetName("ColorsFreeSurferLh")
 
     for index in range(numberOfPointsRh):
         if(labelsRh[index] == -1):

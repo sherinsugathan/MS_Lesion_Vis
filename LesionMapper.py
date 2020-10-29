@@ -95,7 +95,7 @@ class LesionMapper():
     self.lesionvis.renDualLeft.AddObserver("StartEvent", self.leftCameraModifiedCallback)
     self.lesionvis.renDualRight.AddObserver("StartEvent", self.rightCameraModifiedCallback)
 
-    for actor in self.lesionvis.actors:
+    for actor in self.lesionvis.actors: # Adding actors to left and right viewports.
         itemType = actor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
         if(itemType == None or itemType == "ventricles"):
             self.lesionvis.renDualLeft.AddActor(actor)
@@ -205,6 +205,21 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.currentActiveStreamlineActor = None
         self.currentLesionID = None
         self.clrRed = [227,74,51]
+        self.isLesionMappingActivatedOnceAndInitialized = False
+        self.lesionMapper.lesionMappingRh = np.array([])
+        self.lesionMapper.lesionMappingLh = np.array([])
+
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLh)
+
+        self.vtk_colorsLh = vtk.vtkUnsignedCharArray()
+        self.vtk_colorsRh = vtk.vtkUnsignedCharArray()
+        self.vtk_colorsLh.SetNumberOfComponents(3)
+        self.vtk_colorsLh.SetName("ColorsLh")
+        self.vtk_colorsRh.SetNumberOfComponents(3)
+        self.vtk_colorsRh.SetName("ColorsRh")
+        self.vtk_colorsLh.SetNumberOfTuples(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints())
+        self.vtk_colorsRh.SetNumberOfTuples(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints())
 
     def computeLesionImpact(self, lesionId):
         indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
@@ -223,7 +238,39 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         b = 255 - int(p * (255 - clr[2]))
         return [r,g,b]
 
+    def clearOrInitializeMappings(self):
+
+        for index in range(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()):
+            clr = self.metaLh[self.labelScalarArrayLh.GetValue(index)]["color"]
+            self.vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+        for index in range(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()):
+            clr = self.metaRh[self.labelScalarArrayRh.GetValue(index)]["color"]
+            self.vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
+
+        self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
+        self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+        for vertexIndex in range(self.lesionMapper.lesionMappingRh.size):
+	        clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
+	        lightClr = self.tintColor(clrParcellationRh, 0.2)
+	        self.vtk_colorRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+        for vertexIndex in range(self.lesionMapper.lesionMappingLh.size):
+	        clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
+	        lightClr = self.tintColor(clrParcellationLh, 0.2)
+	        self.vtk_colorLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
+
     def mapLesionToSurface(self, lesionID, NewPickedActor):
+        if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
+            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
+        else: # Use parcellation colors that has no red lesion impact patches
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+
+        scalarsLh = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
+        scalarsRh = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
+
         self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
         self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
         self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
@@ -271,12 +318,12 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             return
 
 
-        vtk_colorsLh = vtk.vtkUnsignedCharArray()
-        vtk_colorsLh.SetNumberOfComponents(3)
-        vtk_colorsLh.SetName("ColorsLh")
-        vtk_colorsRh = vtk.vtkUnsignedCharArray()
-        vtk_colorsRh.SetNumberOfComponents(3)
-        vtk_colorsRh.SetName("ColorsRh")
+        #vtk_colorsLh = vtk.vtkUnsignedCharArray()
+        #vtk_colorsLh.SetNumberOfComponents(3)
+        #vtk_colorsLh.SetName("ColorsLh")
+        #vtk_colorsRh = vtk.vtkUnsignedCharArray()
+        #vtk_colorsRh.SetNumberOfComponents(3)
+        #vtk_colorsRh.SetName("ColorsRh")
 
         #clrGreen = [161,217,155]
         
@@ -310,31 +357,32 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         #     else:
         #         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
 
-        for vertexIndex in range(self.lesionMapper.lesionMappingRh.size):
+        for vertexIndex in range(scalarsRh.GetNumberOfTuples()):
             if(self.lesionMapper.lesionMappingRh[vertexIndex] == True):
-                vtk_colorsRh.InsertNextTuple3(self.clrRed[0], self.clrRed[1], self.clrRed[2])
+                self.vtk_colorsRh.SetTuple3(vertexIndex, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsRh[vertexIndex] == -1):
                     clrParcellationRh = [25,5,25]
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
                     lightClr = self.tintColor(clrParcellationRh, 0.2)
-                vtk_colorsRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
-        for vertexIndex in range(self.lesionMapper.lesionMappingLh.size):
+                self.vtk_colorsRh.SetTuple3(vertexIndex, lightClr[0], lightClr[1], lightClr[2])
+
+        for vertexIndex in range(scalarsLh.GetNumberOfTuples()):
             if(self.lesionMapper.lesionMappingLh[vertexIndex] == True):
-                vtk_colorsLh.InsertNextTuple3(self.clrRed[0], self.clrRed[1], self.clrRed[2])
+                self.vtk_colorsLh.SetTuple3(vertexIndex, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsLh[vertexIndex] == -1):
                     clrParcellationRh = [25,5,25]
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
                     lightClr = self.tintColor(clrParcellationLh, 0.2)
-                vtk_colorsLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+                self.vtk_colorsLh.SetTuple3(vertexIndex, lightClr[0], lightClr[1], lightClr[2])
 
         self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
         self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
-        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
-        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
 
         # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
 
@@ -356,14 +404,21 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 actor.GetProperty().SetDiffuse(1.0)
                 actor.GetProperty().SetSpecular(0.0)
 
-
     # Update surface colors based on user interaction.
     def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
+        if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
+            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
+        else: # Use parcellation colors that has no red lesion impact patches
+            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+
         scalarsLh = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
         scalarsRh = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
+
         for i in range(scalarsLh.GetNumberOfTuples()):
-            if(self.lesionMapper.lesionMappingLh[i] == True):
-                    scalarsLh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
+            if(self.lesionMapper.lesionMappingLh.size > 0 and self.lesionMapper.lesionMappingLh[i] == True):
+                scalarsLh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsLh[i] == -1):
                     clrParcellationLh = self.lesionvis.metaLh[0]["color"]
@@ -371,13 +426,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[i]]["color"]
                     lightClr = self.tintColor(clrParcellationLh, 0.1)
                 if(clrParcellationLh == pickedParcellationColor and hemisphere == "lh"): # If picked color is same as current color, Apply tint.
-                    scalarsLh.SetTuple(i, self.tintColor(clrParcellationLh, 0.9))
+                    scalarsLh.SetTuple(i, self.tintColor(clrParcellationLh, 0.9)) # Darken parcellation
                 else:
                     scalarsLh.SetTuple3(i, lightClr[0], lightClr[1], lightClr[2])
 
         for i in range(scalarsRh.GetNumberOfTuples()):
-            if(self.lesionMapper.lesionMappingRh[i] == True):
-                    scalarsRh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
+            if(self.lesionMapper.lesionMappingRh.size > 0 and self.lesionMapper.lesionMappingRh[i] == True):
+                scalarsRh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsRh[i] == -1):
                     clrParcellationRh = self.lesionvis.metaRh[0]["color"]
@@ -385,12 +440,50 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[i]]["color"]
                     lightClr = self.tintColor(clrParcellationRh, 0.1)
                 if(clrParcellationRh == pickedParcellationColor and hemisphere == "rh"): # If picked color is same as current color, Apply tint.
-                    scalarsRh.SetTuple(i, self.tintColor(clrParcellationRh, 0.9))
+                    scalarsRh.SetTuple(i, self.tintColor(clrParcellationRh, 0.9)) # darken parcellation.
                 else:
                     scalarsRh.SetTuple3(i, lightClr[0], lightClr[1], lightClr[2])
 
-        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
-        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
+        #self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(scalarsRh)
+        #self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(scalarsLh)
+
+    # # Update surface colors based on user interaction. (Original)
+    # def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
+    #     scalarsLh = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
+    #     scalarsRh = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
+
+    #     for i in range(scalarsLh.GetNumberOfTuples()):
+    #         if(self.lesionMapper.lesionMappingLh != None):
+    #             if(self.lesionMapper.lesionMappingLh[i] == True):
+    #                 scalarsLh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
+    #         else:
+    #             if(self.lesionvis.labelsLh[i] == -1):
+    #                 clrParcellationLh = self.lesionvis.metaLh[0]["color"]
+    #             else:
+    #                 clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[i]]["color"]
+    #                 lightClr = self.tintColor(clrParcellationLh, 0.1)
+    #             if(clrParcellationLh == pickedParcellationColor and hemisphere == "lh"): # If picked color is same as current color, Apply tint.
+    #                 scalarsLh.SetTuple(i, self.tintColor(clrParcellationLh, 0.9)) # Darken parcellation
+    #             else:
+    #                 scalarsLh.SetTuple3(i, lightClr[0], lightClr[1], lightClr[2])
+
+    #     for i in range(scalarsRh.GetNumberOfTuples()):
+    #         if(self.lesionMapper.lesionMappingRh!=None):
+    #             if(self.lesionMapper.lesionMappingRh[i] == True):
+    #                 scalarsRh.SetTuple3(i, self.clrRed[0], self.clrRed[1], self.clrRed[2])
+    #         else:
+    #             if(self.lesionvis.labelsRh[i] == -1):
+    #                 clrParcellationRh = self.lesionvis.metaRh[0]["color"]
+    #             else:
+    #                 clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[i]]["color"]
+    #                 lightClr = self.tintColor(clrParcellationRh, 0.1)
+    #             if(clrParcellationRh == pickedParcellationColor and hemisphere == "rh"): # If picked color is same as current color, Apply tint.
+    #                 scalarsRh.SetTuple(i, self.tintColor(clrParcellationRh, 0.9)) # darken parcellation.
+    #             else:
+    #                 scalarsRh.SetTuple3(i, lightClr[0], lightClr[1], lightClr[2])
+
+    #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
+    #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
 
     def leftButtonPressEvent(self,obj,event):
         clickPos = self.GetInteractor().GetEventPosition()
