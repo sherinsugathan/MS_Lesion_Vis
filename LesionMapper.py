@@ -15,14 +15,14 @@ class LesionMapper():
       self.textActorLesionStatistics.UseBorderAlignOff() 
       self.textActorLesionStatistics.SetPosition(10,0)
       self.textActorLesionStatistics.GetTextProperty().SetFontFamily(4)
-      self.textActorLesionStatistics.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+      self.textActorLesionStatistics.GetTextProperty().SetFontFile("asset\\GoogleSans-Medium.ttf")
       self.textActorLesionStatistics.GetTextProperty().SetFontSize(14)
       self.textActorLesionStatistics.GetTextProperty().ShadowOn()
       self.textActorLesionStatistics.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
       self.textActorParcellation.UseBorderAlignOff() 
       self.textActorParcellation.GetTextProperty().SetFontFamily(4)
-      self.textActorParcellation.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+      self.textActorParcellation.GetTextProperty().SetFontFile("asset\\GoogleSans-Medium.ttf")
       self.textActorParcellation.GetTextProperty().SetFontSize(14)
       self.textActorParcellation.GetTextProperty().ShadowOn()
       self.textActorParcellation.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -120,7 +120,7 @@ class LesionMapper():
 
     # Add legend data
     legend = vtk.vtkLegendBoxActor()
-    legend.SetNumberOfEntries(2)
+    legend.SetNumberOfEntries(1)
     overlayTextProperty = vtk.vtkTextProperty()
     overlayTextProperty.SetFontFamily(4)
     overlayTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
@@ -128,12 +128,9 @@ class LesionMapper():
     legend.SetEntryTextProperty(overlayTextProperty)
     legendBox = vtk.vtkCubeSource()
     legendBox.Update()
-    legend.SetEntryString(0, "NORMAL AREA")
-    legend.SetEntryString(1, "LESION INFLUENCE AREA")
+    legend.SetEntryString(0, "LESION INFLUENCE AREA")
     legend.SetEntrySymbol(0, legendBox.GetOutput())
-    legend.SetEntrySymbol(1, legendBox.GetOutput())
-    legend.SetEntryColor(0, [161/255,217/255,155/255])
-    legend.SetEntryColor(1, [227/255,74/255,51/255])
+    legend.SetEntryColor(0, [227/255,74/255,51/255])
     legend.BoxOff()
     legend.BorderOff()
     # place legend in lower right
@@ -158,6 +155,11 @@ class LesionMapper():
   def ClearData(self):
     self.lesionvis.renDualLeft.RemoveAllViewProps()
     self.lesionvis.renDualRight.RemoveAllViewProps()
+
+  def EnableStreamlines(self):
+      if(self.interactionStyleLeft.currentActiveStreamlineActor!=None):
+        self.lesionvis.renDualLeft.AddActor(self.interactionStyleLeft.currentActiveStreamlineActor)
+        self.lesionvis.renDualLeft.Render()
 
   def ClearStreamlines(self):
       if(self.interactionStyleLeft.currentActiveStreamlineActor!=None):
@@ -209,8 +211,8 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.lesionMappingRh = np.array([])
         self.lesionMapper.lesionMappingLh = np.array([])
 
-        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsRh)
-        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLh)
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightLh)
 
         self.vtk_colorsLh = vtk.vtkUnsignedCharArray()
         self.vtk_colorsRh = vtk.vtkUnsignedCharArray()
@@ -238,27 +240,27 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         b = 255 - int(p * (255 - clr[2]))
         return [r,g,b]
 
-    def clearOrInitializeMappings(self):
+    # def clearOrInitializeMappings(self):
 
-        for index in range(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()):
-            clr = self.metaLh[self.labelScalarArrayLh.GetValue(index)]["color"]
-            self.vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
-        for index in range(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()):
-            clr = self.metaRh[self.labelScalarArrayRh.GetValue(index)]["color"]
-            self.vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
+    #     for index in range(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()):
+    #         clr = self.metaLh[self.labelScalarArrayLh.GetValue(index)]["color"]
+    #         self.vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+    #     for index in range(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()):
+    #         clr = self.metaRh[self.labelScalarArrayRh.GetValue(index)]["color"]
+    #         self.vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
 
-        self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
-        self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
-        for vertexIndex in range(self.lesionMapper.lesionMappingRh.size):
-	        clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
-	        lightClr = self.tintColor(clrParcellationRh, 0.2)
-	        self.vtk_colorRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
-        for vertexIndex in range(self.lesionMapper.lesionMappingLh.size):
-	        clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
-	        lightClr = self.tintColor(clrParcellationLh, 0.2)
-	        self.vtk_colorLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
-        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
-        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
+    #     self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
+    #     self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
+    #     for vertexIndex in range(self.lesionMapper.lesionMappingRh.size):
+	#         clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
+	#         lightClr = self.tintColor(clrParcellationRh, 0.2)
+	#         self.vtk_colorRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+    #     for vertexIndex in range(self.lesionMapper.lesionMappingLh.size):
+	#         clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
+	#         lightClr = self.tintColor(clrParcellationLh, 0.2)
+	#         self.vtk_colorLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
+    #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
+    #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
 
     def mapLesionToSurface(self, lesionID, NewPickedActor):
         if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
@@ -424,7 +426,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationLh = self.lesionvis.metaLh[0]["color"]
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[i]]["color"]
-                    lightClr = self.tintColor(clrParcellationLh, 0.1)
+                    lightClr = self.tintColor(clrParcellationLh, 0.2)
                 if(clrParcellationLh == pickedParcellationColor and hemisphere == "lh"): # If picked color is same as current color, Apply tint.
                     scalarsLh.SetTuple(i, self.tintColor(clrParcellationLh, 0.9)) # Darken parcellation
                 else:
@@ -438,7 +440,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = self.lesionvis.metaRh[0]["color"]
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[i]]["color"]
-                    lightClr = self.tintColor(clrParcellationRh, 0.1)
+                    lightClr = self.tintColor(clrParcellationRh, 0.2)
                 if(clrParcellationRh == pickedParcellationColor and hemisphere == "rh"): # If picked color is same as current color, Apply tint.
                     scalarsRh.SetTuple(i, self.tintColor(clrParcellationRh, 0.9)) # darken parcellation.
                 else:

@@ -154,6 +154,11 @@ class Ui(Qt.QMainWindow):
             #self.brodmannTextActor.SetInput("Sherin")
             #self.iren.Render()
 
+    def resource_path(self, relative):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative)
+        return os.path.join(relative)
+
     # Initialize vtk
     def initVTK(self):
         # Define viewport ranges (3 MPRS and 1 volume rendering)
@@ -249,7 +254,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRA.UseBorderAlignOff()
         self.sliceNumberTextMPRA.SetPosition(0,0)
         self.sliceNumberTextMPRA.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRA.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        self.sliceNumberTextMPRA.GetTextProperty().SetFontFile("asset\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRA.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRA.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRA.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -257,7 +262,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRB.UseBorderAlignOff()
         self.sliceNumberTextMPRB.SetPosition(0,0)
         self.sliceNumberTextMPRB.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRB.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        self.sliceNumberTextMPRB.GetTextProperty().SetFontFile("asset\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRB.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRB.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRB.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -265,7 +270,7 @@ class Ui(Qt.QMainWindow):
         self.sliceNumberTextMPRC.UseBorderAlignOff()
         self.sliceNumberTextMPRC.SetPosition(0,0)
         self.sliceNumberTextMPRC.GetTextProperty().SetFontFamily(4)
-        self.sliceNumberTextMPRC.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        self.sliceNumberTextMPRC.GetTextProperty().SetFontFile("asset\\RobotoMono-Medium.ttf")
         self.sliceNumberTextMPRC.GetTextProperty().SetFontSize(14)
         self.sliceNumberTextMPRC.GetTextProperty().ShadowOn()
         self.sliceNumberTextMPRC.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
@@ -282,20 +287,25 @@ class Ui(Qt.QMainWindow):
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
         self.textActorLesionStatistics.GetTextProperty().SetFontFamily(4)
-        self.textActorLesionStatistics.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        #print("FONT LOCATION", os.path.dirname(os.path.abspath(__file__)) + "\\asset\\GoogleSans-Medium.ttf")
+        #self.textActorLesionStatistics.GetTextProperty().SetFontFile(os.path.dirname(os.path.abspath(__file__)) + "\\asset\\GoogleSans-Medium.ttf")
+        self.textActorLesionStatistics.GetTextProperty().SetFontFile("asset\\GoogleSans-Medium.ttf")
         self.textActorLesionStatistics.GetTextProperty().SetFontSize(14)
         self.textActorLesionStatistics.GetTextProperty().ShadowOn()
         self.textActorLesionStatistics.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
         self.textActorGlobal.UseBorderAlignOff()
         self.textActorGlobal.GetTextProperty().SetFontFamily(4)
-        self.textActorGlobal.GetTextProperty().SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        #self.textActorGlobal.GetTextProperty().SetFontFile("GoogleSans-Medium.ttf")
+        #self.textActorGlobal.GetTextProperty().SetFontFile("GoogleSans-Medium.ttf")
+        #print("PATH ", self.resource_path(os.path.join('asset', 'GoogleSans-Medium.ttf')))
+        self.textActorGlobal.GetTextProperty().SetFontFile("GoogleSans-Medium.ttf")
         self.textActorGlobal.GetTextProperty().SetFontSize(14)
         self.textActorGlobal.GetTextProperty().ShadowOn()
         self.textActorGlobal.GetTextProperty().SetColor( 0.3372, 0.7490, 0.4627 )
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        fontPath = os.path.join(ui_path, "fonts\\RobotoMono-Medium.ttf")
+        fontPath = os.path.join(ui_path, "asset\\RobotoMono-Medium.ttf")
         self.brodmannTextActor = vtk.vtkTextActor()
         self.brodmannTextActor.UseBorderAlignOn()
         self.brodmannTextActor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
@@ -471,7 +481,6 @@ class Ui(Qt.QMainWindow):
 
     # action called by thte push button 
     def plotMPRs(self): 
-        print("Calling plot")
         # clearing old figures
         self.figureMPRA.clear()
         plt.figure(0)
@@ -788,7 +797,7 @@ class Ui(Qt.QMainWindow):
         self.legendDistance.SetNumberOfEntries(4)
         self.overlayLegendTextProperty = vtk.vtkTextProperty()
         self.overlayLegendTextProperty.SetFontFamily(4)
-        self.overlayLegendTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
+        self.overlayLegendTextProperty.SetFontFile("asset\\RobotoMono-Medium.ttf")
         self.overlayLegendTextProperty.SetFontSize(12)
         self.overlayLegendTextProperty.SetJustificationToLeft()
         self.legend.SetEntryTextProperty(self.overlayLegendTextProperty)
@@ -917,7 +926,7 @@ class Ui(Qt.QMainWindow):
             subjectFiles = [f for f in LesionUtils.getListOfFiles(subjectFolder) if os.path.isfile(os.path.join(subjectFolder, f))]
             self.renderData(subjectFiles, self.settings)  # Render the actual data
             # Initialize annotation data
-            self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhwhiteMapper, self.lhwhiteMapper)
+            self.colorsRh, self.colorsLh, self.colorsLightRh, self.colorsLightLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhwhiteMapper, self.lhwhiteMapper)
             #self.colorsRh, self.colorsLh, self.labelsRh, self.labelsLh, self.regionsRh, self.regionsLh, self.metaRh, self.metaLh, self.uniqueLabelsRh, self.uniqueLabelsLh, self.areaRh, self.areaLh, self.polyDataRh, self.polyDataLh = LesionUtils.initializeSurfaceAnnotationColors(subjectFolder, self.rhpialMapper, self.lhpialMapper)
             # If parcellation enabled
             if self.pushButton_Parcellation.isChecked():
@@ -1449,7 +1458,7 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot(bool)
     def fiberEnable_toggled(self, checkStatus):
         if(checkStatus == True):
-            self.streamActors = self.streamActorsDTI
+            if self.dualLoadedOnce: self.lesionMapperDual.EnableStreamlines()
         else:
             if self.dualLoadedOnce: self.lesionMapperDual.ClearStreamlines() 
 

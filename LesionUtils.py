@@ -1085,12 +1085,23 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
     colorDataLh.SetNumberOfComponents(3)
     colorDataLh.SetName("ColorsFreeSurferLh")
 
+    colorDataLightRh = vtk.vtkUnsignedCharArray()
+    colorDataLightRh.SetNumberOfComponents(3)
+    colorDataLightRh.SetNumberOfTuples(numberOfPointsRh)
+    colorDataLightRh.SetName("ColorsFreeSurferRh")
+    colorDataLightLh = vtk.vtkUnsignedCharArray()
+    colorDataLightLh.SetNumberOfComponents(3)
+    colorDataLightLh.SetNumberOfTuples(numberOfPointsLh)
+    colorDataLightLh.SetName("ColorsFreeSurferLh")
+
     for index in range(numberOfPointsRh):
         if(labelsRh[index] == -1):
             clr = [25,5,25]
         else:
             clr = metaRh[labelsRh[index]]["color"]
+            tintColor([clr[0], clr[1], clr[2]], 0.2)
         colorDataRh.InsertNextTuple3(clr[0], clr[1], clr[2])
+        colorDataLightRh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.2))
 
     for index in range(numberOfPointsLh):
         if(labelsLh[index] == -1):
@@ -1098,6 +1109,7 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
         else:
             clr = metaLh[labelsLh[index]]["color"]
         colorDataLh.InsertNextTuple3(clr[0], clr[1], clr[2])
+        colorDataLightLh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.2))
 
     areaRh = {}
     polyDataRh = []
@@ -1168,7 +1180,7 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
     
     print("Completed")
     
-    return colorDataRh, colorDataLh, labelsRh, labelsLh, regionsRh, regionsLh, metaRh, metaLh, uniqueLabelsRh, uniqueLabelsLh, areaRh, areaLh, polyDataRh, polyDataLh
+    return colorDataRh, colorDataLh, colorDataLightRh, colorDataLightLh, labelsRh, labelsLh, regionsRh, regionsLh, metaRh, metaLh, uniqueLabelsRh, uniqueLabelsLh, areaRh, areaLh, polyDataRh, polyDataLh
 
 '''
 ##########################################################################

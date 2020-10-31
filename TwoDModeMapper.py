@@ -126,7 +126,7 @@ class TwoDModeMapper():
 
 
     ui_path = os.path.dirname(os.path.abspath(__file__))
-    fontPath = os.path.join(ui_path, "fonts\\RobotoMono-Medium.ttf")
+    fontPath = os.path.join(ui_path, "asset\\GoogleSans-Medium.ttf")
     self.textActorLesion = vtk.vtkTextActor()
     self.textActorSurface = vtk.vtkTextActor()
     self.textActorRh = vtk.vtkTextActor()

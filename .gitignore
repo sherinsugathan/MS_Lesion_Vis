@@ -6,3 +6,5 @@ __pycache__/LesionUtils.cpython-37.pyc
 __pycache__/LesionMapper.cpython-37.pyc
 *.pyc
 envs/
+build/
+dist/
