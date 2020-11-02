@@ -8,6 +8,7 @@ import os
 import vtk
 import numpy as np
 import time
+from datetime import datetime
 import SimpleITK as sitk
 import time
 import json
@@ -119,9 +120,12 @@ def captureScreenshot(renderWindow):
     windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
     windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
     windowToImageFilter.Update()
-    timestr = time.strftime("%Y%m%d-%H%M%S")
+    curr_time = datetime.now()
+    timestr = curr_time.strftime('%H.%M.%S.%f')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    fileName = dir_path + "\\" + timestr + ".png"
     writer = vtk.vtkPNGWriter()
-    writer.SetFileName(timestr + ".png")
+    writer.SetFileName(fileName)
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
 
@@ -1557,3 +1561,39 @@ def tintColor(clr, p=0.5):
     g = 255 - int(p * (255 - clr[1]))
     b = 255 - int(p * (255 - clr[2]))
     return [r,g,b]
+
+'''
+##########################################################################
+    Highlight specified actors in the array
+    Returns: None
+##########################################################################
+'''
+def highlightActors(actors, informationIDList, informationUniqueKey):
+    for actor in actors:
+        lesionID = actor.GetProperty().GetInformation().Get(informationUniqueKey)
+        actor.GetMapper().ScalarVisibilityOn()
+        if int(lesionID) in informationIDList:
+            actor.GetMapper().ScalarVisibilityOff()
+            actor.GetProperty().SetColor(1.0, 1.0, 0.0)
+            actor.GetProperty().SetDiffuse(1.0)
+            actor.GetProperty().SetSpecular(0.0)
+
+'''
+##########################################################################
+    Refresh active Renderer.
+    Returns: None
+##########################################################################
+'''
+def refreshActiveRenderer(self):
+    if(self.buttonGroupModes.checkedId() == -2): # Normal Mode
+        self.iren.Render()
+
+    if(self.buttonGroupModes.checkedId() == -3): # Dual Mode
+        self.lesionMapperDual.Refresh()
+
+    if(self.buttonGroupModes.checkedId() == -4): # 2D Mode
+        pass # not implemented yet.
+
+    if(self.buttonGroupModes.checkedId() == -5): # Reports Mode
+        pass
+

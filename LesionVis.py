@@ -390,6 +390,9 @@ class Ui(Qt.QMainWindow):
         self.figureMPRA.canvas.mpl_connect('scroll_event', self.onScrollMPRA)
         self.figureMPRB.canvas.mpl_connect('scroll_event', self.onScrollMPRB)
         self.figureMPRC.canvas.mpl_connect('scroll_event', self.onScrollMPRC)
+        self.figureMPRA.canvas.mpl_connect('button_press_event', self.onClickMPRA)
+        self.figureMPRB.canvas.mpl_connect('button_press_event', self.onClickMPRB)
+        self.figureMPRC.canvas.mpl_connect('button_press_event', self.onClickMPRC)
         # self.iren_MPRA.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRA, 1)
         # self.iren_MPRA.AddObserver('MouseWheelBackwardEvent', self.select_sliceMPRA, 1)
         # self.iren_MPRB.AddObserver('MouseWheelForwardEvent', self.select_sliceMPRB, 1)
@@ -453,6 +456,34 @@ class Ui(Qt.QMainWindow):
                 self.midSliceZ = self.midSliceZ - 1
         self.mprC_Slice_Slider.setValue(self.midSliceZ)
 
+    def onClickMPRA(self, event):
+        location = event.x, event.y
+        transform = self.axMPRA.transData.inverted().transform(location)
+        pickID = self.sliceMask_MPRA[int(transform[1]), int(transform[0])]
+        if(isinstance(pickID, np.float64)):
+            sliceLesionID = [int(pickID)]
+            LesionUtils.highlightActors(self.lesionActors, sliceLesionID, self.informationUniqueKey)
+            LesionUtils.refreshActiveRenderer(self)
+
+    def onClickMPRB(self, event):
+        location = event.x, event.y
+        transform = self.axMPRB.transData.inverted().transform(location)
+        pickID = self.sliceMask_MPRB[int(transform[1]), int(transform[0])]
+        if(isinstance(pickID, np.float64)):
+            sliceLesionID = [int(pickID)]
+            LesionUtils.highlightActors(self.lesionActors, sliceLesionID, self.informationUniqueKey)
+            LesionUtils.refreshActiveRenderer(self)
+
+    def onClickMPRC(self, event):
+        location = event.x, event.y
+        transform = self.axMPRC.transData.inverted().transform(location)
+        pickID = self.sliceMask_MPRC[int(transform[1]), int(transform[0])]
+        if(isinstance(pickID, np.float64)):
+            sliceLesionID = [int(pickID)]
+            LesionUtils.highlightActors(self.lesionActors, sliceLesionID, self.informationUniqueKey)
+            LesionUtils.refreshActiveRenderer(self)
+        
+
     # def select_sliceMPRA(self, caller, event):
     #     """
     #     This synchronizes our overlay plane
@@ -485,7 +516,7 @@ class Ui(Qt.QMainWindow):
         self.figureMPRA.clear()
         plt.figure(0)
         # create an axis
-        axMPRA = self.figureMPRA.add_subplot(111)
+        self.axMPRA = self.figureMPRA.add_subplot(111)
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRA = np.rot90(self.slice_MPRA)
@@ -495,7 +526,7 @@ class Ui(Qt.QMainWindow):
 
         self.figureMPRB.clear()
         plt.figure(1)
-        axMPRB = self.figureMPRB.add_subplot(111)
+        self.axMPRB = self.figureMPRB.add_subplot(111)
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRB = np.rot90(self.slice_MPRB)
@@ -505,7 +536,7 @@ class Ui(Qt.QMainWindow):
 
         self.figureMPRC.clear()
         plt.figure(2)
-        axMPRC = self.figureMPRC.add_subplot(111) 
+        self.axMPRC = self.figureMPRC.add_subplot(111) 
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRC = np.rot90(self.slice_MPRC)
@@ -526,7 +557,7 @@ class Ui(Qt.QMainWindow):
             self.mask_data = self.mask_img.get_fdata() # Read mask data
             # Creating mask
             self.alpha_mask = ma.masked_where(self.mask_data <= 0, self.mask_data)
-            self.alpha_mask[self.alpha_mask>0] = 255
+            #self.alpha_mask[self.alpha_mask>0] = 255
 
             self.data_dims = self.epi_img_data.shape
             self.midSliceX = int(self.data_dims[0]/2)
