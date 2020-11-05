@@ -8,18 +8,19 @@ import ctypes
 
 
 #pending = 01039VITE_DATA, moel check negIndex (for windowSize 5)
-rootPath = "D:\\OneDrive-MyDatasets\\OneDrive - ODMAIL\\Datasets\\ModifiedDataSet\\MS_SegmentationChallengeDataset\\"
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA", "07040DORE_DATA", "07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-#listOfSubjects = ["07040DORE_DATA", "07043SEME_DATA"]
-modalities = ["T1", "T2", "3DFLAIR"]
-
+rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA", "07040DORE_DATA", "07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+listOfSubjects = ["DTIDATA"]
+#modalities = ["T1", "T2", "3DFLAIR"]
+modalities = ["T1", "T2"]
 
 for subjectString in listOfSubjects:
     for modality in modalities:
 
         #subjectString = "08037ROGU_DATA"
         fileNameT1 = rootPath + subjectString+"\\structural\\"+modality+".nii"
-        fileNameMask = rootPath + subjectString+"\\lesionMask\\resampledConsensus"+modality+"Cropped.nii"
+        #fileNameMask = rootPath + subjectString+"\\lesionMask\\resampledConsensus"+modality+"Cropped.nii" #[USED FOR OLD STRUCTURAL DATA - CHECK IF THIS IS STILL NEEDED. CAN YOU USE FOLLOWING LINE INSTEAD?]
+        fileNameMask = rootPath + subjectString + "\\lesionMask\\ConnectedComponents" + modality + "VoxelSpaceCorrected.nii"
         fileNameOutput = rootPath + subjectString+"\\structural\\"+modality+"IntensityDifference.nii"
 
         # Read T1 data.
