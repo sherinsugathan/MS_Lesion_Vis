@@ -295,7 +295,10 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             for actor in self.lesionvis.lesionActors:
                 scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
                 if(scenelesionID!=lesionID):
-                    actor.GetMapper().ScalarVisibilityOn()
+                    if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                        actor.GetMapper().ScalarVisibilityOff()
+                    else:
+                        actor.GetMapper().ScalarVisibilityOn()
 
 
             if("lh" in str(itemType) and False):

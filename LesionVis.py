@@ -283,6 +283,7 @@ class Ui(Qt.QMainWindow):
         self.textActorGlobal = vtk.vtkTextActor()
         self.depthPeelingStatus = "Depth Peeling : Enabled"
         
+        self.availableModalities = []
         self.numberOfLesions = 0
         self.textActorLesionStatistics.UseBorderAlignOff()
         self.textActorLesionStatistics.SetPosition(10,0)
@@ -544,6 +545,9 @@ class Ui(Qt.QMainWindow):
         self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect='auto')
         self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
 
+        self.canvasMPRA.draw()
+        self.canvasMPRB.draw()
+        self.canvasMPRC.draw()
 
     # Load and Render Structural data as image slices.
     def LoadStructuralSlices(self, subjectFolder, modality, IsOverlayEnabled = False):
@@ -658,9 +662,9 @@ class Ui(Qt.QMainWindow):
 
                 self.lesionAverageLesionIntensityT1.append(p["AverageLesionIntensity"])
                 self.lesionAverageSuroundingIntensityT1.append(p["AverageSurroundingIntensity"])
+                self.lesionAverageLesionIntensityT2.append(p["AverageLesionIntensityT2"])
+                self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
                 if(self.dtiDataActive == False):
-                    self.lesionAverageLesionIntensityT2.append(p["AverageLesionIntensityT2"])
-                    self.lesionAverageSuroundingIntensityT2.append(p["AverageSurroundingIntensityT2"])
                     self.lesionAverageLesionIntensityFLAIR.append(p["AverageLesionIntensityFLAIR"])
                     self.lesionAverageSuroundingIntensityFLAIR.append(p["AverageSurroundingIntensityFLAIR"])
                 else:
@@ -1214,14 +1218,20 @@ class Ui(Qt.QMainWindow):
     def on_buttonGroupVisChanged(self, btn):
         if(self.dataFolderInitialized == True):
             if(btn.text()=="CONTINUOUS"):
-                self.pushButton_T1.setEnabled(True)
-                self.pushButton_T2.setEnabled(True)
-                self.pushButton_FLAIR.setEnabled(True)
+                if "T1" in self.availableModalities:
+                    self.pushButton_T1.setEnabled(True) 
+                if "T2" in self.availableModalities:
+                    self.pushButton_T2.setEnabled(True)
+                if "FLAIR" in self.availableModalities:
+                    self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsContinuous()
             if(btn.text()=="DISCRETE"):
-                self.pushButton_T1.setEnabled(True)
-                self.pushButton_T2.setEnabled(True)
-                self.pushButton_FLAIR.setEnabled(True)
+                if "T1" in self.availableModalities:
+                    self.pushButton_T1.setEnabled(True)
+                if "T2" in self.availableModalities:
+                    self.pushButton_T2.setEnabled(True)
+                if "FLAIR" in self.availableModalities:
+                    self.pushButton_FLAIR.setEnabled(True)
                 self.updateLesionColorsDiscrete()
             if(btn.text()=="DISTANCE"):
                 self.pushButton_T1.setEnabled(False)
@@ -1343,19 +1353,23 @@ class Ui(Qt.QMainWindow):
 
     # Initialize mode buttons.
     def initializeModeButtons(self):
+        self.availableModalities.clear()
         modalityButtons = self.buttonGroupModality.buttons()
         visButtons = self.buttonGroupVis.buttons()
         modeButtons = self.buttonGroupModes.buttons()
         if(os.path.isfile(self.subjectFolder + "\\structural\\T1.nii")):
             modalityButtons[0].setEnabled(True)
+            self.availableModalities.append("T1")
         else:
             modalityButtons[0].setEnabled(False)
         if(os.path.isfile(self.subjectFolder + "\\structural\\T2.nii")):
             modalityButtons[1].setEnabled(True)
+            self.availableModalities.append("T2")
         else:
             modalityButtons[1].setEnabled(False)
         if(os.path.isfile(self.subjectFolder + "\\structural\\FLAIR.nii")):
             modalityButtons[2].setEnabled(True)
+            self.availableModalities.append("FLAIR")
         else:
             modalityButtons[2].setEnabled(False)
 

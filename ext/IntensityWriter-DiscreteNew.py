@@ -14,7 +14,7 @@ rootPath = "D:\\OneDrive - University of Bergen\Datasets\\MS_SegmentationChallen
 
 listOfSubjects = ["DTIDATA"]
 #listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
-modalityFileNames = ["T1.nii"]
+modalityFileNames = ["T1.nii", "T2.nii"]
 #modalityFileNames = ["T1.nii", "T2.nii", "3DFLAIR.nii"]
 for subjectName in listOfSubjects:
     jsonProcessedOnce = False
@@ -59,11 +59,11 @@ for subjectName in listOfSubjects:
 
         structureInfo = None
         if(jsonProcessedOnce == False):
-            with open(subjectFolder + "\\structure-def.json") as fp: 
+            with open(subjectFolder + "\\structure-def3.json") as fp: 
                 structureInfo = json.load(fp)
                 jsonProcessedOnce = True
         else:
-            with open(subjectFolder + "\\structure-def2.json") as fp: 
+            with open(subjectFolder + "\\structure-def3.json") as fp: 
                 structureInfo = json.load(fp)
         numberOfLesionElements = len(structureInfo)
 
@@ -156,7 +156,7 @@ for subjectName in listOfSubjects:
         #sitk.WriteImage(resampled_volume, "D:\\temp\\newT1.nii")
 
 
-        with open(subjectFolder + '\\structure-def2.json', 'w') as fp:
+        with open(subjectFolder + '\\structure-def3.json', 'w') as fp:
             json.dump(data, fp, indent=4)
 
 print("FINISHED - SUCCESS")
