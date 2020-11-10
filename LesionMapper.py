@@ -199,7 +199,9 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,parent = None, lesionvis = None, lesionMapper = None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
-        self.AddObserver("PickEvent",self.pickEvent)
+        self.AddObserver("LeftButtonReleaseEvent",self.leftButtonReleaseEvent)
+        self.AddObserver("MouseMoveEvent", self.mouseMoveEvent)
+
         self.lesionvis = lesionvis
         self.lesionMapper = lesionMapper
         self.LastPickedActor = None
@@ -223,6 +225,8 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.vtk_colorsLh.SetNumberOfTuples(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints())
         self.vtk_colorsRh.SetNumberOfTuples(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints())
 
+        self.MouseMotion = 0
+
     def computeLesionImpact(self, lesionId):
         indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
         impactString = []
@@ -239,28 +243,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         g = 255 - int(p * (255 - clr[1]))
         b = 255 - int(p * (255 - clr[2]))
         return [r,g,b]
-
-    # def clearOrInitializeMappings(self):
-
-    #     for index in range(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()):
-    #         clr = self.metaLh[self.labelScalarArrayLh.GetValue(index)]["color"]
-    #         self.vtk_colorsLh.InsertNextTuple3(clr[0], clr[1], clr[2])
-    #     for index in range(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()):
-    #         clr = self.metaRh[self.labelScalarArrayRh.GetValue(index)]["color"]
-    #         self.vtk_colorsRh.InsertNextTuple3(clr[0], clr[1], clr[2])
-
-    #     self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
-    #     self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
-    #     for vertexIndex in range(self.lesionMapper.lesionMappingRh.size):
-	#         clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
-	#         lightClr = self.tintColor(clrParcellationRh, 0.2)
-	#         self.vtk_colorRh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
-    #     for vertexIndex in range(self.lesionMapper.lesionMappingLh.size):
-	#         clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
-	#         lightClr = self.tintColor(clrParcellationLh, 0.2)
-	#         self.vtk_colorLh.InsertNextTuple3(lightClr[0], lightClr[1], lightClr[2])
-    #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
-    #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
 
     def mapLesionToSurface(self, lesionID, NewPickedActor):
         if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
@@ -392,9 +374,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
         LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
 
-    def pickEvent(self,obj,event):
-        print("pick event")
-
     # Highlight lesions based on selected parcellation.
     def highlightLesionsBasedOnSelectedParcellation(self, parcellationAssociatedLesionList):
         for actor in self.lesionvis.lesionActors:
@@ -493,159 +472,103 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
     #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
     #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
 
-    def leftButtonPressEvent(self,obj,event):
-        print("hello")
-        clickPos = self.GetInteractor().GetEventPosition()
-        picker = vtk.vtkPropPicker()
-        #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        picker.Pick(clickPos[0], clickPos[1], 0, self.renderer)
-        
-        cellPicker = vtk.vtkCellPicker()
-        cellPicker.SetTolerance(0.0005)
-        cellPicker.Pick(clickPos[0], clickPos[1], 0, self.renderer)
+    def leftButtonReleaseEvent(self, obj, event):
+        if(self.MouseMotion == 0):
+            clickPos = self.GetInteractor().GetEventPosition()
+            picker = vtk.vtkPropPicker()
+            #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+            picker.Pick(clickPos[0], clickPos[1], 0, self.renderer)
+            
+            cellPicker = vtk.vtkCellPicker()
+            cellPicker.SetTolerance(0.0005)
+            cellPicker.Pick(clickPos[0], clickPos[1], 0, self.renderer)
 
-        # get the new
-        self.NewPickedActor = picker.GetActor()
-        
-        # If something was selected
-        if self.NewPickedActor:
-            shouldProcessNewActor = True
-            itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
-            if(itemType=="structural tracts"):# or itemType=="ventricles"): # If clicked on streamtubes.
-                shouldProcessNewActor = False
+            # get the new
+            self.NewPickedActor = picker.GetActor()
+            
+            # If something was selected
+            if self.NewPickedActor:
+                shouldProcessNewActor = True
+                itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
+                if(itemType=="structural tracts"):# or itemType=="ventricles"): # If clicked on streamtubes.
+                    shouldProcessNewActor = False
 
-            if(shouldProcessNewActor == True): # Process only the relevant actors.
-                lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-                self.currentLesionID = lesionID
+                if(shouldProcessNewActor == True): # Process only the relevant actors.
+                    lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+                    self.currentLesionID = lesionID
 
-                # If we picked something before, reset its property
-                if self.LastPickedActor:
-                    self.LastPickedActor.GetMapper().ScalarVisibilityOn()
-                    self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+                    # If we picked something before, reset its property
+                    if self.LastPickedActor:
+                        self.LastPickedActor.GetMapper().ScalarVisibilityOn()
+                        self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
 
-                # Save the property of the picked actor so that we can
-                # restore it next time
-                self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
-                #print(cellPicker.GetPointId())
+                    # Save the property of the picked actor so that we can
+                    # restore it next time
+                    self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+                    #print(cellPicker.GetPointId())
 
-                if("lh" in str(itemType)):
-                    parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
-                    parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
-                    pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
-                    self.updateSurfaceColorsForParcellationPick("lh", pickedParcellationColor)
-                    self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
+                    if("lh" in str(itemType)):
+                        parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
+                        parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
+                        pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
+                        self.updateSurfaceColorsForParcellationPick("lh", pickedParcellationColor)
+                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
 
-                if("rh" in str(itemType)):
-                    parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
-                    parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
-                    self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
-                    pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
-                    self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
-                    self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
+                    if("rh" in str(itemType)):
+                        parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
+                        parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
+                        self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
+                        pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
+                        self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
+                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
 
-                if itemType==None: # Itemtype is None for lesions. They only have Ids.
-                    self.mapLesionToSurface(lesionID, self.NewPickedActor)
-                    self.lesionvis.userPickedLesion = lesionID
-                    self.lesionvis.style.clickedLesionActor = self.NewPickedActor
+                    if itemType==None: # Itemtype is None for lesions. They only have Ids.
+                        self.mapLesionToSurface(lesionID, self.NewPickedActor)
+                        self.lesionvis.userPickedLesion = lesionID
+                        self.lesionvis.style.clickedLesionActor = self.NewPickedActor
 
-                    # Reset view style for all other lesions.
-                    for actor in self.lesionvis.lesionActors:
-                        scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-                        if(scenelesionID!=lesionID):
-                            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
-                                actor.GetMapper().ScalarVisibilityOff()
-                            else:
-                                actor.GetMapper().ScalarVisibilityOn()
+                        # Reset view style for all other lesions.
+                        for actor in self.lesionvis.lesionActors:
+                            scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+                            if(scenelesionID!=lesionID):
+                                if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                                    actor.GetMapper().ScalarVisibilityOff()
+                                else:
+                                    actor.GetMapper().ScalarVisibilityOn()
 
 
-                    # Display streamlines associated with the lesion
-                    if(self.lesionvis.pushButton_EnableFibers.isChecked()==True):
-                        if(self.currentActiveStreamlineActor!=None):
-                            self.lesionvis.renDualLeft.RemoveActor(self.currentActiveStreamlineActor)
+                        # Display streamlines associated with the lesion
+                        if(self.lesionvis.pushButton_EnableFibers.isChecked()==True):
+                            if(self.currentActiveStreamlineActor!=None):
+                                self.lesionvis.renDualLeft.RemoveActor(self.currentActiveStreamlineActor)
 
-                        if(self.lesionvis.streamActors != None): # Either diffusion or HE
-                            streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
-                            self.lesionvis.renDualLeft.AddActor(streamlineActor)
-                            self.currentActiveStreamlineActor = streamlineActor
-                        else: # Signed Distance Map is active
-                            pass
-                        
-
-                    # # Set overlay dictionary
-                    # self.centerOfMass = self.lesionvis.lesionCentroids[int(lesionID)-1]
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion ID"] = str(lesionID)
-                    # self.lesionMapper.overlayDataMainLeftLesions["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
-                    # self.lesionMapper.overlayDataMainLeftLesions["Voxel Count"] = self.lesionvis.lesionNumberOfPixels[int(lesionID)-1]
-                    # self.lesionMapper.overlayDataMainLeftLesions["Elongation"] = "{0:.2f}".format(self.lesionvis.lesionElongation[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionPerimeter[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionvis.lesionSphericalRadius[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionvis.lesionSphericalPerimeter[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion Flatness"] = "{0:.2f}".format(self.lesionvis.lesionFlatness[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
-                    # self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
-                    # impactStringList = self.computeLesionImpact(lesionID)
-                    # functionListString = "\n"
-                    # for elemIndex in range(len(impactStringList)):
-                    #     functionListString = functionListString + str(impactStringList[elemIndex]) + "\n"
-
-                    # self.lesionMapper.overlayDataMainLeftLesionImpact["Affected Functions"] = functionListString
-                    # self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
+                            if(self.lesionvis.streamActors != None): # Either diffusion or HE
+                                streamlineActor = self.lesionvis.streamActors[int(lesionID)-1]
+                                self.lesionvis.renDualLeft.AddActor(streamlineActor)
+                                self.currentActiveStreamlineActor = streamlineActor
+                            else: # Signed Distance Map is active
+                                pass
+                            
+                    LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainRightParcellationImpact, self.lesionMapper.textActorParcellation)
                     
-                    # # Highlight the picked actor by changing its properties
-                    # self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                    # self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-                    # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-                    # self.NewPickedActor.GetProperty().SetSpecular(0.0)
-                    # vtk_colorsLh = vtk.vtkUnsignedCharArray()
-                    # vtk_colorsLh.SetNumberOfComponents(3)
-                    # vtk_colorsRh = vtk.vtkUnsignedCharArray()
-                    # vtk_colorsRh.SetNumberOfComponents(3)
-
-                    # clrGreen = [161,217,155]
-                    # clrRed = [227,74,51]
-
-                    # # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
-                    # numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
-                    # numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
-                    # vertexIndexArrayRh = np.arange(numberOfPointsRh)
-                    # vertexIndexArrayLh = np.arange(numberOfPointsLh)
-                    # affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
-                    # affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
-                    # lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
-                    # lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-                    # for elem in lesionMappingRh:
-                    #     if(elem==True):
-                    #         vtk_colorsRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                    #     else:
-                    #         vtk_colorsRh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-                    # for elem in lesionMappingLh:
-                    #     if(elem==True):
-                    #         vtk_colorsLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                    #     else:
-                    #         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
-
-                    # self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
-                    # self.lesionvis.lhwhiteMapper.ScalarVisibilityOn()
-                    # self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsRh)
-                    # self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(vtk_colorsLh)
-                    # # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
-
-                    # #self.NewPickedActor.GetProperty().SetRepresentationToWireframe()
-                    # LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesions, self.lesionMapper.textActorLesionStatistics)
-                    # LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
-                
-                LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainRightParcellationImpact, self.lesionMapper.textActorParcellation)
-                
-                # save the last picked actor
-                self.LastPickedActor = self.NewPickedActor
-
-        
-        self.OnLeftButtonDown()
+                    # save the last picked actor
+                    self.LastPickedActor = self.NewPickedActor
+        self.OnLeftButtonUp()
         return
+
+    def mouseMoveEvent(self, obj, event):
+        self.MouseMotion = 1
+        self.OnMouseMove()
+        return
+
+    def leftButtonPressEvent(self,obj,event):
+        #print("leftButtonPressEvent")
+        self.MouseMotion = 0
+        self.OnLeftButtonDown()
