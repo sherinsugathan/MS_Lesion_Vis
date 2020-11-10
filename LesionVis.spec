@@ -17,9 +17,6 @@ a = Analysis(['LesionVis.py'],
              noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-			 
-a.datas += [('GoogleSans-Medium.ttf','D:\\MS_Lesion_Vis\\GoogleSans-Medium.ttf', "DATA")]
-
 exe = EXE(pyz,
           a.scripts,
           a.binaries,

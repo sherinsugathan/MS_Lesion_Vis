@@ -131,25 +131,6 @@ def captureScreenshot(renderWindow):
 
 '''
 ##########################################################################
-    Class for implementing custom interactor for MPRs
-##########################################################################
-'''
-class MyMPRInteractorStyle(vtk.vtkInteractorStyleImage):
- 
-    def __init__(self,parent=None):
-        self.AddObserver("MouseWheelForwardEvent", self.wheelForward)
-        self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
-    
-    def wheelForward(self,obj,event):
-        print("Asd")
-        self.SetInteractionModeToImageSlicing()
-        self.OnMouseWheelForward()
-
-    def leftButtonPressEvent(self,obj,event):
-        print("left click")
-
-'''
-##########################################################################
     Class for implementing custom interactor for main VR.
 ##########################################################################
 '''
@@ -157,6 +138,8 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,lesionvis,parent=None,iren=None, overlayDataMain=None, textActorLesionStatistics=None, overlayDataGlobal=None, textActorGlobal=None, informationKey = None, informationKeyID = None, lesionSeededFiberTracts=None, sliderA=None, sliderB=None, sliderC=None):
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
+        self.AddObserver("LeftButtonReleaseEvent",self.leftButtonReleaseEvent)
+        self.AddObserver("MouseMoveEvent", self.mouseMoveEvent)
         self.lesionvis = lesionvis
         self.LastPickedActor = None
         self.NewPickedActor = None
@@ -173,6 +156,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
         self.sliderA = sliderA
         self.sliderB = sliderB
         self.sliderC = sliderC
+        self.MouseMotion = 0
         # self.message = "tick"
         # self.timer = QTimer()
         # self.timer.timeout.connect(self.onTimerEvent)
@@ -259,170 +243,181 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             streamActor.GetProperty().SetInformation(information)
             self.GetDefaultRenderer().AddActor(streamActor)
 
-    def leftButtonPressEvent(self,obj,event):
-        clickPos = self.GetInteractor().GetEventPosition()
-        picker = vtk.vtkPropPicker()
-        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        # pointPicker = vtk.vtkPointPicker()
-        # pointPicker.SetTolerance(0.0005)
-        # pointPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        # worldPosition = pointPicker.GetPickPosition()
-        # print(pointPicker.GetPointId())
-        self.clickedLesionActor = None
-        cellPicker = vtk.vtkCellPicker()
-        cellPicker.SetTolerance(0.0005)
-        cellPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        #worldPosition = cellPicker.GetPickPosition()
-        #print(cellPicker.GetPointId())
-        
-        # get the new
-        self.NewPickedActor = picker.GetActor()
-        # If something was selected
-        if self.NewPickedActor:
-            # If we picked something before, reset its property
-            if self.LastPickedActor:
-                self.LastPickedActor.GetMapper().ScalarVisibilityOn()
-                self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+    def leftButtonReleaseEvent(self,obj,event):
+        if(self.MouseMotion == 0):
+            clickPos = self.GetInteractor().GetEventPosition()
+            picker = vtk.vtkPropPicker()
+            picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+            # pointPicker = vtk.vtkPointPicker()
+            # pointPicker.SetTolerance(0.0005)
+            # pointPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+            # worldPosition = pointPicker.GetPickPosition()
+            # print(pointPicker.GetPointId())
+            self.clickedLesionActor = None
+            cellPicker = vtk.vtkCellPicker()
+            cellPicker.SetTolerance(0.0005)
+            cellPicker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+            #worldPosition = cellPicker.GetPickPosition()
+            #print(cellPicker.GetPointId())
             
-            # Save the property of the picked actor so that we can
-            # restore it next time
-            self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+            # get the new
+            self.NewPickedActor = picker.GetActor()
+            # If something was selected
+            if self.NewPickedActor:
+                # If we picked something before, reset its property
+                if self.LastPickedActor:
+                    self.LastPickedActor.GetMapper().ScalarVisibilityOn()
+                    self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+                
+                # Save the property of the picked actor so that we can
+                # restore it next time
+                self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
 
-            itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
-            lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
+                itemType = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKey)
+                lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.informationKeyID)
 
-            # Reset view style for all other lesions.
-            for actor in self.lesionvis.lesionActors:
-                scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-                if(scenelesionID!=lesionID):
-                    if(self.lesionvis.pushButton_Discrete.isChecked() == True):
-                        actor.GetMapper().ScalarVisibilityOff()
+                # Reset view style for all other lesions.
+                for actor in self.lesionvis.lesionActors:
+                    scenelesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+                    if(scenelesionID!=lesionID):
+                        if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                            actor.GetMapper().ScalarVisibilityOff()
+                        else:
+                            actor.GetMapper().ScalarVisibilityOn()
+
+
+                if("lh" in str(itemType) and False):
+                    if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
+                        self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
+                    self.renMapOutcome.RemoveAllViewProps()
+                    if(self.labelsLh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
+                        #print("Not a valid point")
+                        pass
                     else:
-                        actor.GetMapper().ScalarVisibilityOn()
+                        clr = self.metaLh[self.labelsLh[cellPicker.GetPointId()]]["color"]
+                        self.brodmannTextActor.SetInput(str(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])))
+                        polyDataActor = self.polyDataLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])]
+                        parcellationMapperLh = vtk.vtkOpenGLPolyDataMapper()
+                        parcellationMapperLh.SetInputData(polyDataActor)
+                        parcellationMapperLh.ScalarVisibilityOn()
+                        self.parcellationActorLh = vtk.vtkActor()
+                        self.parcellationActorLh.SetMapper(parcellationMapperLh)
+                        self.parcellationActorLh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
+                        self.parcellationActorLh.SetOrigin(self.parcellationActorLh.GetCenter())
+                        self.parcellationCurrentActor = self.parcellationActorLh
+                        self.renMapOutcome.AddViewProp(self.parcellationActorLh)
+                        self.renMapOutcome.AddActor(self.brodmannTextActor)
+                        self.renMapOutcome.ResetCamera()
+                        #self.timer.start(200)
+                if("rh" in str(itemType) and False):
+                    if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
+                        self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
+                    self.renMapOutcome.RemoveAllViewProps()
+                    #print("Right")
+                    if(self.labelsRh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
+                        #print("Not a valid point")
+                        pass
+                    else:
+                        clr = self.metaRh[self.labelsRh[cellPicker.GetPointId()]]["color"]
+                        self.brodmannTextActor.SetInput(str(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])))
+                        polyDataActor = self.polyDataRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])]
+                        parcellationMapperRh = vtk.vtkOpenGLPolyDataMapper()
+                        parcellationMapperRh.SetInputData(polyDataActor)
+                        parcellationMapperRh.ScalarVisibilityOn()
+                        self.parcellationActorRh = vtk.vtkActor()
+                        self.parcellationActorRh.SetMapper(parcellationMapperRh)
+                        self.parcellationActorRh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
+                        self.parcellationActorRh.SetOrigin(self.parcellationActorRh.GetCenter())
+                        self.parcellationCurrentActor = self.parcellationActorRh
+                        self.renMapOutcome.AddViewProp(self.parcellationActorRh)
+                        self.renMapOutcome.AddActor(self.brodmannTextActor)
+                        self.renMapOutcome.ResetCamera()
+                        #self.timer.start(200)
+                
+                #if itemType==None: # Itemtype is None for lesions. They only have Ids.
 
 
-            if("lh" in str(itemType) and False):
-                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
-                    self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
-                self.renMapOutcome.RemoveAllViewProps()
-                if(self.labelsLh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
-                    #print("Not a valid point")
-                    pass
+                if lesionID!=None and itemType==None:
+                    self.mapLesionToText(lesionID, self.NewPickedActor)
+                    # self.clickedLesionActor = self.NewPickedActor
+                    # #self.timer.stop()
+                    # if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
+                    #     self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
+                    # # Highlight the picked actor by changing its properties
+                    # self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+                    # self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                    # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                    # self.NewPickedActor.GetProperty().SetSpecular(0.0)
+
+                    # centerOfMassFilter = vtk.vtkCenterOfMass()
+                    # centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
+                    # #print(self.NewPickedActor.GetMapper().GetInput())
+                    # centerOfMassFilter.SetUseScalarsAsWeights(False)
+                    # centerOfMassFilter.Update()
+
+                    # self.centerOfMass = centerOfMassFilter.GetCenter()
+
+                    # # Get slice numbers for setting the MPRs.
+                    # sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
+                    # self.sliderA.setValue(sliceNumbers[2])
+                    # self.sliderB.setValue(sliceNumbers[1])
+                    # self.sliderC.setValue(sliceNumbers[0])
+
+                    # print("picked lesion")
+
+                    # self.lesionvis.userPickedLesion = lesionID
+                    # self.overlayDataMain["Lesion ID"] = str(lesionID)
+                    # self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
+                    # #self.overlayDataMain["Selection Type"] = str(itemType)
+                    # self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
+                    # self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
+                    # self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
+                    # self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
+                    # self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
+                    # self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
+                    # self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
+                    # if (self.lesionSeededFiberTracts == True):
+                    #     actorCollection = self.GetDefaultRenderer().GetActors()
+                    #     for actor in actorCollection:
+                    #         actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
+                    #         if(actorName=="structural tracts"):
+                    #             self.GetDefaultRenderer().RemoveActor(actor)
+
+                    #     #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
+                    #     lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
+                    #     streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
+                    #     information = vtk.vtkInformation()
+                    #     information.Set(self.informationKey,"structural tracts")
+                    #     streamActor.GetProperty().SetInformation(information)
+                    #     self.GetDefaultRenderer().AddActor(streamActor)
                 else:
-                    clr = self.metaLh[self.labelsLh[cellPicker.GetPointId()]]["color"]
-                    self.brodmannTextActor.SetInput(str(self.regionsLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])])))
-                    polyDataActor = self.polyDataLh[self.uniqueLabelsLh.tolist().index(self.labelsLh[cellPicker.GetPointId()])]
-                    parcellationMapperLh = vtk.vtkOpenGLPolyDataMapper()
-                    parcellationMapperLh.SetInputData(polyDataActor)
-                    parcellationMapperLh.ScalarVisibilityOn()
-                    self.parcellationActorLh = vtk.vtkActor()
-                    self.parcellationActorLh.SetMapper(parcellationMapperLh)
-                    self.parcellationActorLh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
-                    self.parcellationActorLh.SetOrigin(self.parcellationActorLh.GetCenter())
-                    self.parcellationCurrentActor = self.parcellationActorLh
-                    self.renMapOutcome.AddViewProp(self.parcellationActorLh)
-                    self.renMapOutcome.AddActor(self.brodmannTextActor)
-                    self.renMapOutcome.ResetCamera()
-                    #self.timer.start(200)
-            if("rh" in str(itemType) and False):
-                if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == False):
-                    self.vtkWidget.GetRenderWindow().AddRenderer(self.renMapOutcome)
-                self.renMapOutcome.RemoveAllViewProps()
-                #print("Right")
-                if(self.labelsRh[cellPicker.GetPointId()] == -1 or cellPicker.GetPointId() == -1):
-                    #print("Not a valid point")
-                    pass
-                else:
-                    clr = self.metaRh[self.labelsRh[cellPicker.GetPointId()]]["color"]
-                    self.brodmannTextActor.SetInput(str(self.regionsRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])].decode('utf-8')) + "\n" + "Normal" + "\n" + str("{0:.2f}".format(self.areaRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])])))
-                    polyDataActor = self.polyDataRh[self.uniqueLabelsRh.tolist().index(self.labelsRh[cellPicker.GetPointId()])]
-                    parcellationMapperRh = vtk.vtkOpenGLPolyDataMapper()
-                    parcellationMapperRh.SetInputData(polyDataActor)
-                    parcellationMapperRh.ScalarVisibilityOn()
-                    self.parcellationActorRh = vtk.vtkActor()
-                    self.parcellationActorRh.SetMapper(parcellationMapperRh)
-                    self.parcellationActorRh.GetProperty().SetColor(clr[0]/255.0, clr[1]/255.0, clr[2]/255.0)
-                    self.parcellationActorRh.SetOrigin(self.parcellationActorRh.GetCenter())
-                    self.parcellationCurrentActor = self.parcellationActorRh
-                    self.renMapOutcome.AddViewProp(self.parcellationActorRh)
-                    self.renMapOutcome.AddActor(self.brodmannTextActor)
-                    self.renMapOutcome.ResetCamera()
-                    #self.timer.start(200)
-            
-            #if itemType==None: # Itemtype is None for lesions. They only have Ids.
+                    self.overlayDataMain["Lesion ID"] = "NA"
+                    self.overlayDataMain["Centroid"] = "NA"
+                    self.overlayDataMain["Voxel Count"] = "NA"
+                    self.overlayDataMain["Elongation"] = "NA"
+                    self.overlayDataMain["Lesion Perimeter"] = "NA"
+                    self.overlayDataMain["Lesion Spherical Radius"] = "NA"
+                    self.overlayDataMain["Lesion Spherical Perimeter"] = "NA"
+                    self.overlayDataMain["Lesion Flatness"] = "NA"
+                    self.overlayDataMain["Lesion Roundness"] = "NA"
 
-
-            if lesionID!=None and itemType==None:
-                self.mapLesionToText(lesionID, self.NewPickedActor)
-                # self.clickedLesionActor = self.NewPickedActor
-                # #self.timer.stop()
-                # if(self.vtkWidget.GetRenderWindow().HasRenderer(self.renMapOutcome) == True):
-                #     self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
-                # # Highlight the picked actor by changing its properties
-                # self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                # self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-                # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-                # self.NewPickedActor.GetProperty().SetSpecular(0.0)
-
-                # centerOfMassFilter = vtk.vtkCenterOfMass()
-                # centerOfMassFilter.SetInputData(self.NewPickedActor.GetMapper().GetInput())
-                # #print(self.NewPickedActor.GetMapper().GetInput())
-                # centerOfMassFilter.SetUseScalarsAsWeights(False)
-                # centerOfMassFilter.Update()
-
-                # self.centerOfMass = centerOfMassFilter.GetCenter()
-
-                # # Get slice numbers for setting the MPRs.
-                # sliceNumbers = computeSlicePositionFrom3DCoordinates(self.subjectFolder, self.centerOfMass)
-                # self.sliderA.setValue(sliceNumbers[2])
-                # self.sliderB.setValue(sliceNumbers[1])
-                # self.sliderC.setValue(sliceNumbers[0])
-
-                # print("picked lesion")
-
-                # self.lesionvis.userPickedLesion = lesionID
-                # self.overlayDataMain["Lesion ID"] = str(lesionID)
-                # self.overlayDataMain["Centroid"] = str("{0:.2f}".format(self.centerOfMass[0])) +", " +  str("{0:.2f}".format(self.centerOfMass[1])) + ", " + str("{0:.2f}".format(self.centerOfMass[2]))
-                # #self.overlayDataMain["Selection Type"] = str(itemType)
-                # self.overlayDataMain["Voxel Count"] = self.lesionNumberOfPixels[int(lesionID)-1]
-                # self.overlayDataMain["Elongation"] = "{0:.2f}".format(self.lesionElongation[int(lesionID)-1])
-                # self.overlayDataMain["Lesion Perimeter"] = "{0:.2f}".format(self.lesionPerimeter[int(lesionID)-1])
-                # self.overlayDataMain["Lesion Spherical Radius"] = "{0:.2f}".format(self.lesionSphericalRadius[int(lesionID)-1])
-                # self.overlayDataMain["Lesion Spherical Perimeter"] = "{0:.2f}".format(self.lesionSphericalPerimeter[int(lesionID)-1])
-                # self.overlayDataMain["Lesion Flatness"] = "{0:.2f}".format(self.lesionFlatness[int(lesionID)-1])
-                # self.overlayDataMain["Lesion Roundness"] = "{0:.2f}".format(self.lesionRoundness[int(lesionID)-1])
-                # if (self.lesionSeededFiberTracts == True):
-                #     actorCollection = self.GetDefaultRenderer().GetActors()
-                #     for actor in actorCollection:
-                #         actorName = actor.GetProperty().GetInformation().Get(self.informationKey)
-                #         if(actorName=="structural tracts"):
-                #             self.GetDefaultRenderer().RemoveActor(actor)
-
-                #     #lesionPointDataSet = self.rhactor.GetMapper().GetInput()
-                #     lesionPointDataSet = self.NewPickedActor.GetMapper().GetInput()
-                #     streamActor = computeStreamlines(self.subjectFolder, self.centerOfMass, self.lesionSphericalRadius[int(lesionID)-1], lesionPointDataSet)
-                #     information = vtk.vtkInformation()
-                #     information.Set(self.informationKey,"structural tracts")
-                #     streamActor.GetProperty().SetInformation(information)
-                #     self.GetDefaultRenderer().AddActor(streamActor)
-            else:
-                self.overlayDataMain["Lesion ID"] = "NA"
-                self.overlayDataMain["Centroid"] = "NA"
-                self.overlayDataMain["Voxel Count"] = "NA"
-                self.overlayDataMain["Elongation"] = "NA"
-                self.overlayDataMain["Lesion Perimeter"] = "NA"
-                self.overlayDataMain["Lesion Spherical Radius"] = "NA"
-                self.overlayDataMain["Lesion Spherical Perimeter"] = "NA"
-                self.overlayDataMain["Lesion Flatness"] = "NA"
-                self.overlayDataMain["Lesion Roundness"] = "NA"
-
-            updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
-            self.iren.Render()
-            # save the last picked actor
-            self.LastPickedActor = self.NewPickedActor
+                updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
+                self.iren.Render()
+                # save the last picked actor
+                self.LastPickedActor = self.NewPickedActor
         
-        self.OnLeftButtonDown()
+        self.OnLeftButtonUp()
         return
+
+    def mouseMoveEvent(self,obj,event):
+        self.MouseMotion = 1
+        self.OnMouseMove()
+        return
+
+    def leftButtonPressEvent(self,obj,event):
+        self.MouseMotion = 0
+        self.OnLeftButtonDown()
+
 
 '''
 ##########################################################################
