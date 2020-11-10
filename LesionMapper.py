@@ -399,7 +399,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
     def highlightLesionsBasedOnSelectedParcellation(self, parcellationAssociatedLesionList):
         for actor in self.lesionvis.lesionActors:
             lesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-            actor.GetMapper().ScalarVisibilityOn()
+            #actor.GetMapper().ScalarVisibilityOn()
+
+            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                actor.GetMapper().ScalarVisibilityOff()
+            else:
+                actor.GetMapper().ScalarVisibilityOn()
+
             if lesionID in parcellationAssociatedLesionList:
                 actor.GetMapper().ScalarVisibilityOff()
                 actor.GetProperty().SetColor(1.0, 1.0, 0.0)
@@ -488,6 +494,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
     #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
 
     def leftButtonPressEvent(self,obj,event):
+        print("hello")
         clickPos = self.GetInteractor().GetEventPosition()
         picker = vtk.vtkPropPicker()
         #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())

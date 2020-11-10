@@ -682,8 +682,8 @@ class Ui(Qt.QMainWindow):
             self.mappingType = "Diffusion"
             self.streamActorsDTI = LesionUtils.extractStreamlines(self.subjectFolder, self.informationKey, 0)
             self.streamActors = self.streamActorsDTI
-        #else:
-            #self.mappingType = "Heat Equation"
+        else:
+            self.mappingType = "Heat Equation"
         self.comboBox_MappingTechnique.addItem("Heat Equation")  
         self.comboBox_MappingTechnique.addItem("Signed Distance Map")
         self.comboBox_MappingTechnique.addItem("Danielsson Distance")

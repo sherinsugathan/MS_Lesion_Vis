@@ -991,6 +991,7 @@ def loadColorFileAndAssignToLesions(colorFilePath, lesionActors):
     for i in range(len(colorDataFile)):
         colorData = vtk.vtkUnsignedCharArray()
         colorData.SetName('Colors') # Any name will work here.
+        lesionActors[i].GetMapper().GetInput().GetPointData().SetActiveScalars("Colors")
         colorData.SetNumberOfComponents(3)
         #colorData.SetArray(colorDataFile[i], int(colorDataFile[i].size/3), True)
         for j in range(len(colorDataFile[i])):
