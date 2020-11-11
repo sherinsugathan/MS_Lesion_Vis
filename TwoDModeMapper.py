@@ -1,3 +1,4 @@
+# Implementation for 2D unfolded mapping.
 import os
 import vtk
 import LesionUtils
@@ -182,8 +183,6 @@ class TwoDModeMapper():
     scalarDataPathRh = self.lesionvis.subjectFolder + "\\surfaces\\rh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
     scalarDataPathLh = self.lesionvis.subjectFolder + "\\surfaces\\lh.aparc.annotXMLPolyDataLabelAndIndexScalars.vtp"
     
-    
-    
     labelFilePathRh = self.lesionvis.subjectFolder +  "\\surfaces\\rh.aparc.annot"
     labelFilePathLh = self.lesionvis.subjectFolder +  "\\surfaces\\lh.aparc.annot"
 
@@ -331,135 +330,6 @@ class TwoDModeMapper():
     self.customInteractorStyle.rendererTypes = self.rendererTypes
     self.customInteractorStyle.imageStyle = self.imageStyle
 
-    # Add text actors
-    # self.lesionvis.renDualLeft.AddActor2D(self.textActorLesionStatistics)
-    # self.lesionvis.renDualRight.AddActor2D(self.textActorParcellation)
-    # self.lesionvis.renDualLeft.AddActor2D(self.textActorLesionImpact)
-    # self.overlayDataMainLeftLesions = {"Lesion ID":"NA", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA"}
-    # self.overlayDataMainLeftLesionImpact = {"Lesion ID":"NA", "# Functions":"NA", "Affected Functions" : "NA"}
-    # self.overlayDataMainRightParcellationImpact = {"Selected Brain Region:":"NA", "Lesion Influence:":"NA", "Number of Lesions Influencing:":"NA", "Lesion IDs:" : "NA"}
-    
-    # LesionUtils.setOverlayText(self.overlayDataMainLeftLesions, self.textActorLesionStatistics)
-    # LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
-    # LesionUtils.setOverlayText(self.overlayDataMainRightParcellationImpact, self.textActorParcellation)
-
-    # self.interactionStyleLeft.overlayDataMainLeftLesions = self.overlayDataMainLeftLesions
-    # self.interactionStyleLeft.overlayDataMainLeftLesionImpact = self.overlayDataMainLeftLesionImpact
-    # self.interactionStyleLeft.overlayDataMainRightParcellationImpact = self.overlayDataMainRightParcellationImpact
-    # self.interactionStyleLeft.textActorLesionStatistics = self.textActorLesionStatistics
-    # self.interactionStyleLeft.textActorLesionImpact = self.textActorLesionImpact
-    # self.interactionStyleLeft.textActorParcellation = self.textActorParcellation
-
-    # self.interactionStyleRight.overlayDataMainLeftLesions = self.overlayDataMainLeftLesions
-    # self.interactionStyleRight.overlayDataMainLeftLesionImpact = self.overlayDataMainLeftLesionImpact
-    # self.interactionStyleRight.overlayDataMainRightParcellationImpact = self.overlayDataMainRightParcellationImpact
-    # self.interactionStyleRight.textActorLesionStatistics = self.textActorLesionStatistics
-    # self.interactionStyleRight.textActorLesionImpact = self.textActorLesionImpact
-    # self.interactionStyleRight.textActorParcellation = self.textActorParcellation
-
-    # self.interactionStyleLeft.labelsRh = self.lesionvis.labelsRh
-    # self.interactionStyleLeft.regionsRh = self.lesionvis.regionsRh
-    # self.interactionStyleLeft.metaRh = self.lesionvis.metaRh
-    # self.interactionStyleLeft.uniqueLabelsRh = self.lesionvis.uniqueLabelsRh
-    # self.interactionStyleLeft.areaRh = self.lesionvis.areaRh
-    # self.interactionStyleLeft.labelsLh = self.lesionvis.labelsLh
-    # self.interactionStyleLeft.regionsLh = self.lesionvis.regionsLh
-    # self.interactionStyleLeft.metaLh = self.lesionvis.metaLh
-    # self.interactionStyleLeft.uniqueLabelsLh = self.lesionvis.uniqueLabelsLh
-    # self.interactionStyleLeft.areaLh = self.lesionvis.areaLh
-    # self.interactionStyleLeft.polyDataRh = self.lesionvis.polyDataRh
-    # self.interactionStyleLeft.polyDataLh = self.lesionvis.polyDataLh
-
-    # self.interactionStyleRight.labelsRh = self.lesionvis.labelsRh
-    # self.interactionStyleRight.regionsRh = self.lesionvis.regionsRh
-    # self.interactionStyleRight.metaRh = self.lesionvis.metaRh
-    # self.interactionStyleRight.uniqueLabelsRh = self.lesionvis.uniqueLabelsRh
-    # self.interactionStyleRight.areaRh = self.lesionvis.areaRh
-    # self.interactionStyleRight.labelsLh = self.lesionvis.labelsLh
-    # self.interactionStyleRight.regionsLh = self.lesionvis.regionsLh
-    # self.interactionStyleRight.metaLh = self.lesionvis.metaLh
-    # self.interactionStyleRight.uniqueLabelsLh = self.lesionvis.uniqueLabelsLh
-    # self.interactionStyleRight.areaLh = self.lesionvis.areaLh
-    # self.interactionStyleRight.polyDataRh = self.lesionvis.polyDataRh
-    # self.interactionStyleRight.polyDataLh = self.lesionvis.polyDataLh
-
-    # self.interactionStyleLeft.lesionCentroids = self.lesionvis.lesionCentroids
-    # self.interactionStyleLeft.lesionNumberOfPixels = self.lesionvis.lesionNumberOfPixels
-    # self.interactionStyleLeft.lesionElongation = self.lesionvis.lesionElongation
-    # self.interactionStyleLeft.lesionPerimeter = self.lesionvis.lesionPerimeter
-    # self.interactionStyleLeft.lesionSphericalRadius = self.lesionvis.lesionSphericalRadius
-    # self.interactionStyleLeft.lesionSphericalPerimeter = self.lesionvis.lesionSphericalPerimeter
-    # self.interactionStyleLeft.lesionFlatness = self.lesionvis.lesionFlatness
-    # self.interactionStyleLeft.lesionRoundness = self.lesionvis.lesionRoundness
-
-    # self.interactionStyleRight.lesionCentroids = self.lesionvis.lesionCentroids
-    # self.interactionStyleRight.lesionNumberOfPixels = self.lesionvis.lesionNumberOfPixels
-    # self.interactionStyleRight.lesionElongation = self.lesionvis.lesionElongation
-    # self.interactionStyleRight.lesionPerimeter = self.lesionvis.lesionPerimeter
-    # self.interactionStyleRight.lesionSphericalRadius = self.lesionvis.lesionSphericalRadius
-    # self.interactionStyleRight.lesionSphericalPerimeter = self.lesionvis.lesionSphericalPerimeter
-    # self.interactionStyleRight.lesionFlatness = self.lesionvis.lesionFlatness
-    # self.interactionStyleRight.lesionRoundness = self.lesionvis.lesionRoundness
-    # load precomputed lesion properties
-    # self.structureInfoLh = None
-    # with open(self.lesionvis.subjectFolder + "\\parcellationLh.json") as fp: 
-    #     self.structureInfoLh = json.load(fp)
-    # #print(self.structureInfoLh.keys())
-    # self.parcellationsLhCount = len(self.structureInfoLh)
-    # self.structureInfoRh = None
-    # with open(self.lesionvis.subjectFolder + "\\parcellationRh.json") as fp: 
-    #     self.structureInfoRh = json.load(fp)
-    # self.parcellationsRhCount = len(self.structureInfoRh)
-
-    # self.parcellationAffectedPercentageLh = []
-    # self.parcellationLesionInfluenceCountLh = []
-    # self.parcellationAssociatedLesionsLh = []
-    # for jsonElementIndex in range(self.parcellationsLhCount):
-    #     for p in self.structureInfoLh[str(jsonElementIndex)]:
-    #         self.parcellationAffectedPercentageLh.append(p["PercentageAffected"])
-    #         self.parcellationLesionInfluenceCountLh.append(p["LesionInfluenceCount"])
-    #         self.parcellationAssociatedLesionsLh.append(p["AssociatedLesions"])
-
-    # for jsonElementIndex in list(self.structureInfoLh.keys()):
-    #     for p in self.structureInfoLh[str(jsonElementIndex)]:
-    #         self.parcellationAffectedPercentageLh.append(p["PercentageAffected"])
-    #         self.parcellationLesionInfluenceCountLh.append(p["LesionInfluenceCount"])
-    #         self.parcellationAssociatedLesionsLh.append(p["AssociatedLesions"])
-
-    # self.parcellationAffectedPercentageRh = []
-    # self.parcellationLesionInfluenceCountRh = []
-    # self.parcellationAssociatedLesionsRh = []
-    # # for jsonElementIndex in range(self.parcellationsRhCount):
-    # #     for p in self.structureInfoRh[str(jsonElementIndex)]:
-    # #         self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
-    # #         self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
-    # #         self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
-    # for jsonElementIndex in list(self.structureInfoLh.keys()):
-    #     for p in self.structureInfoRh[str(jsonElementIndex)]:
-    #         self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
-    #         self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
-    #         self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
-
-    # self.interactionStyleLeft.parcellationsLhCount = self.parcellationsLhCount
-    # self.interactionStyleLeft.parcellationAffectedPercentageLh = self.parcellationAffectedPercentageLh
-    # self.interactionStyleLeft.parcellationLesionInfluenceCountLh = self.parcellationLesionInfluenceCountLh
-    # self.interactionStyleLeft.parcellationAssociatedLesionsLh = self.parcellationAssociatedLesionsLh
-    # self.interactionStyleLeft.parcellationsRhCount = self.parcellationsRhCount
-    # self.interactionStyleLeft.parcellationAffectedPercentageRh = self.parcellationAffectedPercentageRh
-    # self.interactionStyleLeft.parcellationLesionInfluenceCountRh = self.parcellationLesionInfluenceCountRh
-    # self.interactionStyleLeft.parcellationAssociatedLesionsRh = self.parcellationAssociatedLesionsRh
-
-    # self.interactionStyleRight.parcellationsLhCount = self.parcellationsLhCount
-    # self.interactionStyleRight.parcellationAffectedPercentageLh = self.parcellationAffectedPercentageLh
-    # self.interactionStyleRight.parcellationLesionInfluenceCountLh = self.parcellationLesionInfluenceCountLh
-    # self.interactionStyleRight.parcellationAssociatedLesionsLh = self.parcellationAssociatedLesionsLh
-    # self.interactionStyleRight.parcellationsRhCount = self.parcellationsRhCount
-    # self.interactionStyleRight.parcellationAffectedPercentageRh = self.parcellationAffectedPercentageRh
-    # self.interactionStyleRight.parcellationLesionInfluenceCountRh = self.parcellationLesionInfluenceCountRh
-    # self.interactionStyleRight.parcellationAssociatedLesionsRh = self.parcellationAssociatedLesionsRh
-
-    # self.lesionvis.ren2x2.ResetCamera()
-    # self.lesionvis.ren2x2.Render()
     self.customInteractorStyle.reColor3DNoLesions(self.lesionvis.colorsRh, self.lesionvis.colorsLh)
 
     self.rendererLesion.ResetCamera()
@@ -490,11 +360,17 @@ class TwoDModeMapper():
 class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
  
     def __init__(self,parent=None):
+        self.MouseMotion = 0
+        self.leftButtonActive = 0
+        self.AddObserver("LeftButtonDownEvent",self.leftButtonDownEvent)
         self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
         self.AddObserver("RightButtonPressEvent",self.rightButtonPressEvent)
+
         self.AddObserver("MiddleButtonPressEvent",self.middleButtonPressEvent)
         self.AddObserver("MouseWheelForwardEvent",self.mouseWheelForwardEvent)
         self.AddObserver("MouseWheelBackwardEvent",self.mouseWheelBackwardEvent)
+        self.AddObserver("LeftButtonReleaseEvent",self.leftButtonReleaseEvent)
+        self.AddObserver("MouseMoveEvent", self.mouseMoveEvent)
 
         self.LastPickedActor = None
         self.LastPickedProperty = vtk.vtkProperty()
@@ -531,7 +407,6 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.SetDefaultRenderer(renderer)
         self.OnRightButtonDown()
         return
-
 
     def brightenColor(self, clr):
         lightenAddVal = 255 - np.amax(clr)
@@ -695,155 +570,102 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.reColor3D()
         self.twoDModeMapper.iren_2x2.Render()
 
-    def leftButtonPressEvent(self,obj,event):
+    def leftButtonDownEvent(self,obj,event):
+        self.leftButtonActive = 1
+
+    def leftButtonReleaseEvent(self,obj,event):
+        self.leftButtonActive = 0
         clickPos = self.GetInteractor().GetEventPosition()
         renderer = self.iren.FindPokedRenderer(clickPos[0], clickPos[1])
         #print(self.rendererTypes[id(renderer)])
         self.SetDefaultRenderer(renderer)
-
-        picker = vtk.vtkPropPicker()
-        #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-        picker.Pick(clickPos[0], clickPos[1], 0, renderer)
-        
-        cellPicker = vtk.vtkCellPicker()
-        cellPicker.SetTolerance(0.0005)
-        cellPicker.Pick(clickPos[0], clickPos[1], 0, renderer)
-
-        # if current renderer is "Rh"
-        if(self.rendererTypes[id(renderer)] == "rh"):
-            clr = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelsRh[self.twoDModeMapper.actualVertexIdsRh[cellPicker.GetPointId()]]]["color"]
-            self.reColor2D(None, clr)
-            self.reColor3D(None, clr)
-            self.twoDModeMapper.iren_2x2.Render()
-            #self.OnLeftButtonDown()
-            return
-
-        # if current renderer is "Lh"
-        if(self.rendererTypes[id(renderer)] == "lh"):
-            clr = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelsLh[self.twoDModeMapper.actualVertexIdsLh[cellPicker.GetPointId()]]]["color"]
-            self.reColor2D(clr, None)
-            self.reColor3D(clr, None)
-            self.twoDModeMapper.iren_2x2.Render()
-            #self.OnLeftButtonDown()
-            return
-
-        # if current renderer is "Surface"
-        if(self.rendererTypes[id(renderer)] == "tbcameraSurface"):
-            #print("Surface")
-            self.OnLeftButtonDown()
-            return
-
-        # Check if current renderer is rendererLesion or rendererSurface
-        if(self.rendererTypes[id(renderer)] == "tbcameraLesion"):
-            #print("camera")
-        
-            # get the new
-            self.NewPickedActor = picker.GetActor()
+        if(self.MouseMotion == 0):
+            picker = vtk.vtkPropPicker()
+            #picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+            picker.Pick(clickPos[0], clickPos[1], 0, renderer)
             
-            # If something was selected
-            if self.NewPickedActor:
-                # If we picked something before, reset its property
-                if self.LastPickedActor:
-                    self.LastPickedActor.GetMapper().ScalarVisibilityOn()
-                    self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+            cellPicker = vtk.vtkCellPicker()
+            cellPicker.SetTolerance(0.0005)
+            cellPicker.Pick(clickPos[0], clickPos[1], 0, renderer)
+
+            # if current renderer is "Rh"
+            if(self.rendererTypes[id(renderer)] == "rh"):
+                clr = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelsRh[self.twoDModeMapper.actualVertexIdsRh[cellPicker.GetPointId()]]]["color"]
+                self.reColor2D(None, clr)
+                self.reColor3D(None, clr)
+                self.twoDModeMapper.iren_2x2.Render()
+                self.OnLeftButtonUp()
+                return
+
+            # if current renderer is "Lh"
+            if(self.rendererTypes[id(renderer)] == "lh"):
+                clr = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelsLh[self.twoDModeMapper.actualVertexIdsLh[cellPicker.GetPointId()]]]["color"]
+                self.reColor2D(clr, None)
+                self.reColor3D(clr, None)
+                self.twoDModeMapper.iren_2x2.Render()
+                self.OnLeftButtonUp()
+                return
+
+            # if current renderer is "Surface"
+            if(self.rendererTypes[id(renderer)] == "tbcameraSurface"):
+                #print("Surface")
+                self.OnLeftButtonUp()
+                return
+
+            # Check if current renderer is rendererLesion or rendererSurface
+            if(self.rendererTypes[id(renderer)] == "tbcameraLesion"):
+                #print("camera")
+            
+                # get the new
+                self.NewPickedActor = picker.GetActor()
                 
-                # Save the property of the picked actor so that we can
-                # restore it next time
-                self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+                # If something was selected
+                if self.NewPickedActor:
+                    # If we picked something before, reset its property
+                    if self.LastPickedActor:
+                        self.LastPickedActor.GetMapper().ScalarVisibilityOn()
+                        self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+                    
+                    # Save the property of the picked actor so that we can
+                    # restore it next time
+                    self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
 
-                self.lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-                # Highlight the picked actor by changing its properties
-                self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-                self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-                self.NewPickedActor.GetProperty().SetSpecular(0.0)
+                    self.lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+                    # Highlight the picked actor by changing its properties
+                    self.NewPickedActor.GetMapper().ScalarVisibilityOff()
+                    self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                    self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+                    self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
-                vtk_colorsLh = vtk.vtkUnsignedCharArray()
-                vtk_colorsLh.SetNumberOfComponents(4)
-                vtk_colorsRh = vtk.vtkUnsignedCharArray()
-                vtk_colorsRh.SetNumberOfComponents(4)
+                    vtk_colorsLh = vtk.vtkUnsignedCharArray()
+                    vtk_colorsLh.SetNumberOfComponents(4)
+                    vtk_colorsRh = vtk.vtkUnsignedCharArray()
+                    vtk_colorsRh.SetNumberOfComponents(4)
 
-                clrGreen = [161,217,155]
-                clrRed = [227,74,51]
-                clrParcellationRh = [0,0,0]
-                clrParcellationRh = [0,0,0]
+                    clrGreen = [161,217,155]
+                    clrRed = [227,74,51]
+                    clrParcellationRh = [0,0,0]
+                    clrParcellationRh = [0,0,0]
 
-                # LESION IMPACT COLOR MAPPING STARTS HERE (2D)
-                self.reColor2D()
-                self.reColor3D()
-                # vertexIndexArrayRh = self.twoDModeMapper.actualVertexIdsRh
-                # vertexIndexArrayLh = self.twoDModeMapper.actualVertexIdsLh
-                # affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
-                # affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
-                # lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
-                # lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-
-                # for vertexIndex in range(lesionMappingRh.size):
-                #     if(lesionMappingRh[vertexIndex]==True):
-                #         vtk_colorsRh.InsertNextTuple4(clrRed[0], clrRed[1], clrRed[2], 255.0)
-                #     else:
-                #         clrParcellationRh = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelScalarArrayRh.GetValue(vertexIndex)]["color"]
-                #         vtk_colorsRh.InsertNextTuple4(clrParcellationRh[0], clrParcellationRh[1], clrParcellationRh[2], 120)
-
-                # for vertexIndex in range(lesionMappingLh.size):
-                #     if(lesionMappingLh[vertexIndex] == True):
-                #         vtk_colorsLh.InsertNextTuple4(clrRed[0], clrRed[1], clrRed[2], 255.0)
-                #     else:
-                #         clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelScalarArrayLh.GetValue(vertexIndex)]["color"]
-                #         vtk_colorsLh.InsertNextTuple4(clrParcellationLh[0], clrParcellationLh[1], clrParcellationLh[2], 120)
-                # self.twoDModeMapper.unfoldedMapperRh.GetInput().GetPointData().SetScalars(vtk_colorsRh)
-                # self.twoDModeMapper.unfoldedMapperLh.GetInput().GetPointData().SetScalars(vtk_colorsLh)
-                # LESION IMPACT COLOR MAPPING ENDS HERE
-
-                # vtk_colors3DLh = vtk.vtkUnsignedCharArray()
-                # vtk_colors3DLh.SetNumberOfComponents(3)
-                # vtk_colors3DRh = vtk.vtkUnsignedCharArray()
-                # vtk_colors3DRh.SetNumberOfComponents(3)
-
-                # # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
-                # numberOfPointsRh = self.twoDModeMapper.pialMapperRh.GetInput().GetNumberOfPoints()
-                # numberOfPointsLh = self.twoDModeMapper.pialMapperLh.GetInput().GetNumberOfPoints()
-                # vertexIndexArrayRh = np.arange(numberOfPointsRh)
-                # vertexIndexArrayLh = np.arange(numberOfPointsLh)
-                # affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(self.lesionID)-1])
-                # affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(self.lesionID)-1])
-                # lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
-                # lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
-
-                # for vertexIndex in range(lesionMappingRh.size):
-                #     if(lesionMappingRh[vertexIndex] == True):
-                #         vtk_colors3DRh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                #     else:
-                #         if(self.twoDModeMapper.labelsRh[vertexIndex] == -1):
-                #             clrParcellationRh = [25,5,25]
-                #         else:
-                #             clrParcellationRh = self.twoDModeMapper.metaRh[self.twoDModeMapper.labelsRh[vertexIndex]]["color"]
-                #         vtk_colors3DRh.InsertNextTuple3(clrParcellationRh[0]/4, clrParcellationRh[1]/4, clrParcellationRh[2]/4)
-                # for vertexIndex in range(lesionMappingLh.size):
-                #     if(lesionMappingLh[vertexIndex] == True):
-                #         vtk_colors3DLh.InsertNextTuple3(clrRed[0], clrRed[1], clrRed[2])
-                #     else:
-                #         if(self.twoDModeMapper.labelsLh[vertexIndex] == -1):
-                #             clrParcellationLh = [25,5,25]
-                #         else:
-                #             clrParcellationLh = self.twoDModeMapper.metaLh[self.twoDModeMapper.labelsLh[vertexIndex]]["color"]
-                #         vtk_colors3DLh.InsertNextTuple3(clrParcellationLh[0]/4, clrParcellationLh[1]/4, clrParcellationLh[2]/4)
-                # self.twoDModeMapper.pialMapperRh.GetInput().GetPointData().SetScalars(vtk_colors3DRh)
-                # self.twoDModeMapper.pialMapperLh.GetInput().GetPointData().SetScalars(vtk_colors3DLh)
-                # LESION IMPACT COLOR MAPPING ENDS HERE (3D SURFACE)
+                    # LESION IMPACT COLOR MAPPING STARTS HERE (2D)
+                    self.reColor2D()
+                    self.reColor3D()
+                
+                    # save the last picked actor
+                    self.LastPickedActor = self.NewPickedActor
             
-                # save the last picked actor
-                self.LastPickedActor = self.NewPickedActor
-            
+        self.OnLeftButtonUp()
+        return
+
+    def mouseMoveEvent(self,obj,event):
+        self.MouseMotion = 1
+        self.OnMouseMove()
+        return
+
+    def leftButtonPressEvent(self,obj,event):
+        self.MouseMotion = 0
+        clickPos = self.GetInteractor().GetEventPosition()
+        renderer = self.iren.FindPokedRenderer(clickPos[0], clickPos[1])
+        self.SetDefaultRenderer(renderer)
+        if(self.rendererTypes[id(renderer)] != "rh" and self.rendererTypes[id(renderer)] != "lh"):
             self.OnLeftButtonDown()
-            return
-        else:
-            #self.OnLeftButtonDown()
-            #self.iren.SetInteractorStyle(self.imageStyle)
-            return
-
-
-        #self.SetDefaultRenderer(renderer)
-        #self.renderer = renderer
-        
-

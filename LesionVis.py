@@ -524,6 +524,8 @@ class Ui(Qt.QMainWindow):
         self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
         self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect='auto')
         self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        self.sliceNumberHandleMPRA = self.axMPRA.text(5, 5, str(self.midSliceX), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
+        
 
         self.figureMPRB.clear()
         plt.figure(1)
@@ -534,6 +536,7 @@ class Ui(Qt.QMainWindow):
         self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
         self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect='auto')
         self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        self.sliceNumberHandleMPRB = self.axMPRB.text(5, 5, str(self.midSliceY), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.figureMPRC.clear()
         plt.figure(2)
@@ -544,6 +547,7 @@ class Ui(Qt.QMainWindow):
         self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC)
         self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect='auto')
         self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        self.sliceNumberHandleMPRC = self.axMPRC.text(5, 5, str(self.midSliceZ), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.canvasMPRA.draw()
         self.canvasMPRB.draw()
@@ -567,6 +571,7 @@ class Ui(Qt.QMainWindow):
             self.midSliceX = int(self.data_dims[0]/2)
             self.midSliceY = int(self.data_dims[1]/2)
             self.midSliceZ = int(self.data_dims[2]/2)
+
             ################################
             # MPR SLICES    ################
             ################################
@@ -1106,6 +1111,7 @@ class Ui(Qt.QMainWindow):
         self.slice_MPRA = np.rot90(self.epi_img_data[self.midSliceX, :, :])
         self.sliceMask_MPRA = np.rot90(self.alpha_mask[self.midSliceX, :, :])
         self.MPRA.set_data(self.slice_MPRA)
+        self.sliceNumberHandleMPRA.set_text(self.midSliceX)
         self.MPRAMask.set_data(self.sliceMask_MPRA)
         self.canvasMPRA.draw()
 
@@ -1117,6 +1123,7 @@ class Ui(Qt.QMainWindow):
         self.slice_MPRB = np.rot90(self.epi_img_data[:, self.midSliceY, :])
         self.sliceMask_MPRB = np.rot90(self.alpha_mask[:, self.midSliceY, :])
         self.MPRB.set_data(self.slice_MPRB)
+        self.sliceNumberHandleMPRB.set_text(self.midSliceY)
         self.MPRBMask.set_data(self.sliceMask_MPRB)
         self.canvasMPRB.draw()
 
@@ -1128,6 +1135,7 @@ class Ui(Qt.QMainWindow):
         self.slice_MPRC = np.rot90(self.epi_img_data[:, :, self.midSliceZ])
         self.sliceMask_MPRC = np.rot90(self.alpha_mask[:, :, self.midSliceZ])
         self.MPRC.set_data(self.slice_MPRC)
+        self.sliceNumberHandleMPRC.set_text(self.midSliceZ)
         self.MPRCMask.set_data(self.sliceMask_MPRC)
         self.canvasMPRC.draw()
 

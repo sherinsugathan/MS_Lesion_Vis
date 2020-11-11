@@ -1,3 +1,4 @@
+pyinstaller --onefile -i"asset/icons/msvisicon.ico" LesionVis.py
 pyinstaller --onefile -noconsole -i"asset/icons/msvisicon.ico" LesionVis.py
 
 pyinstaller –noconsole TempConv.py
