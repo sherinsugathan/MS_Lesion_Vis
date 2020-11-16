@@ -1102,9 +1102,8 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
             clr = [25,5,25]
         else:
             clr = metaRh[labelsRh[index]]["color"]
-            tintColor([clr[0], clr[1], clr[2]], 0.2)
         colorDataRh.InsertNextTuple3(clr[0], clr[1], clr[2])
-        colorDataLightRh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.2))
+        colorDataLightRh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.1))
 
     for index in range(numberOfPointsLh):
         if(labelsLh[index] == -1):
@@ -1112,7 +1111,7 @@ def initializeSurfaceAnnotationColors(subjectFolder, rhwhiteMapper, lhwhiteMappe
         else:
             clr = metaLh[labelsLh[index]]["color"]
         colorDataLh.InsertNextTuple3(clr[0], clr[1], clr[2])
-        colorDataLightLh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.2))
+        colorDataLightLh.SetTuple(index, tintColor([clr[0], clr[1], clr[2]], 0.1))
 
     areaRh = {}
     polyDataRh = []

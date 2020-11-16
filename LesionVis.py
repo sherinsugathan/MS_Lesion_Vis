@@ -83,7 +83,6 @@ class Ui(Qt.QMainWindow):
         self.clear()
         logging.info('UI initialized successfully.')
         self.initVTK()
-        
 
         self.showMaximized()
         

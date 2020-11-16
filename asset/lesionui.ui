@@ -669,7 +669,7 @@ border-radius: 10px;</string>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
             <layout class="QGridLayout" name="gridLayout_16">
-             <item row="0" column="1">
+             <item row="1" column="2">
               <spacer name="horizontalSpacer_3">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -682,7 +682,48 @@ border-radius: 10px;</string>
                </property>
               </spacer>
              </item>
-             <item row="0" column="2">
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="checkBox_AutoHighlightLesions">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Auto highlight Lesions</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QSlider" name="horizontalSlider_TopNLesions">
+               <property name="styleSheet">
+                <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: rgb(20, 52, 30);
+    /*margin: 0 12px;*/
+}</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4">
               <widget class="QCheckBox" name="checkBox_AutoHighlightRegions">
                <property name="styleSheet">
                 <string notr="true">color: rgb(149, 189, 149);
@@ -696,17 +737,52 @@ font: 9pt &quot;Google Sans&quot;;</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QCheckBox" name="checkBox_AutoHighlightLesions">
+             <item row="1" column="3">
+              <widget class="QSlider" name="horizontalSlider_TopNRegions">
+               <property name="styleSheet">
+                <string notr="true">.QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 10px solid #467955;
+    /*height: 5px;*/
+	width: 1px;
+    /*margin: -30px -30px;*/
+	/*border-radius: 30px;*/
+}
+
+.QSlider::groove:horizontal {
+    border: 1px solid #262626;
+    /*width: 10px;*/
+    background: rgb(20, 52, 30);
+    /*margin: 0 12px;*/
+}</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLabel" name="label_TopNLesions">
                <property name="styleSheet">
                 <string notr="true">color: rgb(149, 189, 149);
 font: 9pt &quot;Google Sans&quot;;</string>
                </property>
                <property name="text">
-                <string>Auto highlight Lesions</string>
+                <string>Showing top N influencing lesions</string>
                </property>
-               <property name="checked">
-                <bool>true</bool>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_TopNRegions">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(149, 189, 149);
+font: 9pt &quot;Google Sans&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Showing top N influenced regions</string>
                </property>
               </widget>
              </item>

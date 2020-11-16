@@ -5,7 +5,7 @@ import numpy as np
 import json
 import sys
 from nibabel import freesurfer
-
+import operator
 
 '''
 ##########################################################################
@@ -71,13 +71,16 @@ def ComputeAndWriteParcellationData(dataType):
         print("Parcellation list count Rh ", len(listOfSegmentedParcellationVerticesRh))
         print("Parcellation list count Lh ", len(listOfSegmentedParcellationVerticesLh))
 
-
+        #lesionContributionDictRh = dict() # For storing impact patch quantification of all lesions on a single parcellation.
+        #lesionContributionDictLh = dict() # For storing impact patch quantification of all lesions on a single parcellation.
+        
         # Compute information for Rh hemisphere
         data = {}
         pElementArrayIndex = 0
         for pElementIndex in uniqueLabelsRh: # for every parcellation
             #for pElementIndex in range(len(listOfSegmentedParcellationVerticesRh)): # for every parcellation
             lesionImpactData = {}
+            lesionContributionQuantified = dict()
             for jsonElementIndex in (range(1,numberOfLesionElements+1)): # for every lesion
                 for p in structureInfo[str(jsonElementIndex)]:
                     if(dataType == "STRUCTURAL"):
@@ -94,16 +97,23 @@ def ComputeAndWriteParcellationData(dataType):
                         intersectionList = np.intersect1d(impactRh, listOfSegmentedParcellationVerticesRh[pElementArrayIndex])
                         if(intersectionList.size>0):
                             lesionImpactData[jsonElementIndex] = intersectionList.tolist()
+                            lesionContributionQuantified.update({'%d'%jsonElementIndex:len(intersectionList.tolist())})
+                            #lesionContributionDictRh.update({'%d'%n:lesionContributionQuantified})
                             #print("Intersection")
                         #else:
                             #print("No intersection")
                     #if(np.intersect1d(impactRh, ))
                     #print(impactLh)
             #print(type(lesionImpactData))
+            # for item in lesionContributionQuantified:
+            #     print("HI SHERIN", item)
+            sorted_Contributions = sorted(lesionContributionQuantified.items(), key=operator.itemgetter(1))
+
             # Prepare data for writing.
             properties={}
             properties['AssociatedLesions'] = lesionImpactData
             properties['LesionInfluenceCount'] = len(lesionImpactData)
+            properties['lesionContributionSorted'] = sorted_Contributions
             affectedPoints = []
             for key in lesionImpactData: 
                 affectedPoints.extend(lesionImpactData[key])
@@ -115,11 +125,10 @@ def ComputeAndWriteParcellationData(dataType):
             data[int(pElementIndex)].append(properties)
             pElementArrayIndex = pElementArrayIndex + 1
 
+
         # Write parcellation information for Rh hemisphere
         with open(parcellationJSONFileNameRh, 'w') as fp:
             json.dump(data, fp, indent=4)
-
-
 
         # Compute information for Lh hemisphere
         data = {}
@@ -127,6 +136,7 @@ def ComputeAndWriteParcellationData(dataType):
         for pElementIndex in uniqueLabelsLh: # for every parcellation
             #for pElementIndex in range(len(listOfSegmentedParcellationVerticesLh)): # for every parcellation
             lesionImpactData = {}
+            lesionContributionQuantified = dict()
             for jsonElementIndex in (range(1,numberOfLesionElements+1)): # for every lesion
                 for p in structureInfo[str(jsonElementIndex)]:
                     if(dataType == "STRUCTURAL"):
@@ -143,16 +153,20 @@ def ComputeAndWriteParcellationData(dataType):
                         intersectionList = np.intersect1d(impactLh, listOfSegmentedParcellationVerticesLh[pElementArrayIndex])
                         if(intersectionList.size>0):
                             lesionImpactData[jsonElementIndex] = intersectionList.tolist()
+                            lesionContributionQuantified.update({'%d'%jsonElementIndex:len(intersectionList.tolist())})
                             #print("Intersection")
                         #else:
                             #print("No intersection")
                     #if(np.intersect1d(impactRh, ))
                     #print(impactLh)
+            sorted_Contributions = sorted(lesionContributionQuantified.items(), key=operator.itemgetter(1))
+            print(sorted_Contributions)
             #print(type(lesionImpactData))
             # Prepare data for writing.
             properties={}
             properties['AssociatedLesions'] = lesionImpactData
             properties['LesionInfluenceCount'] = len(lesionImpactData)
+            properties['lesionContributionSorted'] = sorted_Contributions
             affectedPoints = []
             for key in lesionImpactData: 
                 affectedPoints.extend(lesionImpactData[key])
@@ -172,12 +186,12 @@ def ComputeAndWriteParcellationData(dataType):
 
 
 rootPath = "D:\\OneDrive - University of Bergen\\Datasets\\MS_SegmentationChallengeDataset\\"
-#listOfSubjects = ["DTIDATA"]
-listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
+listOfSubjects = ["DTIDATA"]
+#listOfSubjects = ["01016SACH_DATA","01038PAGU_DATA","01039VITE_DATA","01040VANE_DATA","01042GULE_DATA","07001MOEL_DATA","07003SATH_DATA","07010NABO_DATA","07040DORE_DATA","07043SEME_DATA", "08002CHJE_DATA","08027SYBR_DATA","08029IVDI_DATA","08031SEVE_DATA","08037ROGU_DATA"]
 
 
 
 # MAIN FUNCTION CALLS.
 #ComputeAndWriteParcellationData("STRUCTURAL")
-#ComputeAndWriteParcellationData("DTI")
-ComputeAndWriteParcellationData("DANIELSSON")
+ComputeAndWriteParcellationData("DTI")
+#ComputeAndWriteParcellationData("DANIELSSON")

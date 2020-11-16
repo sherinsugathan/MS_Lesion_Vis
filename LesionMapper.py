@@ -5,6 +5,7 @@ import numpy as np
 from nibabel import freesurfer
 import json
 import copy
+import operator
 
 class LesionMapper():
   def __init__(self, lesionvis):
@@ -34,12 +35,27 @@ class LesionMapper():
       self.textActorLesionImpact.SetPosition(0.01, 1)
       self.interactionStyleLeft = None
       self.interactionStyleRight = None
+
+      # Ui Control handlers.
+      self.lesionvis.horizontalSlider_TopNRegions.valueChanged.connect(self.on_sliderChangedTopNRegions)
       #print("done1")
 
   def leftCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualRight.Render()
   def rightCameraModifiedCallback(self,obj,event):
       self.lesionvis.iren_LesionMapDualLeft.Render()
+
+  def on_sliderChangedTopNRegions(self):
+    if(self.interactionStyleLeft.currentLesionID != None):
+        sliderValue = self.lesionvis.horizontalSlider_TopNRegions.value()
+        #print("SLICDErvalue", sliderValue)
+        lhdata, rhdata = self.getTopNRegions(sliderValue, self.interactionStyleLeft.currentLesionID, self.parcellationLesionContributionSortedLh, self.parcellationLesionContributionSortedRh)
+        self.lesionvis.label_TopNRegions.setText("Showing top " + str(sliderValue) +" influenced regions")
+        self.interactionStyleLeft.mapLesionToSurface(self.interactionStyleLeft.currentLesionID, None, lhdata, rhdata)
+        self.lesionvis.renDualRight.Render()
+        #print(lhdata)
+        #print(rhdata)
+        #print("done")
 
   def loadParcellationData(self):
     # load precomputed lesion properties
@@ -65,22 +81,88 @@ class LesionMapper():
     self.parcellationAffectedPercentageLh = []
     self.parcellationLesionInfluenceCountLh = []
     self.parcellationAssociatedLesionsLh = []
+    self.parcellationLesionContributionSortedLh = []
 
     for jsonElementIndex in list(self.structureInfoLh.keys()):
         for p in self.structureInfoLh[str(jsonElementIndex)]:
             self.parcellationAffectedPercentageLh.append(p["PercentageAffected"])
             self.parcellationLesionInfluenceCountLh.append(p["LesionInfluenceCount"])
             self.parcellationAssociatedLesionsLh.append(p["AssociatedLesions"])
+            self.parcellationLesionContributionSortedLh.append(p["lesionContributionSorted"])
 
     self.parcellationAffectedPercentageRh = []
     self.parcellationLesionInfluenceCountRh = []
     self.parcellationAssociatedLesionsRh = []
+    self.parcellationLesionContributionSortedRh = []
 
     for jsonElementIndex in list(self.structureInfoLh.keys()):
         for p in self.structureInfoRh[str(jsonElementIndex)]:
             self.parcellationAffectedPercentageRh.append(p["PercentageAffected"])
             self.parcellationLesionInfluenceCountRh.append(p["LesionInfluenceCount"])
             self.parcellationAssociatedLesionsRh.append(p["AssociatedLesions"])
+            self.parcellationLesionContributionSortedRh.append(p["lesionContributionSorted"])
+
+  def getTopNLesions(self, n, parcellationLabel, parcellationLesionContributionSortedLh, parcellationLesionContributionSortedRh, isLeftHemisphere):
+      topLesionIds = []
+      indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
+      parcellationIndex = list(indexToParcellationDict.keys())[list(indexToParcellationDict.values()).index(parcellationLabel)]
+      if(isLeftHemisphere):
+          lesionsAndImpactCountOnParcellation = parcellationLesionContributionSortedLh[parcellationIndex]
+      else:
+          lesionsAndImpactCountOnParcellation = parcellationLesionContributionSortedRh[parcellationIndex]
+          
+      reversedList = lesionsAndImpactCountOnParcellation[::-1]
+      topN = reversedList[:n]
+      for item in topN:
+          topLesionIds.append(int(item[0]))
+      return topLesionIds
+
+  def getTopNRegions(self, n, lesionID, parcellationLesionContributionSortedLh, parcellationLesionContributionSortedRh):
+        # Convert from list of list to list of tuples.
+        #[['6', 14], ['5', 16], ['3', 20], ['4', 32], ['8', 44], ['2', 61], ['7', 76], ['1', 159]]
+        #[('6', 14), ('5', 16), ('3', 20), ('4', 32), ('8', 44), ('2', 61), ('7', 76), ('1', 159)]
+        for elem in parcellationLesionContributionSortedLh:
+            for i in range(len(elem)):
+                elem[i] = tuple(elem[i])
+
+        for elem in parcellationLesionContributionSortedRh:
+            for i in range(len(elem)):
+                elem[i] = tuple(elem[i])
+
+        #print("LH DATA", parcellationLesionContributionSortedLh)
+        #print("RH DATA", parcellationLesionContributionSortedRh)
+
+        topParcellationLabelsLh = []
+        topParcellationLabelsRh = []
+        indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
+        combinedList = []
+        #print(parcellationLesionContributionSortedLh)
+        for item in parcellationLesionContributionSortedLh:
+            if(item): # list not empty
+                for entry in item:
+                    if(int(lesionID) == int(entry[0])):
+                        combinedList.append(['l', '%d'%parcellationLesionContributionSortedLh.index(item),entry[1]])
+  
+        for item in parcellationLesionContributionSortedRh:
+            if(item): # list not empty
+                for entry in item:
+                    if(int(lesionID) ==int(entry[0])):
+                        combinedList.append(['r','%d'%parcellationLesionContributionSortedRh.index(item), entry[1]])
+             
+        combinedListsorted = sorted(combinedList, key=operator.itemgetter(2))
+        finalList = combinedListsorted[::-1][:n]
+  
+  
+        #compute parcellation labels
+        for item in finalList:
+            item[1] = indexToParcellationDict[int(item[1])]
+            #print(item)
+            if(item[0]=='l'):
+                topParcellationLabelsLh.append(item[1])
+            else:
+                topParcellationLabelsRh.append(item[1])
+          
+        return topParcellationLabelsLh, topParcellationLabelsRh
       
   def AddData(self):
     self.lesionvis.renDualRight.SetActiveCamera(self.lesionvis.renDualLeft.GetActiveCamera())
@@ -123,7 +205,7 @@ class LesionMapper():
     legend.SetNumberOfEntries(1)
     overlayTextProperty = vtk.vtkTextProperty()
     overlayTextProperty.SetFontFamily(4)
-    overlayTextProperty.SetFontFile("fonts\\RobotoMono-Medium.ttf")
+    overlayTextProperty.SetFontFile("asset\\RobotoMono-Medium.ttf")
     overlayTextProperty.SetFontSize(16)
     legend.SetEntryTextProperty(overlayTextProperty)
     legendBox = vtk.vtkCubeSource()
@@ -213,9 +295,6 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.lesionMappingRh = np.array([])
         self.lesionMapper.lesionMappingLh = np.array([])
 
-        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightRh)
-        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightLh)
-
         self.vtk_colorsLh = vtk.vtkUnsignedCharArray()
         self.vtk_colorsRh = vtk.vtkUnsignedCharArray()
         self.vtk_colorsLh.SetNumberOfComponents(3)
@@ -225,18 +304,56 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.vtk_colorsLh.SetNumberOfTuples(self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints())
         self.vtk_colorsRh.SetNumberOfTuples(self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints())
 
+        self.vtk_colorsLh.DeepCopy(self.lesionvis.colorsLightLh)
+        self.vtk_colorsRh.DeepCopy(self.lesionvis.colorsLightRh)
+
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.lesionvis.colorsLightLh)
+
         self.MouseMotion = 0
 
-    def computeLesionImpact(self, lesionId):
+    # def computeLesionImpact(self, lesionId):
+    #     indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
+    #     impactString = []
+    #     impactParcellationLabelsRh = []
+    #     impactParcellationLabelsLh = []
+    #     print("PARCCOUNT", self.lesionMapper.parcellationsRhCount)
+    #     for parcellationIndex in range(self.lesionMapper.parcellationsRhCount):
+    #         if(lesionId in list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())):
+    #             uniqueLabelIndex = self.lesionvis.uniqueLabelsRh.tolist().index(indexToParcellationDict[parcellationIndex])
+    #             impactParcellationLabelsRh.append(self.lesionvis.uniqueLabelsRh[uniqueLabelIndex])
+    #             impactString.append("RH-" + str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
+    #     for parcellationIndex in range(self.lesionMapper.parcellationsLhCount):
+    #         if(lesionId in list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())):
+    #             uniqueLabelIndex = self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])
+    #             impactParcellationLabelsLh.append(self.lesionvis.uniqueLabelsLh[uniqueLabelIndex])
+    #             impactString.append("LH-" + str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
+    #     return impactString, impactParcellationLabelsLh, impactParcellationLabelsRh
+
+    def computeLesionImpact(self, lesionId, parcellationWhiteListLh = None, parcellationWhiteListRh = None):
         indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
         impactString = []
+        impactParcellationLabelsRh = []
+        impactParcellationLabelsLh = []
         for parcellationIndex in range(self.lesionMapper.parcellationsRhCount):
             if(lesionId in list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())):
+                uniqueLabelIndex = self.lesionvis.uniqueLabelsRh.tolist().index(indexToParcellationDict[parcellationIndex])
+                if(parcellationWhiteListRh != None):
+                    if(self.lesionvis.uniqueLabelsRh[uniqueLabelIndex] not in parcellationWhiteListRh):
+                        continue
+                impactParcellationLabelsRh.append(self.lesionvis.uniqueLabelsRh[uniqueLabelIndex])
                 impactString.append("RH-" + str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
         for parcellationIndex in range(self.lesionMapper.parcellationsLhCount):
             if(lesionId in list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())):
+                uniqueLabelIndex = self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])
+                if(parcellationWhiteListLh != None):
+                    if(self.lesionvis.uniqueLabelsLh[uniqueLabelIndex] not in parcellationWhiteListLh):
+                        continue
+                impactParcellationLabelsLh.append(self.lesionvis.uniqueLabelsLh[uniqueLabelIndex])
                 impactString.append("LH-" + str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(indexToParcellationDict[parcellationIndex])].decode('utf-8')))
-        return impactString
+        return impactString, impactParcellationLabelsLh, impactParcellationLabelsRh
 
     def tintColor(self, clr, p=0.5):
         r = 255 - int(p * (255 - clr[0]))
@@ -244,13 +361,34 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         b = 255 - int(p * (255 - clr[2]))
         return [r,g,b]
 
-    def mapLesionToSurface(self, lesionID, NewPickedActor):
-        if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
-            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
-            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
-        else: # Use parcellation colors that has no red lesion impact patches
-            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
-            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+    def mapLesionToSurface(self, lesionID, NewPickedActor = None, parcellationWhiteListLh = None, parcellationWhiteListRh = None):
+        numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
+        numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
+        vertexIndexArrayRh = np.arange(numberOfPointsRh)
+        vertexIndexArrayLh = np.arange(numberOfPointsLh)
+        if(self.lesionvis.mappingType == "Heat Equation"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
+        if(self.lesionvis.mappingType == "Diffusion"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(lesionID)-1])
+        if(self.lesionvis.mappingType == "Danielsson Distance"):
+            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDanielsson[int(lesionID)-1])
+            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(lesionID)-1])
+        self.lesionMapper.lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
+        self.lesionMapper.lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+
+        # if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
+        #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
+        #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
+        #     print("MapLesionsToSurface-->ColorsLh")
+        # else: # Use parcellation colors that has no red lesion impact patches
+        #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+        #     print("MapLesionsToSurface-->ColorsFreeSurferLh")
+
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
 
         scalarsLh = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
         scalarsRh = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
@@ -266,7 +404,28 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.overlayDataMainLeftLesions["Lesion Flatness"] = "{0:.2f}".format(self.lesionvis.lesionFlatness[int(lesionID)-1])
         self.lesionMapper.overlayDataMainLeftLesions["Lesion Roundness"] = "{0:.2f}".format(self.lesionvis.lesionRoundness[int(lesionID)-1])
         self.lesionMapper.overlayDataMainLeftLesionImpact["Lesion ID"] = str(lesionID)
-        impactStringList = self.computeLesionImpact(lesionID)
+        if(parcellationWhiteListLh == None or parcellationWhiteListRh == None):
+            impactStringList, impactParcellationLabelsLh, impactParcellationLabelsRh = self.computeLesionImpact(lesionID)
+            totalParcellationsAffected = len(impactStringList)
+            self.lesionvis.label_TopNRegions.setText("Showing top " + str(totalParcellationsAffected) +" influenced regions")
+            self.lesionvis.horizontalSlider_TopNRegions.setMaximum(totalParcellationsAffected)
+            self.lesionvis.horizontalSlider_TopNRegions.blockSignals(True)
+            self.lesionvis.horizontalSlider_TopNRegions.setValue(totalParcellationsAffected)
+            self.lesionvis.horizontalSlider_TopNRegions.blockSignals(False)
+        else:
+            impactStringList, impactParcellationLabelsLh, impactParcellationLabelsRh = self.computeLesionImpact(lesionID, parcellationWhiteListLh, parcellationWhiteListRh)
+        #print(impactParcellationLabelsLh)
+        #print(impactParcellationLabelsRh)
+
+        #print("LESION ID", lesionID)
+        #print("SORTED LH", self.lesionMapper.parcellationLesionContributionSortedLh)
+
+        #print("SORTED RH", self.lesionMapper.parcellationLesionContributionSortedRh)
+        #lhdata, rhdata = self.lesionMapper.getTopNRegions(10, lesionID, self.lesionMapper.parcellationLesionContributionSortedLh, self.lesionMapper.parcellationLesionContributionSortedRh)
+        #print("RESULTLH", lhdata)
+        #print("RESULTRH", rhdata)
+        
+
         
         functionListString = "\n"
         for elemIndex in range(len(impactStringList)):
@@ -276,10 +435,11 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.overlayDataMainLeftLesionImpact["# Functions"] = len(impactStringList)
         
         # Highlight the picked actor by changing its properties
-        NewPickedActor.GetMapper().ScalarVisibilityOff()
-        NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
-        NewPickedActor.GetProperty().SetDiffuse(1.0)
-        NewPickedActor.GetProperty().SetSpecular(0.0)
+        if(NewPickedActor!=None):
+            NewPickedActor.GetMapper().ScalarVisibilityOff()
+            NewPickedActor.GetProperty().SetColor(1.0, 1.0, 0.0)
+            NewPickedActor.GetProperty().SetDiffuse(1.0)
+            NewPickedActor.GetProperty().SetSpecular(0.0)
 
         if(self.lesionvis.mappingType == "Signed Distance Map"): #  If SDM, then directly map loaded scalars and return.
             #self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
@@ -313,21 +473,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         
 
         # LESION IMPACT COLOR MAPPING STARTS HERE (3D SURFACE)
-        numberOfPointsRh = self.lesionvis.rhwhiteMapper.GetInput().GetNumberOfPoints()
-        numberOfPointsLh = self.lesionvis.lhwhiteMapper.GetInput().GetNumberOfPoints()
-        vertexIndexArrayRh = np.arange(numberOfPointsRh)
-        vertexIndexArrayLh = np.arange(numberOfPointsLh)
-        if(self.lesionvis.mappingType == "Heat Equation"):
-            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRh[int(lesionID)-1])
-            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLh[int(lesionID)-1])
-        if(self.lesionvis.mappingType == "Diffusion"):
-            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDTI[int(lesionID)-1])
-            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDTI[int(lesionID)-1])
-        if(self.lesionvis.mappingType == "Danielsson Distance"):
-            affectedRh = np.asarray(self.lesionvis.lesionAffectedPointIdsRhDanielsson[int(lesionID)-1])
-            affectedLh = np.asarray(self.lesionvis.lesionAffectedPointIdsLhDanielsson[int(lesionID)-1])
-        self.lesionMapper.lesionMappingRh = np.isin(vertexIndexArrayRh, affectedRh)
-        self.lesionMapper.lesionMappingLh = np.isin(vertexIndexArrayLh, affectedLh)
+
 
         # for elem in lesionMappingRh:
         #     if(elem==True):
@@ -349,7 +495,10 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = [25,5,25]
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
-                    lightClr = self.tintColor(clrParcellationRh, 0.2)
+                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh): # If parcellation label id is element of affected parcellations then darken
+                        lightClr = clrParcellationRh
+                    else: # else lighten up parcellation.
+                        lightClr = self.tintColor(clrParcellationRh, 0.1)
                 self.vtk_colorsRh.SetTuple3(vertexIndex, lightClr[0], lightClr[1], lightClr[2])
 
         for vertexIndex in range(scalarsLh.GetNumberOfTuples()):
@@ -360,7 +509,10 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = [25,5,25]
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
-                    lightClr = self.tintColor(clrParcellationLh, 0.2)
+                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh): # If parcellation label id is element of affected parcellations then darken
+                        lightClr = clrParcellationLh
+                    else:  # else lighten up parcellation.
+                        lightClr = self.tintColor(clrParcellationLh, 0.1)
                 self.vtk_colorsLh.SetTuple3(vertexIndex, lightClr[0], lightClr[1], lightClr[2])
 
         self.lesionvis.rhwhiteMapper.ScalarVisibilityOn()
@@ -393,12 +545,17 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
 
     # Update surface colors based on user interaction.
     def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
-        if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
-            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
-            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
-        else: # Use parcellation colors that has no red lesion impact patches
-            self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
-            self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+        # if(self.lesionMapper.lesionMappingLh.size > 0): # Can use lesionMappingRh also. This is to check if lesion mapping is done atleast once.
+        #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsLh")
+        #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsRh")
+        #     print("ColorsLh")
+        # else: # Use parcellation colors that has no red lesion impact patches
+        #     self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        #     self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+        #     print("ColorsFreeSurferLh")
+
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
 
         scalarsLh = self.lesionvis.lhwhiteMapper.GetInput().GetPointData().GetScalars()
         scalarsRh = self.lesionvis.rhwhiteMapper.GetInput().GetPointData().GetScalars()
@@ -411,7 +568,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationLh = self.lesionvis.metaLh[0]["color"]
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[i]]["color"]
-                    lightClr = self.tintColor(clrParcellationLh, 0.2)
+                    lightClr = self.tintColor(clrParcellationLh, 0.1)
                 if(clrParcellationLh == pickedParcellationColor and hemisphere == "lh"): # If picked color is same as current color, Apply tint.
                     scalarsLh.SetTuple(i, self.tintColor(clrParcellationLh, 0.9)) # Darken parcellation
                 else:
@@ -425,7 +582,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     clrParcellationRh = self.lesionvis.metaRh[0]["color"]
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[i]]["color"]
-                    lightClr = self.tintColor(clrParcellationRh, 0.2)
+                    lightClr = self.tintColor(clrParcellationRh, 0.1)
                 if(clrParcellationRh == pickedParcellationColor and hemisphere == "rh"): # If picked color is same as current color, Apply tint.
                     scalarsRh.SetTuple(i, self.tintColor(clrParcellationRh, 0.9)) # darken parcellation.
                 else:
@@ -526,6 +683,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
                         self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
                         pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
+                        print("PARCELLATION LABEL", self.lesionvis.labelsRh[cellPicker.GetPointId()])
                         self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
                         self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
 
@@ -560,8 +718,43 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     
                     # save the last picked actor
                     self.LastPickedActor = self.NewPickedActor
+            else: # no actor picked. Clicked on background space.
+                if(self.lesionMapper.interactionStyleLeft.currentActiveStreamlineActor!=None): # Check if there are streamlineActors, if yes, remove.
+                    self.lesionvis.renDualLeft.RemoveActor(self.lesionMapper.interactionStyleLeft.currentActiveStreamlineActor)
+                # Reset view style for all lesions. (no lesions picked state)
+                self.resetToDefaultViewLesions()
+                self.resetToDefaultViewSurface() # Reset view style for parcellations.
+                self.lesionMapper.Refresh()
+
+                # Reset overlays.
         self.OnLeftButtonUp()
         return
+
+    def resetToDefaultViewLesions(self):
+        self.lesionMapper.lesionMappingLh = np.empty(shape=(0))
+        self.lesionMapper.lesionMappingRh = np.empty(shape=(0))
+        for actor in self.lesionvis.lesionActors:
+            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                actor.GetMapper().ScalarVisibilityOff()
+            else:
+                actor.GetMapper().ScalarVisibilityOn()
+        self.LastPickedActor = None
+        self.currentLesionID = None
+
+    def resetToDefaultViewSurface(self):
+        self.lesionMapper.lesionMappingLh = np.empty(shape=(0))
+        self.lesionMapper.lesionMappingRh = np.empty(shape=(0))
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferLh")
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetActiveScalars("ColorsFreeSurferRh")
+        
+        # self.lesionvis.colorsLightLh.DeepCopy(self.vtk_colorsLh)
+        # self.lesionvis.colorsLightRh.DeepCopy(self.vtk_colorsRh)
+        self.vtk_colorsLh.DeepCopy(self.lesionvis.colorsLightLh)
+        self.vtk_colorsRh.DeepCopy(self.lesionvis.colorsLightRh)
+
+        self.lesionvis.rhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsRh)
+        self.lesionvis.lhwhiteMapper.GetInput().GetPointData().SetScalars(self.vtk_colorsLh)
+        self.lesionvis.label_TopNRegions.setText("Showing top N influenced regions")
 
     def mouseMoveEvent(self, obj, event):
         self.MouseMotion = 1
