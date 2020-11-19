@@ -196,7 +196,7 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
             self.vtkWidget.GetRenderWindow().RemoveRenderer(self.renMapOutcome)
         # Highlight the picked actor by changing its properties
         self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-        self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+        self.NewPickedActor.GetProperty().SetColor(0.4627, 0.4627, 0.9568) # A blueish color.
         self.NewPickedActor.GetProperty().SetDiffuse(1.0)
         self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
@@ -391,23 +391,46 @@ class MouseInteractorHighLightActor(vtk.vtkInteractorStyleTrackballCamera):
                     #     streamActor.GetProperty().SetInformation(information)
                     #     self.GetDefaultRenderer().AddActor(streamActor)
                 else:
-                    self.overlayDataMain["Lesion ID"] = "NA"
-                    self.overlayDataMain["Centroid"] = "NA"
-                    self.overlayDataMain["Voxel Count"] = "NA"
-                    self.overlayDataMain["Elongation"] = "NA"
-                    self.overlayDataMain["Lesion Perimeter"] = "NA"
-                    self.overlayDataMain["Lesion Spherical Radius"] = "NA"
-                    self.overlayDataMain["Lesion Spherical Perimeter"] = "NA"
-                    self.overlayDataMain["Lesion Flatness"] = "NA"
-                    self.overlayDataMain["Lesion Roundness"] = "NA"
+                    self.clearTextOverlayLesionStatistics()
 
                 updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
                 self.iren.Render()
                 # save the last picked actor
                 self.LastPickedActor = self.NewPickedActor
-        
+            else: # no actor picked. Clicked on background.
+                self.resetToDefaultViewLesions()
+                self.clearTextOverlayLesionStatistics()
+                updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
+
         self.OnLeftButtonUp()
         return
+
+    def clearTextOverlayLesionStatistics(self):
+        self.overlayDataMain["Lesion ID"] = "NA"
+        self.overlayDataMain["Centroid"] = "NA"
+        self.overlayDataMain["Voxel Count"] = "NA"
+        self.overlayDataMain["Elongation"] = "NA"
+        self.overlayDataMain["Lesion Perimeter"] = "NA"
+        self.overlayDataMain["Lesion Spherical Radius"] = "NA"
+        self.overlayDataMain["Lesion Spherical Perimeter"] = "NA"
+        self.overlayDataMain["Lesion Flatness"] = "NA"
+        self.overlayDataMain["Lesion Roundness"] = "NA"
+
+    def resetToDefaultViewLesions(self):
+        #self.lesionMapper.lesionMappingLh = np.empty(shape=(0))
+        #self.lesionMapper.lesionMappingRh = np.empty(shape=(0))
+        for actor in self.lesionvis.lesionActors:
+            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                #actor.GetMapper().ScalarVisibilityOff()
+                self.lesionvis.updateLesionColorsDiscrete()
+                break
+                #updateLesionColorsDiscrete()
+            else:
+                actor.GetMapper().ScalarVisibilityOn()
+        self.LastPickedActor = None
+        self.clickedLesionActor
+        #self.currentLesionID = None
+        #self.currentParcellationLabel = None
 
     def mouseMoveEvent(self,obj,event):
         self.MouseMotion = 1
@@ -1572,7 +1595,7 @@ def highlightActors(actors, informationIDList, informationUniqueKey):
         actor.GetMapper().ScalarVisibilityOn()
         if int(lesionID) in informationIDList:
             actor.GetMapper().ScalarVisibilityOff()
-            actor.GetProperty().SetColor(1.0, 1.0, 0.0)
+            actor.GetProperty().SetColor(0.4627, 0.4627, 0.9568) # blueish color.
             actor.GetProperty().SetDiffuse(1.0)
             actor.GetProperty().SetSpecular(0.0)
 

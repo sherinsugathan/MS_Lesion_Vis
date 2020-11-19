@@ -28,6 +28,7 @@ import ctypes
 import time
 import copy
 from ctypes import wintypes
+from matplotlib import colors
 
 
 from PyQt5 import QtWidgets, uic
@@ -386,6 +387,7 @@ class Ui(Qt.QMainWindow):
         self.activeMode = -2
         self.streamlineComputed = False
         self.dtiDataActive = True
+        self.MPROverlayColorMap = colors.ListedColormap(['blue', 'blue'])
 
         self.figureMPRA.canvas.mpl_connect('scroll_event', self.onScrollMPRA)
         self.figureMPRB.canvas.mpl_connect('scroll_event', self.onScrollMPRB)
@@ -514,6 +516,7 @@ class Ui(Qt.QMainWindow):
     def plotMPRs(self): 
         # clearing old figures
         self.figureMPRA.clear()
+
         plt.figure(0)
         # create an axis
         self.axMPRA = self.figureMPRA.add_subplot(111)
@@ -521,8 +524,8 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRA = np.rot90(self.slice_MPRA)
         self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
-        self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect='auto')
-        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect='equal')
+        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
         self.sliceNumberHandleMPRA = self.axMPRA.text(5, 5, str(self.midSliceX), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
         
 
@@ -533,8 +536,8 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRB = np.rot90(self.slice_MPRB)
         self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
-        self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect='auto')
-        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect='equal')
+        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
         self.sliceNumberHandleMPRB = self.axMPRB.text(5, 5, str(self.midSliceY), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.figureMPRC.clear()
@@ -542,10 +545,14 @@ class Ui(Qt.QMainWindow):
         self.axMPRC = self.figureMPRC.add_subplot(111) 
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
-        self.slice_MPRC = np.rot90(self.slice_MPRC)
-        self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC)
-        self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect='auto')
-        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap='jet', alpha=0.5, aspect='auto',  interpolation='none')
+        if(self.dtiDataActive == True):
+            self.slice_MPRC = np.rot90(self.slice_MPRC)
+            self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC)
+        else:
+            self.slice_MPRC = np.rot90(self.slice_MPRC, 3)
+            self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC, 3)
+        self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect='equal')
+        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
         self.sliceNumberHandleMPRC = self.axMPRC.text(5, 5, str(self.midSliceZ), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.canvasMPRA.draw()
@@ -783,7 +790,7 @@ class Ui(Qt.QMainWindow):
 
                 if(fileNames[i].endswith("ventricleMesh.obj") == True):
                     LesionUtils.smoothSurface(actor)
-                    information.Set(self.informationKey,"ventricles")
+                    information.Set(self.informationKey,"ventricleMesh")
                     actor.GetProperty().SetInformation(information)
                     actor.GetMapper().ScalarVisibilityOff()
                     actor.GetProperty().SetColor(0.5608, 0.7059, 0.5725)
@@ -888,11 +895,11 @@ class Ui(Qt.QMainWindow):
                 intensityDifference = self.lesionAverageLesionIntensityFLAIR[dataIndex] - self.lesionAverageSuroundingIntensityFLAIR[dataIndex]
 
             if(intensityDifference < thresholdMin):
-                self.lesionActors[dataIndex].GetProperty().SetColor(103/255.0, 169/255.0, 207/255.0)
+                self.lesionActors[dataIndex].GetProperty().SetColor(0.4039, 0.6627, 0.8117) # RGB [103,169,207]
             if(intensityDifference >= thresholdMin and intensityDifference <=thresholdMax):
-                self.lesionActors[dataIndex].GetProperty().SetColor(247/255.0, 247/255.0, 247/255.0)
+                self.lesionActors[dataIndex].GetProperty().SetColor(0.9686, 0.9686, 0.9686) # RGB 247, 247, 247
             if(intensityDifference >= thresholdMax):
-                self.lesionActors[dataIndex].GetProperty().SetColor(239/255.0, 138/255.0, 98/255.0)
+                self.lesionActors[dataIndex].GetProperty().SetColor(0.9373, 0.5412, 0.3843) # RGB 239, 138, 98
         
         self.ren.RemoveActor(self.legendDistance)
         self.ren.AddActor(self.legend)
@@ -1131,8 +1138,12 @@ class Ui(Qt.QMainWindow):
     def on_sliderChangedMPRC(self):
         plt.figure(2)
         self.midSliceZ = self.mprC_Slice_Slider.value()
-        self.slice_MPRC = np.rot90(self.epi_img_data[:, :, self.midSliceZ])
-        self.sliceMask_MPRC = np.rot90(self.alpha_mask[:, :, self.midSliceZ])
+        if(self.dtiDataActive == True):
+            self.slice_MPRC = np.rot90(self.epi_img_data[:, :, self.midSliceZ])
+            self.sliceMask_MPRC = np.rot90(self.alpha_mask[:, :, self.midSliceZ])
+        else:
+            self.slice_MPRC = np.rot90(self.epi_img_data[:, :, self.midSliceZ], 3)
+            self.sliceMask_MPRC = np.rot90(self.alpha_mask[:, :, self.midSliceZ], 3)            
         self.MPRC.set_data(self.slice_MPRC)
         self.sliceNumberHandleMPRC.set_text(self.midSliceZ)
         self.MPRCMask.set_data(self.sliceMask_MPRC)

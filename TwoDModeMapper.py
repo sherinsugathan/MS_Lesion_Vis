@@ -633,7 +633,7 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                     self.lesionID = self.NewPickedActor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
                     # Highlight the picked actor by changing its properties
                     self.NewPickedActor.GetMapper().ScalarVisibilityOff()
-                    self.NewPickedActor.GetProperty().SetColor(1.0, 0.0, 0.0)
+                    self.NewPickedActor.GetProperty().SetColor(0.4627, 0.4627, 0.9568) # blueish color.
                     self.NewPickedActor.GetProperty().SetDiffuse(1.0)
                     self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
@@ -653,9 +653,21 @@ class CustomLesionInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 
                     # save the last picked actor
                     self.LastPickedActor = self.NewPickedActor
+
+                else: # nothing picked.
+                    self.resetToDefaultViewLesions()
+
             
         self.OnLeftButtonUp()
         return
+
+    def resetToDefaultViewLesions(self):
+        for actor in self.lesionvis.lesionActors:
+            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                self.lesionvis.updateLesionColorsDiscrete()
+                break
+            else:
+                actor.GetMapper().ScalarVisibilityOn()
 
     def mouseMoveEvent(self,obj,event):
         self.MouseMotion = 1

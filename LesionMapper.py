@@ -38,6 +38,7 @@ class LesionMapper():
 
       # Ui Control handlers.
       self.lesionvis.horizontalSlider_TopNRegions.valueChanged.connect(self.on_sliderChangedTopNRegions)
+      self.lesionvis.horizontalSlider_TopNLesions.valueChanged.connect(self.on_sliderChangedTopNLesions)
       #print("done1")
 
   def leftCameraModifiedCallback(self,obj,event):
@@ -48,14 +49,49 @@ class LesionMapper():
   def on_sliderChangedTopNRegions(self):
     if(self.interactionStyleLeft.currentLesionID != None):
         sliderValue = self.lesionvis.horizontalSlider_TopNRegions.value()
-        #print("SLICDErvalue", sliderValue)
         lhdata, rhdata = self.getTopNRegions(sliderValue, self.interactionStyleLeft.currentLesionID, self.parcellationLesionContributionSortedLh, self.parcellationLesionContributionSortedRh)
         self.lesionvis.label_TopNRegions.setText("Showing top " + str(sliderValue) +" influenced regions")
         self.interactionStyleLeft.mapLesionToSurface(self.interactionStyleLeft.currentLesionID, None, lhdata, rhdata)
         self.lesionvis.renDualRight.Render()
-        #print(lhdata)
-        #print(rhdata)
-        #print("done")
+
+  def on_sliderChangedTopNLesions(self):
+    if(self.interactionStyleRight.currentParcellationLabel != None):
+        indexToParcellationDict = {0:-1,1:1,2:2,3:3,4:5,5:6,6:7,7:8,8:9,9:10,10:11,11:12,12:13,13:14,14:15,15:16,16:17,17:18,18:19,19:20,20:21,21:22,22:23,23:24,24:25,25:26,26:27,27:28,28:29,29:30,30:31,31:32,32:33,33:34,34:35}
+        parcellationLabelToIndexValue = list(indexToParcellationDict.keys())[list(indexToParcellationDict.values()).index(self.interactionStyleRight.currentParcellationLabel[0])]
+        #print(parcellationLabelToIndexValue)
+        lesionIDs = []      
+        if(self.interactionStyleRight.currentParcellationLabel[1] == "lh"):
+            sortedListLh = self.parcellationLesionContributionSortedLh[int(parcellationLabelToIndexValue)]
+            for elem in sortedListLh:
+                lesionIDs.append(int(elem[0]))
+            #print("LH", self.lesionMapper.parcellationLesionContributionSortedLh[int(parcellationLabelToIndexValue)])
+        if(self.interactionStyleRight.currentParcellationLabel[1] == "rh"):
+            sortedListRh = self.parcellationLesionContributionSortedRh[int(parcellationLabelToIndexValue)]
+            for elem in sortedListRh:
+                lesionIDs.append(int(elem[0]))
+
+        sliderValue = self.lesionvis.horizontalSlider_TopNLesions.value()
+        self.lesionvis.label_TopNLesions.setText("Showing top " + str(sliderValue) +" influenced regions")
+        topLesionsHighestToLowest = lesionIDs[::-1]
+        topLesions = topLesionsHighestToLowest[:int(sliderValue)]
+        
+
+        for actor in self.lesionvis.lesionActors:
+            lesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
+
+            if(self.lesionvis.pushButton_Discrete.isChecked() == True):
+                actor.GetMapper().ScalarVisibilityOff()
+            else:
+                actor.GetMapper().ScalarVisibilityOn()
+
+            if int(lesionID) in topLesions:
+                actor.GetMapper().ScalarVisibilityOff()
+                actor.GetProperty().SetColor(1.0, 1.0, 0.0)
+                actor.GetProperty().SetDiffuse(1.0)
+                actor.GetProperty().SetSpecular(0.0)
+
+        self.lesionvis.renDualRight.Render()
+
 
   def loadParcellationData(self):
     # load precomputed lesion properties
@@ -163,7 +199,15 @@ class LesionMapper():
                 topParcellationLabelsRh.append(item[1])
           
         return topParcellationLabelsLh, topParcellationLabelsRh
-      
+
+  def ResetTextOverlay(self):
+    self.overlayDataMainLeftLesions = {"Lesion ID":"NA", "Voxel Count":"NA", "Centroid":"NA", "Elongation":"NA", "Lesion Perimeter":"NA", "Lesion Spherical Radius":"NA", "Lesion Spherical Perimeter":"NA", "Lesion Flatness":"NA", "Lesion Roundness":"NA"}
+    self.overlayDataMainLeftLesionImpact = {"Lesion ID":"NA", "# Functions":"NA", "Affected Functions" : "NA"}
+    self.overlayDataMainRightParcellationImpact = {"SELECTED BRAIN REGION:":"NA", "LESION INFLUENCE ON SELECTED REGION:":"NA", "NUMBER OF INFLUENCING LESIONS:":"NA", "INFLUENCING LESION IDs:" : "NA"}
+    LesionUtils.setOverlayText(self.overlayDataMainLeftLesions, self.textActorLesionStatistics)
+    LesionUtils.setOverlayText(self.overlayDataMainLeftLesionImpact, self.textActorLesionImpact)
+    LesionUtils.setOverlayText(self.overlayDataMainRightParcellationImpact, self.textActorParcellation)
+
   def AddData(self):
     self.lesionvis.renDualRight.SetActiveCamera(self.lesionvis.renDualLeft.GetActiveCamera())
     self.interactionStyleLeft = LesionMappingInteraction(None, self.lesionvis, self)
@@ -179,7 +223,7 @@ class LesionMapper():
 
     for actor in self.lesionvis.actors: # Adding actors to left and right viewports.
         itemType = actor.GetProperty().GetInformation().Get(self.lesionvis.informationKey)
-        if(itemType == None or itemType == "ventricles"):
+        if(itemType == None or itemType == "ventricleMesh"):
             self.lesionvis.renDualLeft.AddActor(actor)
         else:
             actor.GetProperty().SetOpacity(1)
@@ -290,6 +334,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.LastPickedProperty = vtk.vtkProperty()
         self.currentActiveStreamlineActor = None
         self.currentLesionID = None
+        self.currentParcellationLabel = None
         self.clrRed = [227,74,51]
         self.isLesionMappingActivatedOnceAndInitialized = False
         self.lesionMapper.lesionMappingRh = np.array([])
@@ -527,10 +572,9 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         LesionUtils.setOverlayText(self.lesionMapper.overlayDataMainLeftLesionImpact, self.lesionMapper.textActorLesionImpact)
 
     # Highlight lesions based on selected parcellation.
-    def highlightLesionsBasedOnSelectedParcellation(self, parcellationAssociatedLesionList):
+    def highlightLesionsBasedOnSelectedParcellation(self, parcellationAssociatedLesionList, selectedParcellationLabel, hemisphere):
         for actor in self.lesionvis.lesionActors:
             lesionID = actor.GetProperty().GetInformation().Get(self.lesionvis.informationUniqueKey)
-            #actor.GetMapper().ScalarVisibilityOn()
 
             if(self.lesionvis.pushButton_Discrete.isChecked() == True):
                 actor.GetMapper().ScalarVisibilityOff()
@@ -542,6 +586,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 actor.GetProperty().SetColor(1.0, 1.0, 0.0)
                 actor.GetProperty().SetDiffuse(1.0)
                 actor.GetProperty().SetSpecular(0.0)
+
+        influencingLesionCount = len(parcellationAssociatedLesionList)
+        self.lesionvis.horizontalSlider_TopNLesions.setMaximum(influencingLesionCount)
+        self.lesionvis.horizontalSlider_TopNLesions.blockSignals(True)
+        self.lesionvis.horizontalSlider_TopNLesions.setValue(influencingLesionCount)
+        self.lesionvis.horizontalSlider_TopNLesions.blockSignals(False)
+        self.lesionvis.label_TopNLesions.setText("Showing top " + str(influencingLesionCount) +" influenced regions")
 
     # Update surface colors based on user interaction.
     def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
@@ -665,6 +716,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     #print(cellPicker.GetPointId())
 
                     if("lh" in str(itemType)):
+                        self.currentParcellationLabel = [self.lesionvis.labelsLh[cellPicker.GetPointId()], "lh"]
                         parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
                         self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsLh[self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])].decode('utf-8'))
                         self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageLh[parcellationIndex])) + "%"
@@ -673,9 +725,10 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
                         pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
                         self.updateSurfaceColorsForParcellationPick("lh", pickedParcellationColor)
-                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
+                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList, self.lesionvis.labelsLh[cellPicker.GetPointId()], "lh")
 
                     if("rh" in str(itemType)):
+                        self.currentParcellationLabel = [self.lesionvis.labelsRh[cellPicker.GetPointId()], "rh"]
                         parcellationIndex = self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])
                         self.lesionMapper.overlayDataMainRightParcellationImpact["SELECTED BRAIN REGION:"] = str(self.lesionvis.regionsRh[self.lesionvis.uniqueLabelsRh.tolist().index(self.lesionvis.labelsRh[cellPicker.GetPointId()])].decode('utf-8'))
                         self.lesionMapper.overlayDataMainRightParcellationImpact["LESION INFLUENCE ON SELECTED REGION:"] = str("{0:.2f}".format(self.lesionMapper.parcellationAffectedPercentageRh[parcellationIndex])) + "%"
@@ -683,9 +736,8 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
                         self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
                         pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
-                        print("PARCELLATION LABEL", self.lesionvis.labelsRh[cellPicker.GetPointId()])
                         self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
-                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList)
+                        self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList, self.lesionvis.labelsRh[cellPicker.GetPointId()], "rh")
 
                     if itemType==None: # Itemtype is None for lesions. They only have Ids.
                         self.mapLesionToSurface(lesionID, self.NewPickedActor)
@@ -724,6 +776,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                 # Reset view style for all lesions. (no lesions picked state)
                 self.resetToDefaultViewLesions()
                 self.resetToDefaultViewSurface() # Reset view style for parcellations.
+                self.lesionMapper.ResetTextOverlay()
                 self.lesionMapper.Refresh()
 
                 # Reset overlays.
@@ -735,11 +788,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionMapper.lesionMappingRh = np.empty(shape=(0))
         for actor in self.lesionvis.lesionActors:
             if(self.lesionvis.pushButton_Discrete.isChecked() == True):
-                actor.GetMapper().ScalarVisibilityOff()
+                self.lesionvis.updateLesionColorsDiscrete()
+                break
             else:
                 actor.GetMapper().ScalarVisibilityOn()
         self.LastPickedActor = None
         self.currentLesionID = None
+        self.currentParcellationLabel = None
 
     def resetToDefaultViewSurface(self):
         self.lesionMapper.lesionMappingLh = np.empty(shape=(0))
