@@ -524,8 +524,10 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRA = np.rot90(self.slice_MPRA)
         self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
-        self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect='equal')
-        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
+        aspectCoronalData = self.spacingData[2]/self.spacingData[1]
+        aspectCoronalMask = self.spacingMask[2]/self.spacingMask[1]
+        self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect=aspectCoronalData)
+        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectCoronalMask,  interpolation='none')
         self.sliceNumberHandleMPRA = self.axMPRA.text(5, 5, str(self.midSliceX), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
         
 
@@ -536,8 +538,10 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRB = np.rot90(self.slice_MPRB)
         self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
-        self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect='equal')
-        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
+        aspectAxialData = self.spacingData[2]/self.spacingData[1]
+        aspectAxialMask = self.spacingMask[2]/self.spacingMask[1]
+        self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect=aspectAxialData)
+        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectAxialMask,  interpolation='none')
         self.sliceNumberHandleMPRB = self.axMPRB.text(5, 5, str(self.midSliceY), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.figureMPRC.clear()
@@ -551,8 +555,10 @@ class Ui(Qt.QMainWindow):
         else:
             self.slice_MPRC = np.rot90(self.slice_MPRC, 3)
             self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC, 3)
-        self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect='equal')
-        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=0.5, aspect='equal',  interpolation='none')
+        aspectSagittalData = self.spacingData[1]/self.spacingData[0]
+        aspectSagittalMask = self.spacingMask[1]/self.spacingMask[0]
+        self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect=aspectSagittalData)
+        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectSagittalMask,  interpolation='none')
         self.sliceNumberHandleMPRC = self.axMPRC.text(5, 5, str(self.midSliceZ), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.canvasMPRA.draw()
@@ -569,6 +575,9 @@ class Ui(Qt.QMainWindow):
             self.mask_img = nib.load(fileNameOverlay)
             self.epi_img_data = self.epi_img.get_fdata() # Read structural
             self.mask_data = self.mask_img.get_fdata() # Read mask data
+
+            self.spacingData = self.epi_img.header.get_zooms()
+            self.spacingMask = self.mask_img.header.get_zooms()
             # Creating mask
             self.alpha_mask = ma.masked_where(self.mask_data <= 0, self.mask_data)
             #self.alpha_mask[self.alpha_mask>0] = 255

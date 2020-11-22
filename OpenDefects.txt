@@ -9,4 +9,4 @@
 9. Implement enable/disable hemisphere feature in dual.
 10. Check and fix SDM projection technique related issues.
 11. Click on corpus callosum key error.
- 
+12. Dual mode, cpick lesion, switch to unfold mode, pick lesion, clik on parcellation, issue-yellow lesion in 3d. 
