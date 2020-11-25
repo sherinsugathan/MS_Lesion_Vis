@@ -5,6 +5,7 @@
 #==========================================
 
 import os
+import sys
 import vtk
 import numpy as np
 import time
@@ -124,7 +125,11 @@ def captureScreenshot(renderWindow, modeID):
     windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
     windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
     windowToImageFilter.Update()
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    if getattr(sys, 'frozen', False):
+        dir_path = os.path.dirname(sys.executable)
+    elif __file__:
+        dir_path = os.path.dirname(__file__)
 
     plt.figure(0)
     curr_time = datetime.now()
@@ -1664,7 +1669,14 @@ def refreshActiveRenderer(self):
 ##########################################################################
 '''
 def clearCaptureFolder():
-    imageDir = str(pathlib.Path(__file__).parent.absolute()) + "\\captures\\"
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+
+    imageDir = application_path + "\\captures\\"
+    if not os.path.exists(imageDir):
+        os.makedirs(imageDir)
     filelist = [ f for f in os.listdir(imageDir) if f.endswith(".jpg") ]
     for f in filelist:
       os.remove(os.path.join(imageDir, f))

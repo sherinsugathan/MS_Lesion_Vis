@@ -1213,7 +1213,13 @@ class Ui(Qt.QMainWindow):
         pdf.cell(40, 10, dateLine)  
         pdf.ln(10)
 
-        dirPath = os.path.dirname(os.path.realpath(__file__)) + "\\captures\\"
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+        elif __file__:
+            application_path = os.path.dirname(__file__)
+
+        #dirPath = os.path.dirname(os.path.realpath(__file__)) + "\\captures\\"
+        dirPath = application_path + "\\captures\\"
         paths = sorted(pathlib.Path(dirPath).iterdir(), key=os.path.getctime)
         fileCount = len(paths)
         mprPadding = 40

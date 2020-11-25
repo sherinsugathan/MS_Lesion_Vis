@@ -1,4 +1,5 @@
 import os
+import sys
 import vtk
 import LesionUtils
 import numpy as np
@@ -45,13 +46,24 @@ class ReportsMapper():
     self.view.page().setWebChannel(self.channel)
     self.view.loadFinished.connect(self._loadFinish)
 
-    file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "interactionSorry.html"))
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+
+    file_path = os.path.abspath(os.path.join(application_path, "interactionSorry.html"))
     htmlUrl = QUrl.fromLocalFile(file_path)
     self.view.load(QUrl(htmlUrl))
     self.view.show()
 
   def SaveReport(self):
-    self.PDFPath = "file:///" + os.path.abspath(os.path.join(os.path.dirname(__file__), "report.pdf"))
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+
+    self.PDFPath = "file:///" + os.path.abspath(os.path.join(application_path, "report.pdf"))
+    
     self.PDFPath = self.PDFPath.replace('\\', '/')
     QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
     QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ScreenCaptureEnabled, True)
