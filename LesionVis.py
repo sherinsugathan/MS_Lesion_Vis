@@ -1223,8 +1223,8 @@ class Ui(Qt.QMainWindow):
         paths = sorted(pathlib.Path(dirPath).iterdir(), key=os.path.getctime)
         fileCount = len(paths)
         mprPadding = 40
-
         writeData = []
+        dualStoreIndex = 0
         for index in range(fileCount):
             writeBatch = []
             currentMode = ""
@@ -1234,14 +1234,16 @@ class Ui(Qt.QMainWindow):
             if(os.path.basename(paths[index])[0:3] == "2DM"):
                 writeBatch = [paths[index-3], paths[index-2], paths[index-1], paths[index]]
                 currentMode = "2DM"
-            if(os.path.basename(paths[index])[0:3] == "DUA"):
-                if(os.path.basename(paths[index-4])[0:3]!="DUA" or index == 3):
-                    writeBatch = [paths[index-3], paths[index-2], paths[index-1], paths[index], paths[index+1], paths[index+2], paths[index+3], paths[index+4]]
+            if(os.path.basename(paths[index])[0:3] == "DUA" and index >6 and (index-dualStoreIndex)>4):
+                if(os.path.basename(paths[index-4])[0:3]=="DUA"):
+                    writeBatch = [paths[index-7], paths[index-6], paths[index-5], paths[index-4], paths[index-3], paths[index-2], paths[index-1], paths[index]]
+                    dualStoreIndex = index
                     currentMode = "DUA"
             if(writeBatch!=[]):
                 writeData.append([currentMode, writeBatch]) 
 
         #print(writeData)
+        #print("LENGTH", len(writeData))
 
         # write to PDF
         dataIndex = 0
@@ -1256,7 +1258,6 @@ class Ui(Qt.QMainWindow):
                         pdf.ln(175)
                         pdf.image(str(fileName),20,110,180)
                         mprPadding =40
-
             if(writeType == "DUA"):
                 MPRWritten = False
                 dualPadding = 15
@@ -1272,7 +1273,6 @@ class Ui(Qt.QMainWindow):
                         pdf.image(str(fileName),dualPadding,110,90)
                         dualPadding = dualPadding + 90
                         mprPadding =40
-
             if(dataIndex < len(writeData)-1):
                 pdf.add_page() # create new page for every mode.
             dataIndex = dataIndex + 1
