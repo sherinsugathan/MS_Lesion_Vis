@@ -15,6 +15,10 @@ import json
 from nibabel import freesurfer
 #from PyQt5.QtCore import QTimer
 import pickle
+import matplotlib.pyplot as plt
+import matplotlib
+import pathlib
+from PIL import Image
 
 '''
 ##########################################################################
@@ -112,21 +116,55 @@ def setOverlayText(overlayDictionary, overlayTextActor):
     Returns: Nothing
 ##########################################################################
 '''
-def captureScreenshot(renderWindow): 
+def captureScreenshot(renderWindow, modeID): 
     windowToImageFilter = vtk.vtkWindowToImageFilter()
     windowToImageFilter.SetInput(renderWindow)
-    windowToImageFilter.SetScale(3,3)
+    #windowToImageFilter.SetScale(3,3)
     #windowToImageFilter.SetMagnification(3) #set the resolution of the output image (3 times the current resolution of vtk render window)
     windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
     windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
     windowToImageFilter.Update()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    plt.figure(0)
     curr_time = datetime.now()
     timestr = curr_time.strftime('%H.%M.%S.%f')
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    fileName = dir_path + "\\" + timestr + ".png"
-    writer = vtk.vtkPNGWriter()
+    fileName = dir_path + "\\captures\\MPR" + timestr + ".jpg"
+    plt.savefig(fileName)
+
+    
+    plt.figure(1)
+    curr_time = datetime.now()
+    timestr = curr_time.strftime('%H.%M.%S.%f')
+    fileName = dir_path + "\\captures\\MPR" + timestr + ".jpg"
+    plt.savefig(fileName)
+
+    plt.figure(2)
+    curr_time = datetime.now()
+    timestr = curr_time.strftime('%H.%M.%S.%f')
+    fileName = dir_path + "\\captures\\MPR" + timestr + ".jpg"
+    plt.savefig(fileName)
+
+    curr_time = datetime.now()
+    timestr = curr_time.strftime('%H.%M.%S.%f')
+    
+    # fileName = dir_path + "\\captures\\" + timestr + ".png"
+    # writer = vtk.vtkPNGWriter()
+    # writer.SetFileName(fileName)
+    # writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+    # writer.Write()
+
+
+    if(modeID == -2):
+        timestr = "NOR" + timestr
+    if(modeID == -3):
+        timestr = "DUA" + timestr
+    if(modeID == -4):
+        timestr = "2DM" + timestr
+    fileName = dir_path +  "\\captures\\" + timestr + ".jpg"
+    writer = vtk.vtkJPEGWriter()
     writer.SetFileName(fileName)
-    writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+    writer.SetInputConnection(windowToImageFilter.GetOutputPort());
     writer.Write()
 
 '''
@@ -1618,3 +1656,15 @@ def refreshActiveRenderer(self):
     if(self.buttonGroupModes.checkedId() == -5): # Reports Mode
         pass
 
+
+'''
+##########################################################################
+    Clear Capture Folder.
+    Returns: None
+##########################################################################
+'''
+def clearCaptureFolder():
+    imageDir = str(pathlib.Path(__file__).parent.absolute()) + "\\captures\\"
+    filelist = [ f for f in os.listdir(imageDir) if f.endswith(".jpg") ]
+    for f in filelist:
+      os.remove(os.path.join(imageDir, f))

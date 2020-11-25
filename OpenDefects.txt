@@ -1,12 +1,9 @@
 1. Parcellation click restore discrete coloring.
 2. Fix font issues in standalone.
 3. Add button to enable/disable overlay.
-4. Implement export to PDF feature.
-5. Disable fiber display, select another lesion and enable fiber display issue.
-6. Fix aspect ratio in MPR based on spacing.
-7. Dual mode, nothing selected, change projection mode is crashing.
-8. Fix issues with corpus callosum coloring.
-9. Implement enable/disable hemisphere feature in dual.
-10. Check and fix SDM projection technique related issues.
-11. Click on corpus callosum key error.
-12. Dual mode, cpick lesion, switch to unfold mode, pick lesion, clik on parcellation, issue-yellow lesion in 3d. 
+4. Disable fiber display, select another lesion and enable fiber display issue.
+5. Dual mode, nothing selected, change projection mode is crashing.
+6. Implement enable/disable hemisphere feature in dual.
+7. Check and fix SDM projection technique related issues.
+8. Dual mode, cpick lesion, switch to unfold mode, pick lesion, clik on parcellation, issue-yellow lesion in 3d. 
+9. Slider issue in T2.

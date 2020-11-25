@@ -71,7 +71,7 @@ class LesionMapper():
                 lesionIDs.append(int(elem[0]))
 
         sliderValue = self.lesionvis.horizontalSlider_TopNLesions.value()
-        self.lesionvis.label_TopNLesions.setText("Showing top " + str(sliderValue) +" influenced regions")
+        self.lesionvis.label_TopNLesions.setText("Showing top " + str(sliderValue) +" influenced lesions")
         topLesionsHighestToLowest = lesionIDs[::-1]
         topLesions = topLesionsHighestToLowest[:int(sliderValue)]
         
@@ -532,12 +532,17 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         #     else:
         #         vtk_colorsLh.InsertNextTuple3(clrGreen[0], clrGreen[1], clrGreen[2])
 
+        # RIGHT HEMISPHERE
         for vertexIndex in range(scalarsRh.GetNumberOfTuples()):
             if(self.lesionMapper.lesionMappingRh[vertexIndex] == True):
                 self.vtk_colorsRh.SetTuple3(vertexIndex, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsRh[vertexIndex] == -1):
-                    clrParcellationRh = [25,5,25]
+                    clrParcellationRh = self.lesionvis.metaRh[0]["color"]#[25,5,25]
+                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh): # If parcellation label id is element of affected parcellations then darken
+                        lightClr = clrParcellationRh
+                    else: # else lighten up parcellation.
+                        lightClr = self.tintColor(clrParcellationRh, 0.1)
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
                     if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh): # If parcellation label id is element of affected parcellations then darken
@@ -546,12 +551,17 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         lightClr = self.tintColor(clrParcellationRh, 0.1)
                 self.vtk_colorsRh.SetTuple3(vertexIndex, lightClr[0], lightClr[1], lightClr[2])
 
+        # LEFT HEMISPHERE
         for vertexIndex in range(scalarsLh.GetNumberOfTuples()):
             if(self.lesionMapper.lesionMappingLh[vertexIndex] == True):
                 self.vtk_colorsLh.SetTuple3(vertexIndex, self.clrRed[0], self.clrRed[1], self.clrRed[2])
             else:
                 if(self.lesionvis.labelsLh[vertexIndex] == -1):
-                    clrParcellationRh = [25,5,25]
+                    clrParcellationLh = self.lesionvis.metaLh[0]["color"]#[25,5,25]
+                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh): # If parcellation label id is element of affected parcellations then darken
+                        lightClr = clrParcellationLh
+                    else:  # else lighten up parcellation.
+                        lightClr = self.tintColor(clrParcellationLh, 0.1)
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
                     if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh): # If parcellation label id is element of affected parcellations then darken
@@ -592,7 +602,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
         self.lesionvis.horizontalSlider_TopNLesions.blockSignals(True)
         self.lesionvis.horizontalSlider_TopNLesions.setValue(influencingLesionCount)
         self.lesionvis.horizontalSlider_TopNLesions.blockSignals(False)
-        self.lesionvis.label_TopNLesions.setText("Showing top " + str(influencingLesionCount) +" influenced regions")
+        self.lesionvis.label_TopNLesions.setText("Showing top " + str(influencingLesionCount) +" influenced lesions")
 
     # Update surface colors based on user interaction.
     def updateSurfaceColorsForParcellationPick(self, hemisphere, pickedParcellationColor):
@@ -617,6 +627,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 if(self.lesionvis.labelsLh[i] == -1):
                     clrParcellationLh = self.lesionvis.metaLh[0]["color"]
+                    #print("entry here", clrParcellationLh)
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[i]]["color"]
                     lightClr = self.tintColor(clrParcellationLh, 0.1)
@@ -631,6 +642,7 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 if(self.lesionvis.labelsRh[i] == -1):
                     clrParcellationRh = self.lesionvis.metaRh[0]["color"]
+                    #print("entry here", clrParcellationRh)
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[i]]["color"]
                     lightClr = self.tintColor(clrParcellationRh, 0.1)
@@ -715,6 +727,10 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                     self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
                     #print(cellPicker.GetPointId())
 
+                    #print(self.lesionvis.labelsLh)
+                    #print(self.lesionvis.metaLh)
+
+
                     if("lh" in str(itemType)):
                         self.currentParcellationLabel = [self.lesionvis.labelsLh[cellPicker.GetPointId()], "lh"]
                         parcellationIndex = self.lesionvis.uniqueLabelsLh.tolist().index(self.lesionvis.labelsLh[cellPicker.GetPointId()])
@@ -723,7 +739,11 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountLh[parcellationIndex]
                         parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsLh[parcellationIndex].keys())
                         self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
-                        pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
+                        if(self.lesionvis.labelsLh[cellPicker.GetPointId()] != -1): # If not corpus callosum
+                            pickedParcellationColor = self.lesionvis.metaLh[self.lesionvis.labelsLh[cellPicker.GetPointId()]]["color"]
+                        else: # if corpus callosum
+                            pickedParcellationColor = [25, 5, 25, 0] # color label of corpus callosum from freesurfer.
+                        #print(pickedParcellationColor)
                         self.updateSurfaceColorsForParcellationPick("lh", pickedParcellationColor)
                         self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList, self.lesionvis.labelsLh[cellPicker.GetPointId()], "lh")
 
@@ -735,7 +755,11 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
                         self.lesionMapper.overlayDataMainRightParcellationImpact["NUMBER OF INFLUENCING LESIONS:"] = self.lesionMapper.parcellationLesionInfluenceCountRh[parcellationIndex]
                         parcellationAssociatedLesionList = list(self.lesionMapper.parcellationAssociatedLesionsRh[parcellationIndex].keys())
                         self.lesionMapper.overlayDataMainRightParcellationImpact["INFLUENCING LESION IDs:"] = parcellationAssociatedLesionList
-                        pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
+                        if(self.lesionvis.labelsRh[cellPicker.GetPointId()] != -1): # If not corpus callosum
+                            pickedParcellationColor = self.lesionvis.metaRh[self.lesionvis.labelsRh[cellPicker.GetPointId()]]["color"]
+                        else: # if corpuscallosum
+                            pickedParcellationColor = [25, 5, 25, 0] # color label of corpus callosum from freesurfer.
+                        #print(pickedParcellationColor)
                         self.updateSurfaceColorsForParcellationPick("rh", pickedParcellationColor)
                         self.highlightLesionsBasedOnSelectedParcellation(parcellationAssociatedLesionList, self.lesionvis.labelsRh[cellPicker.GetPointId()], "rh")
 

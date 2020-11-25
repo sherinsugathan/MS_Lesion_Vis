@@ -27,9 +27,11 @@ import json
 import ctypes
 import time
 import copy
+import pathlib
+import datetime
 from ctypes import wintypes
 from matplotlib import colors
-
+from fpdf import FPDF
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog, QCheckBox, QButtonGroup, QAbstractButton
@@ -57,13 +59,36 @@ import vtkmodules.qt.QVTKRenderWindowInteractor
 import vtkmodules.util
 import vtkmodules.util.numpy_support
 
+
+class PDF(FPDF):
+    def header(self):
+        # Logo
+        self.image(str(pathlib.Path(__file__).parent.absolute()) + '\\asset\\icons\\MuScLeVisHeader.jpg', 10, 8, 33)
+        # Arial bold 15
+        self.set_font('Arial', 'B', 15)
+        # Move to the right
+        self.cell(60)
+        # Title
+        self.cell(80, 10, '2D/3D ANALYSIS REPORT', 1, 0, 'C')
+        # Line break
+        self.ln(20)
+
+    # Page footer
+    def footer(self):
+        # Position at 1.5 cm from bottom
+        self.set_y(-15)
+        # Arial italic 8
+        self.set_font('Arial', 'I', 8)
+        # Page number
+        self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+
 class Ui(Qt.QMainWindow):
 
     # Main Initialization
     def __init__(self):
         super(Ui, self).__init__()
         # Font initialization
-        QtGui.QFontDatabase.addApplicationFont("asset/Google Sans Bold.ttf")
+        QtGui.QFontDatabase.addApplicationFont("asset\\Google Sans Bold.ttf")
         # Needed for windows task bar icon
         myappid = u'mycompany.myproduct.subproduct.version' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -100,6 +125,7 @@ class Ui(Qt.QMainWindow):
         self.pushButton_LoadFolder.clicked.connect(self.on_click_browseFolder) # Attaching button click Handlers
         self.pushButton_LoadData.clicked.connect(self.on_click_LoadData) # Attaching button click Handlers for load surfaces.
         self.pushButton_LoadStructural.clicked.connect(self.on_click_LoadStructural) # Attaching button click Handlers for load structural brain volumes.
+        self.pushButton_SaveReport.clicked.connect(self.on_SaveReport) # register handler for save report.
         self.dial.setMinimum(0)
         self.dial.setMaximum(500)
         self.dial.setValue(500)
@@ -516,7 +542,6 @@ class Ui(Qt.QMainWindow):
     def plotMPRs(self): 
         # clearing old figures
         self.figureMPRA.clear()
-
         plt.figure(0)
         # create an axis
         self.axMPRA = self.figureMPRA.add_subplot(111)
@@ -524,13 +549,16 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRA = np.rot90(self.slice_MPRA)
         self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
-        aspectCoronalData = self.spacingData[2]/self.spacingData[1]
-        aspectCoronalMask = self.spacingMask[2]/self.spacingMask[1]
+        if(self.pushButton_FLAIR.isChecked() == True):
+            aspectCoronalData = self.spacingData[2]/self.spacingData[1]
+            aspectCoronalMask = self.spacingMask[2]/self.spacingMask[1]
+        else:
+            aspectCoronalData = self.spacingData[2]/self.spacingData[0]
+            aspectCoronalMask = self.spacingMask[2]/self.spacingMask[0]
         self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect=aspectCoronalData)
         self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectCoronalMask,  interpolation='none')
         self.sliceNumberHandleMPRA = self.axMPRA.text(5, 5, str(self.midSliceX), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
         
-
         self.figureMPRB.clear()
         plt.figure(1)
         self.axMPRB = self.figureMPRB.add_subplot(111)
@@ -538,8 +566,12 @@ class Ui(Qt.QMainWindow):
         plt.subplots_adjust(wspace=None, hspace=None)
         self.slice_MPRB = np.rot90(self.slice_MPRB)
         self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
-        aspectAxialData = self.spacingData[2]/self.spacingData[1]
-        aspectAxialMask = self.spacingMask[2]/self.spacingMask[1]
+        if(self.pushButton_FLAIR.isChecked() == True):
+            aspectAxialData = self.spacingData[1]/self.spacingData[0]
+            aspectAxialMask = self.spacingMask[1]/self.spacingMask[0]
+        else:
+            aspectAxialData = self.spacingData[2]/self.spacingData[1]
+            aspectAxialMask = self.spacingMask[2]/self.spacingMask[1]
         self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect=aspectAxialData)
         self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectAxialMask,  interpolation='none')
         self.sliceNumberHandleMPRB = self.axMPRB.text(5, 5, str(self.midSliceY), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
@@ -555,8 +587,13 @@ class Ui(Qt.QMainWindow):
         else:
             self.slice_MPRC = np.rot90(self.slice_MPRC, 3)
             self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC, 3)
-        aspectSagittalData = self.spacingData[1]/self.spacingData[0]
-        aspectSagittalMask = self.spacingMask[1]/self.spacingMask[0]
+
+        if(self.pushButton_FLAIR.isChecked() == True):
+            aspectSagittalData = self.spacingData[1]/self.spacingData[0]
+            aspectSagittalMask = self.spacingMask[1]/self.spacingMask[0]
+        else:
+            aspectSagittalData = self.spacingData[1]/self.spacingData[0]
+            aspectSagittalMask = self.spacingMask[1]/self.spacingMask[0]
         self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect=aspectSagittalData)
         self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectSagittalMask,  interpolation='none')
         self.sliceNumberHandleMPRC = self.axMPRC.text(5, 5, str(self.midSliceZ), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
@@ -654,7 +691,7 @@ class Ui(Qt.QMainWindow):
             structureInfo = json.load(fp)
         self.numberOfLesionElements = len(structureInfo)
 
-        jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(self.subjectFolder)
+        #jsonTransformationMatrix = LesionUtils.getJsonDataTransformMatrix(self.subjectFolder)
         
         for jsonElementIndex in (range(1,self.numberOfLesionElements+1)):
             for p in structureInfo[str(jsonElementIndex)]:
@@ -951,6 +988,7 @@ class Ui(Qt.QMainWindow):
     ##########################################
     @pyqtSlot()
     def on_click_LoadData(self):
+        LesionUtils.clearCaptureFolder()
         self.subjectFolder = os.path.join(self.lineEdit_DatasetFolder.text(), str(self.comboBox_AvailableSubjects.currentText()))
         if(self.comboBox_AvailableSubjects.count() == 0):
             return
@@ -1158,6 +1196,85 @@ class Ui(Qt.QMainWindow):
         self.MPRCMask.set_data(self.sliceMask_MPRC)
         self.canvasMPRC.draw()
 
+    # Handler for save report.
+    @pyqtSlot()
+    def on_SaveReport(self):
+        pdf = PDF()
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 10)
+        patientIDLine = "PATIENT ID: " + self.lineEdit_PatientID.text()
+        patientLine = "PATIENT NAME: " + self.lineEdit_PatientName.text()
+        dateLine = "REPORT DATE: " + str(datetime.datetime.now())
+        pdf.cell(40, 10, patientIDLine)
+        pdf.ln(10)
+        pdf.cell(40, 10, patientLine)
+        pdf.ln(10)
+        pdf.cell(40, 10, dateLine)  
+        pdf.ln(10)
+
+        dirPath = os.path.dirname(os.path.realpath(__file__)) + "\\captures\\"
+        paths = sorted(pathlib.Path(dirPath).iterdir(), key=os.path.getctime)
+        fileCount = len(paths)
+        mprPadding = 40
+
+        writeData = []
+        for index in range(fileCount):
+            writeBatch = []
+            currentMode = ""
+            if(os.path.basename(paths[index])[0:3] == "NOR"):
+                writeBatch = [paths[index-3], paths[index-2], paths[index-1], paths[index]]
+                currentMode = "NOR"
+            if(os.path.basename(paths[index])[0:3] == "2DM"):
+                writeBatch = [paths[index-3], paths[index-2], paths[index-1], paths[index]]
+                currentMode = "2DM"
+            if(os.path.basename(paths[index])[0:3] == "DUA"):
+                if(os.path.basename(paths[index-4])[0:3]!="DUA" or index == 3):
+                    writeBatch = [paths[index-3], paths[index-2], paths[index-1], paths[index], paths[index+1], paths[index+2], paths[index+3], paths[index+4]]
+                    currentMode = "DUA"
+            if(writeBatch!=[]):
+                writeData.append([currentMode, writeBatch]) 
+
+        #print(writeData)
+
+        # write to PDF
+        dataIndex = 0
+        for data in writeData:
+            writeType = data[0]
+            if(writeType == "NOR" or writeType == "2DM"):
+                for fileName in data[1]:
+                    if("MPR" in os.path.basename(fileName)):
+                        pdf.image(str(fileName),mprPadding,60,40)
+                        mprPadding = mprPadding + 40
+                    else:
+                        pdf.ln(175)
+                        pdf.image(str(fileName),20,110,180)
+                        mprPadding =40
+
+            if(writeType == "DUA"):
+                MPRWritten = False
+                dualPadding = 15
+                for fileName in data[1]:
+                    if("MPR" in os.path.basename(fileName) and MPRWritten == False):
+                        pdf.image(str(fileName),mprPadding,60,40)
+                        mprPadding = mprPadding + 40
+
+                    if("DUA" in os.path.basename(fileName)):
+                        if(MPRWritten == False):
+                            pdf.ln(175)
+                        MPRWritten = True
+                        pdf.image(str(fileName),dualPadding,110,90)
+                        dualPadding = dualPadding + 90
+                        mprPadding =40
+
+            if(dataIndex < len(writeData)-1):
+                pdf.add_page() # create new page for every mode.
+            dataIndex = dataIndex + 1
+                
+        pdf.output('report.pdf', 'F')  # create pdf.
+        self.reportsMapper.SaveReport()
+
+
     # Handler for Intensity Threshold Slider change.
     @pyqtSlot()
     def on_sliderChangedIntensityThreshold(self):
@@ -1233,7 +1350,7 @@ class Ui(Qt.QMainWindow):
                     self.updateLesionColorsContinuous()
                 if(self.buttonGroupVis.checkedButton().text() == "DISCRETE"):
                     self.updateLesionColorsDiscrete()
-            if(btn.text()=="FLAIR DATA"):
+            if(btn.text()=="T2 FLAIR DATA"):
                 self.LoadStructuralSlices(self.subjectFolder, "3DFLAIR")
                 if(self.buttonGroupVis.checkedButton().text() == "CONTINUOUS"):
                     self.updateLesionColorsContinuous()
@@ -1377,7 +1494,6 @@ class Ui(Qt.QMainWindow):
             self.reportsMapper.AddData()
             self.reportsModeLoadedOnce = True
 
-
     # Initialize mode buttons.
     def initializeModeButtons(self):
         self.availableModalities.clear()
@@ -1394,7 +1510,7 @@ class Ui(Qt.QMainWindow):
             self.availableModalities.append("T2")
         else:
             modalityButtons[1].setEnabled(False)
-        if(os.path.isfile(self.subjectFolder + "\\structural\\FLAIR.nii")):
+        if(os.path.isfile(self.subjectFolder + "\\structural\\3DFLAIR.nii")):
             modalityButtons[2].setEnabled(True)
             self.availableModalities.append("FLAIR")
         else:
@@ -1468,14 +1584,12 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot()
     def on_click_CaptureScreeshot(self):
         if(self.activeMode == -2):
-            LesionUtils.captureScreenshot(self.ren.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.ren.GetRenderWindow(), -2)
         if(self.activeMode == -3):
-            LesionUtils.captureScreenshot(self.renDualLeft.GetRenderWindow())
-            LesionUtils.captureScreenshot(self.renDualRight.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.renDualLeft.GetRenderWindow(), -3)
+            LesionUtils.captureScreenshot(self.renDualRight.GetRenderWindow(), -3)
         if(self.activeMode == -4):
-            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererLesion.GetRenderWindow())
-            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedRh.GetRenderWindow())
-            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererUnfoldedLh.GetRenderWindow())
+            LesionUtils.captureScreenshot(self.twoDModeMapper.rendererLesion.GetRenderWindow(), -4) # There is only one renderer window
 
     # Handler for changing the mapping technique.
     @pyqtSlot()

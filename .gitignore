@@ -8,3 +8,6 @@ __pycache__/LesionMapper.cpython-37.pyc
 envs/
 build/
 dist/
+capture/*
+!captures/.gitkeep
+report.pdf
