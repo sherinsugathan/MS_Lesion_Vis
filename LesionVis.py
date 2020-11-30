@@ -133,7 +133,7 @@ class Ui(Qt.QMainWindow):
         self.pushButton_UnselectAllSubjects.clicked.connect(self.on_click_UnselectAllSubjects) # Attaching button click Handlers
         self.pushButton_DepthPeel.toggled.connect(self.depthpeel_toggled) # Attaching button click Handlers
         self.pushButton_Parcellation.toggled.connect(self.parcellation_toggled) # Attaching button click Handlers
-        self.pushButton_PersistSettings.toggled.connect(self.persistSettings_toggled) # Attaching button toggle handlers.
+        self.pushButton_EnableOverlay.toggled.connect(self.EnableOverlay_toggled) # Attaching button toggle handlers.
         self.pushButton_EnableFibers.toggled.connect(self.fiberEnable_toggled) # Attaching button toggle handlers.
         self.pushButton_ResetView.clicked.connect(self.on_click_ResetViews) # Attaching button click Handlers
         self.pushButton_UpdateIntensityThreshold.clicked.connect(self.on_click_UpdateIntensityThreshold) # Attaching button click Handlers
@@ -539,7 +539,7 @@ class Ui(Qt.QMainWindow):
     #     obj.OnMouseWheelForward()
 
     # action called by thte push button 
-    def plotMPRs(self): 
+    def plotMPRs(self, maskAlpha = 0.5, refreshData=True): 
         # clearing old figures
         self.figureMPRA.clear()
         plt.figure(0)
@@ -547,8 +547,9 @@ class Ui(Qt.QMainWindow):
         self.axMPRA = self.figureMPRA.add_subplot(111)
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
-        self.slice_MPRA = np.rot90(self.slice_MPRA)
-        self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
+        if(refreshData == True):
+            self.slice_MPRA = np.rot90(self.slice_MPRA)
+            self.sliceMask_MPRA = np.rot90(self.sliceMask_MPRA)
         if(self.pushButton_FLAIR.isChecked() == True):
             aspectCoronalData = self.spacingData[2]/self.spacingData[1]
             aspectCoronalMask = self.spacingMask[2]/self.spacingMask[1]
@@ -556,7 +557,7 @@ class Ui(Qt.QMainWindow):
             aspectCoronalData = self.spacingData[2]/self.spacingData[0]
             aspectCoronalMask = self.spacingMask[2]/self.spacingMask[0]
         self.MPRA = plt.imshow(self.slice_MPRA, cmap='Greys_r', aspect=aspectCoronalData)
-        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectCoronalMask,  interpolation='none')
+        self.MPRAMask = plt.imshow(self.sliceMask_MPRA, cmap=self.MPROverlayColorMap, alpha=maskAlpha, aspect=aspectCoronalMask,  interpolation='none')
         self.sliceNumberHandleMPRA = self.axMPRA.text(5, 5, str(self.midSliceX), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
         
         self.figureMPRB.clear()
@@ -564,8 +565,9 @@ class Ui(Qt.QMainWindow):
         self.axMPRB = self.figureMPRB.add_subplot(111)
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
-        self.slice_MPRB = np.rot90(self.slice_MPRB)
-        self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
+        if(refreshData == True):
+            self.slice_MPRB = np.rot90(self.slice_MPRB)
+            self.sliceMask_MPRB = np.rot90(self.sliceMask_MPRB)
         if(self.pushButton_FLAIR.isChecked() == True):
             aspectAxialData = self.spacingData[1]/self.spacingData[0]
             aspectAxialMask = self.spacingMask[1]/self.spacingMask[0]
@@ -573,7 +575,7 @@ class Ui(Qt.QMainWindow):
             aspectAxialData = self.spacingData[2]/self.spacingData[1]
             aspectAxialMask = self.spacingMask[2]/self.spacingMask[1]
         self.MPRB = plt.imshow(self.slice_MPRB, cmap='Greys_r', aspect=aspectAxialData)
-        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectAxialMask,  interpolation='none')
+        self.MPRBMask = plt.imshow(self.sliceMask_MPRB, cmap=self.MPROverlayColorMap, alpha=maskAlpha, aspect=aspectAxialMask,  interpolation='none')
         self.sliceNumberHandleMPRB = self.axMPRB.text(5, 5, str(self.midSliceY), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.figureMPRC.clear()
@@ -581,12 +583,13 @@ class Ui(Qt.QMainWindow):
         self.axMPRC = self.figureMPRC.add_subplot(111) 
         plt.axis('off')
         plt.subplots_adjust(wspace=None, hspace=None)
-        if(self.dtiDataActive == True):
-            self.slice_MPRC = np.rot90(self.slice_MPRC)
-            self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC)
-        else:
-            self.slice_MPRC = np.rot90(self.slice_MPRC, 3)
-            self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC, 3)
+        if(refreshData == True):
+            if(self.dtiDataActive == True):
+                self.slice_MPRC = np.rot90(self.slice_MPRC)
+                self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC)
+            else:
+                self.slice_MPRC = np.rot90(self.slice_MPRC, 3)
+                self.sliceMask_MPRC = np.rot90(self.sliceMask_MPRC, 3)
 
         if(self.pushButton_FLAIR.isChecked() == True):
             aspectSagittalData = self.spacingData[1]/self.spacingData[0]
@@ -595,7 +598,7 @@ class Ui(Qt.QMainWindow):
             aspectSagittalData = self.spacingData[1]/self.spacingData[0]
             aspectSagittalMask = self.spacingMask[1]/self.spacingMask[0]
         self.MPRC = plt.imshow(self.slice_MPRC, cmap='Greys_r', aspect=aspectSagittalData)
-        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=0.5, aspect=aspectSagittalMask,  interpolation='none')
+        self.MPRCMask = plt.imshow(self.sliceMask_MPRC, cmap=self.MPROverlayColorMap, alpha=maskAlpha, aspect=aspectSagittalMask,  interpolation='none')
         self.sliceNumberHandleMPRC = self.axMPRC.text(5, 5, str(self.midSliceZ), verticalalignment='top', horizontalalignment='left', color='green', fontsize=12)
 
         self.canvasMPRA.draw()
@@ -1005,8 +1008,8 @@ class Ui(Qt.QMainWindow):
         self.ren.RemoveAllViewProps() # Remove all actors from the list of actors before loading new subject data.
         self.modelListBoxSurfaces.removeRows(0, self.modelListBoxSurfaces.rowCount()) # Clear all elements in the surface listView.
 
-        # Fetch required display settings.
-        if(self.dataFolderInitialized==False or self.pushButton_PersistSettings.isChecked() == False):
+        # Fetch required display settings. 
+        if(self.dataFolderInitialized==False): # or self.pushButton_PersistSettings.isChecked() == False): # DISABLING PERSIST SETTINGS FEATURE FOR NOW.
             self.settings = Settings.getSettings(Settings.visMapping("Lesion Colored - Continuous"))
             self.lesionFilterParamSettings = Settings.LesionFilterParamSettings(1000,1000,1000,1000,1000,1000,1000)
 
@@ -1627,11 +1630,13 @@ class Ui(Qt.QMainWindow):
         LesionUtils.updateOverlayText(self.iren, self.overlayDataMain, self.overlayDataGlobal, self.textActorLesionStatistics, self.textActorGlobal)
         self.iren.Render()
 
-    # Handler for persist settings
+    # Handler for enable/disable MPR overlay
     @pyqtSlot(bool)
-    def persistSettings_toggled(self, checkStatus):
+    def EnableOverlay_toggled(self, checkStatus):
         if (checkStatus == True):
-            print("TODO: Handle persist settings")
+            self.plotMPRs(0, False)
+        else:
+            self.plotMPRs(0.5, False)
 
     # Handler for updating intensity threshold.
     @pyqtSlot()

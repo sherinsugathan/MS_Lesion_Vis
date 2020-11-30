@@ -1172,7 +1172,7 @@ border-style: solid;</string>
           <number>12</number>
          </property>
          <item row="0" column="0">
-          <widget class="QPushButton" name="pushButton_PersistSettings">
+          <widget class="QPushButton" name="pushButton_EnableOverlay">
            <property name="minimumSize">
             <size>
              <width>100</width>
@@ -1180,13 +1180,13 @@ border-style: solid;</string>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">QPushButton:hover#pushButton_PersistSettings
+            <string notr="true">QPushButton:hover#pushButton_EnableOverlay
 {
 background-color: rgb(54, 113, 38);
 }
-QPushButton:pressed#pushButton_PersistSettings {background-color:rgb(143, 180,146);}
-QPushButton:checked#pushButton_PersistSettings {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
-QPushButton#pushButton_PersistSettings
+QPushButton:pressed#pushButton_EnableOverlay {background-color:rgb(143, 180,146);}
+QPushButton:checked#pushButton_EnableOverlay {background-color:rgb(143, 180,146);color: rgb(6,16,19);}
+QPushButton#pushButton_EnableOverlay
 {
 background-color: rgb(10, 61, 29);
 color: rgb(161, 226, 158);
@@ -1203,7 +1203,7 @@ border-style: solid;
 </string>
            </property>
            <property name="text">
-            <string>Persist Settings</string>
+            <string>Enable Overlay</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
