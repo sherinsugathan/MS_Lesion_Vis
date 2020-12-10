@@ -1634,9 +1634,9 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot(bool)
     def EnableOverlay_toggled(self, checkStatus):
         if (checkStatus == True):
-            self.plotMPRs(0, False)
-        else:
             self.plotMPRs(0.5, False)
+        else:
+            self.plotMPRs(0, False)
 
     # Handler for updating intensity threshold.
     @pyqtSlot()

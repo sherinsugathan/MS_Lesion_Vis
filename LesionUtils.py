@@ -1346,7 +1346,7 @@ def setLegend(legendBox, legend, legendDistance, vis):
     if(vis == "continuous" or vis == "discrete"):
         legend.SetEntryString(0, "HYPO-INTENSE")
         legend.SetEntryString(1, "ISO-INTENSE")
-        legend.SetEntryString(2, "HYPER-LESION")
+        legend.SetEntryString(2, "HYPER-INTENSE")
         legend.SetEntrySymbol(0, legendBox.GetOutput())
         legend.SetEntrySymbol(1, legendBox.GetOutput())
         legend.SetEntrySymbol(2, legendBox.GetOutput())

@@ -1208,6 +1208,9 @@ border-style: solid;
            <property name="checkable">
             <bool>true</bool>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item row="0" column="1">
