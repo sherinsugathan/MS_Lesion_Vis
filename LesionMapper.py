@@ -539,13 +539,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 if(self.lesionvis.labelsRh[vertexIndex] == -1):
                     clrParcellationRh = self.lesionvis.metaRh[0]["color"]#[25,5,25]
-                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh): # If parcellation label id is element of affected parcellations then darken
+                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh and self.lesionvis.checkBox_AutoHighlightRegions.isChecked()==True): # If parcellation label id is element of affected parcellations then darken
                         lightClr = clrParcellationRh
                     else: # else lighten up parcellation.
                         lightClr = self.tintColor(clrParcellationRh, 0.1)
                 else:
                     clrParcellationRh = self.lesionvis.metaRh[self.lesionvis.labelsRh[vertexIndex]]["color"]
-                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh): # If parcellation label id is element of affected parcellations then darken
+                    if(self.lesionvis.labelsRh[vertexIndex] in impactParcellationLabelsRh and self.lesionvis.checkBox_AutoHighlightRegions.isChecked()==True): # If parcellation label id is element of affected parcellations then darken
                         lightClr = clrParcellationRh
                     else: # else lighten up parcellation.
                         lightClr = self.tintColor(clrParcellationRh, 0.1)
@@ -558,13 +558,13 @@ class LesionMappingInteraction(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 if(self.lesionvis.labelsLh[vertexIndex] == -1):
                     clrParcellationLh = self.lesionvis.metaLh[0]["color"]#[25,5,25]
-                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh): # If parcellation label id is element of affected parcellations then darken
+                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh and self.lesionvis.checkBox_AutoHighlightRegions.isChecked()==True): # If parcellation label id is element of affected parcellations then darken
                         lightClr = clrParcellationLh
                     else:  # else lighten up parcellation.
                         lightClr = self.tintColor(clrParcellationLh, 0.1)
                 else:
                     clrParcellationLh = self.lesionvis.metaLh[self.lesionvis.labelsLh[vertexIndex]]["color"]
-                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh): # If parcellation label id is element of affected parcellations then darken
+                    if(self.lesionvis.labelsLh[vertexIndex] in impactParcellationLabelsLh and self.lesionvis.checkBox_AutoHighlightRegions.isChecked()==True): # If parcellation label id is element of affected parcellations then darken
                         lightClr = clrParcellationLh
                     else:  # else lighten up parcellation.
                         lightClr = self.tintColor(clrParcellationLh, 0.1)

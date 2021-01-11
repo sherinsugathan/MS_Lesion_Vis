@@ -111,6 +111,29 @@ def setOverlayText(overlayDictionary, overlayTextActor):
         overlayText = overlayText + str(key) + ": " + str(overlayDictionary[key]) + "\n"
     overlayTextActor.SetInput(overlayText)
 
+
+'''
+##########################################################################
+    Returns: captureScreen for debug and documentation purposes.
+##########################################################################
+'''
+def captureScreenshot2(renderWindow, modeID): 
+    windowToImageFilter = vtk.vtkWindowToImageFilter()
+    windowToImageFilter.SetInput(renderWindow)
+    windowToImageFilter.SetScale(3,3)
+    #windowToImageFilter.SetMagnification(3) #set the resolution of the output image (3 times the current resolution of vtk render window)
+    windowToImageFilter.SetInputBufferTypeToRGBA() #also record the alpha (transparency) channel
+    windowToImageFilter.ReadFrontBufferOff() # read from the back buffer
+    windowToImageFilter.Update()
+    curr_time = datetime.now()
+    timestr = curr_time.strftime('%H.%M.%S.%f')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    fileName = dir_path + "\\" + timestr + ".png"
+    writer = vtk.vtkPNGWriter()
+    writer.SetFileName(fileName)
+    writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+    writer.Write()
+
 '''
 ##########################################################################
     Capture a screenshot from the main renderer. File gets written with timestamp name.
@@ -1467,11 +1490,14 @@ def MakeCellData(min, max, colors, polyDataObject):
     Returns: Nothing
 ##########################################################################
 '''
-def updateContinuousColorData(subjectFolder, sliderVal):
+def updateContinuousColorData(subjectFolder, sliderVal, isDTIDataActive):
     #rootPath = "D:\\OneDrive - University of Bergen\Datasets\\MS_SegmentationChallengeDataset\\"
     #listOfSubjects = ["DTIDATA"]
     #contVolumeFileNames = ["T1IntensityDifference.nii"]
-    contVolumeFileNames = ["T1IntensityDifference.nii", "T2IntensityDifference.nii", "3DFLAIRIntensityDifference.nii"]
+    if(isDTIDataActive == True):
+        contVolumeFileNames = ["T1IntensityDifference.nii", "T2IntensityDifference.nii"]
+    else:
+        contVolumeFileNames = ["T1IntensityDifference.nii", "T2IntensityDifference.nii", "3DFLAIRIntensityDifference.nii"]
 
     structureInfo = None
     with open(subjectFolder + "\\structure-def3.json") as fp: 

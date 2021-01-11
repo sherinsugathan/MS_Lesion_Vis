@@ -1642,7 +1642,7 @@ class Ui(Qt.QMainWindow):
     @pyqtSlot()
     def on_click_UpdateIntensityThreshold(self):
         sliderValue = self.horizontalSliderIntensityThreshold.value()
-        LesionUtils.updateContinuousColorData(self.subjectFolder, int(sliderValue))
+        LesionUtils.updateContinuousColorData(self.subjectFolder, int(sliderValue), self.dtiDataActive)
         self.updateLesionColorsContinuous()
 
     # Handler for reset camera pushbutton 
