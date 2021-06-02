@@ -1,0 +1,1 @@
+[04-May-2021 17:29:00 UTC] PHP Warning:  mysqli_connect(): (HY000/1040): Too many connections in /home1/sherinme/public_html/medvis/config.php on line 10

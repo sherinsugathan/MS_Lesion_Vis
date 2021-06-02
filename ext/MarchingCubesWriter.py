@@ -24,6 +24,17 @@ bounds = niftiReader.GetOutput().GetBounds()
 #volume = vtk.vtkImageData()
 #volume.DeepCopy(niftiReader.GetOutput())
 
+# Read QForm matrix from mask data.
+QFormMatrixMask = niftiReader.GetQFormMatrix()
+qFormListMask = [0] * 16 #the matrix is 4x4
+QFormMatrixMask.DeepCopy(qFormListMask, QFormMatrixMask)
+
+transform = vtk.vtkTransform()
+transform.Identity()
+transform.SetMatrix(qFormListMask)
+transform.Update()
+
+
 surface = vtk.vtkDiscreteMarchingCubes()
 #surface.SetInputData(volume)
 surface.SetInputConnection(niftiReader.GetOutputPort())
@@ -39,6 +50,11 @@ surface.SetValue(0,1)
 surface.Update()
 
 
+transformFilter = vtk.vtkTransformFilter()
+transformFilter.SetInputConnection(surface.GetOutputPort())
+transformFilter.SetTransform(transform)
+transformFilter.Update()
+
 # writer = vtk.vtkXMLPolyDataWriter()
 # writer.SetInputData(surface.GetOutput())
 # writer.SetFileName("D:\\mask.vtp")
@@ -50,7 +66,7 @@ surface.Update()
 # plyWriter.Write()
 
 objWriter = vtk.vtkOBJWriter()
-objWriter.SetInputData(surface.GetOutput())
+objWriter.SetInputData(transformFilter.GetOutput())
 objWriter.SetFileName(pathName + outputFileName)
 objWriter.Write()
 

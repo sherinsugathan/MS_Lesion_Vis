@@ -1,0 +1,235 @@
+body{
+	color:#9EADAD;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 11px;
+	background: #2c2c34;
+}
+
+div{
+	/*border: 1px solid #5A8863;*/
+	text-align: left;
+}
+#header{
+	width: 100%;
+	height: 30px;
+	padding-top: 10px;
+}
+
+#mainControls{
+	width: 230px;
+	height: 100%;
+	float: left;
+	padding-top: 0px;
+	margin-top: 30px;
+}
+
+#MPRs{
+	height: 100%;
+	width: 265px;
+	padding-top: 0px;
+	float: left;
+	min-height: 400px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	font-family: 'Montserrat', sans-serif;
+    font-size: 25px;
+	color: #777777;
+}
+
+#MPRA{
+	height: calc(33%-10px);
+	line-height: 258px;
+	text-align: center;
+	width: 100%;
+	min-height: calc(33%-10px);
+	background: #333333;
+	border: 2px solid #41414d;
+	margin:3px;
+	margin-bottom: 10px;
+}
+
+#MPRB{
+	height: calc(33%-10px);
+	line-height: 258px;
+	text-align: center;
+	width: 100%;
+	min-height: calc(33%-10px);
+	background: #333333;
+	border: 2px solid #41414d;
+	margin:3px;
+	margin-bottom: 10px;
+}
+
+#MPRC{
+	height: calc(33%-110px);
+	line-height: 258px;
+	text-align: center;
+	width: 100%;
+	min-height: calc(33%-10px);
+	background: #333333;
+	border: 2px solid #41414d;
+	margin:3px;
+}
+
+#protocols{
+	height: 50px;
+	margin-left: 600px;
+}
+
+#tdcontent{
+	position: absolute;
+  	left:502px;
+	top:43px;
+	background: #333333;
+  	height: calc(100% - 135px);
+	width:calc(100% - 525px);
+	border: 2px solid #41414d;
+	margin:10px;
+}
+
+button {
+    display: inline-block;
+    border: 2px solid #575757;
+    padding: 6px;
+	min-width:215px;
+    margin: 5px;
+    text-decoration: none;
+    background: #383631;
+    color:#cfcfcf;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 250ms ease-in-out, 
+                transform 150ms ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+button:hover,
+button:focus {
+    background: #0053ba;
+}
+
+button:focus {
+    /*outline: 1px solid #fff;*/
+    /*outline-offset: -4px;*/
+}
+
+button:active {
+    transform: scale(0.99);
+}
+
+
+/* TEXT BOX STYLING */
+input {
+  margin: 0 .25rem;
+  min-width: 125px;
+  border: 1px solid #eee;
+/*  border-left: 3px solid;*/
+  border-radius: 5px;
+  transition: border-color .5s ease-out;
+}
+input:optional {
+  border-left-color: #999;
+}
+input:required {
+  border-left-color: palegreen;
+}
+input:invalid {
+  border-left-color: salmon;
+}
+
+/* COMBOBOX */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  outline: 0;
+  box-shadow: none;
+  border: 0 !important;
+  background: #2c3e50;
+  background-image: none;
+  margin:3px;
+  color:#9EADAD;
+}
+/* Remove IE arrow */
+select::-ms-expand {
+  display: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+}
+/* Custom Select */
+.select {
+  position: relative;
+  display: flex;
+  width: 20em;
+  height: 3em;
+  line-height: 3;
+  background: #2c3e50;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: .25em;
+}
+select {
+  flex: 1;
+  padding: 0 .5em;
+  color:#9EADAD;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+}
+/* Arrow */
+.select::after {
+  content: '\25BC';
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 1em;
+  background: #34495e;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  pointer-events: none;
+  -webkit-transition: .25s all ease;
+  -o-transition: .25s all ease;
+  transition: .25s all ease;
+}
+/* Transition */
+.select:hover::after {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: #f39c12;
+}
+
+textarea {
+	background: #2c3e50;
+	min-width:209px;
+	margin-left: 5px;
+	border: 2px solid #575757;
+	min-height:120px;
+	color:#9EADAD;
+}
+
+#logoutBtn{
+  float: right;  
+  /*display: inline-block;*/
+}
+
+a:link, a:visited {
+  background-color:firebrick;
+  color: white;
+  padding: 7px 10px;
+	margin-right: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+a:hover, a:active {
+  background-color: red;
+}
