@@ -10,4 +10,4 @@ a. vtk - https://anaconda.org/anaconda/vtk    (conda install -c anaconda vtk) <b
 b. itk - https://anaconda.org/conda-forge/itk  (conda install -c conda-forge itk) <br/>
 c. simpleitk - https://anaconda.org/SimpleITK/simpleitk  (conda install -c simpleitk simpleitk) <br/>
 d. nibabel - https://anaconda.org/conda-forge/nibabel  (conda install -c conda-forge nibabel) <br/>
-e. pip install freesurfer-surface<br/>
+e. pip install freesurfer-surface <br/>
