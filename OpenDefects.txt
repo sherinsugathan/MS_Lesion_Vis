@@ -7,4 +7,4 @@
 7. Check and fix SDM projection technique related issues.
 8. Dual mode, cpick lesion, switch to unfold mode, pick lesion, clik on parcellation, issue-yellow lesion in 3d. 
 9. Slider issue in T2.
-10. Fast color switching for surfaces.s
+10. Fast color switching for surfaces.sdd
